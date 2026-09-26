@@ -2,9 +2,9 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 
 /**
  * Hero3DCardStage
- * A collection of interactive 3D floating UI cards representing the actual RoomSync product.
+ * A collection of interactive 3D floating Roommate Profile, Compatibility, and Shared Living UI cards.
  * Features:
- * - Initial staggered 3D entrance animation on page load
+ * - Staggered 3D entrance animation on page load
  * - Continuous subtle harmonic floating in 3D space
  * - Smooth mouse parallax and perspective tilt
  * - Scroll-responsive 3D dispersion as user scrolls down
@@ -15,7 +15,6 @@ export default function Hero3DCardStage({ className = '' }) {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0, targetX: 0, targetY: 0 });
   const [scrollY, setScrollY] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
   const animFrameRef = useRef(null);
 
   // Trigger initial staggered entrance animation on mount
@@ -42,9 +41,7 @@ export default function Hero3DCardStage({ className = '' }) {
     setMousePos(prev => ({ ...prev, targetX: x, targetY: y }));
   }, []);
 
-  const handleMouseEnter = () => setIsHovered(true);
   const handleMouseLeave = () => {
-    setIsHovered(false);
     setMousePos(prev => ({ ...prev, targetX: 0, targetY: 0 }));
   };
 
@@ -87,86 +84,93 @@ export default function Hero3DCardStage({ className = '' }) {
     <div
       ref={containerRef}
       onMouseMove={handleMouseMove}
-      onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className={`relative w-full max-w-lg lg:max-w-xl mx-auto select-none ${className}`}
       style={{
         perspective: '1200px',
-        minHeight: '460px'
+        minHeight: '480px'
       }}
     >
       {/* 3D Scene Root */}
       <div
-        className="relative w-full h-full min-h-[460px] flex items-center justify-center transition-transform duration-200 ease-out"
+        className="relative w-full h-full min-h-[480px] flex items-center justify-center transition-transform duration-200 ease-out"
         style={{
           transformStyle: 'preserve-3d',
           transform: `rotateX(${tiltX.toFixed(2)}deg) rotateY(${tiltY.toFixed(2)}deg)`
         }}
       >
         {/* ======================================================== */}
-        {/* CARD 1: PRIMARY CHORE / MORNING RHYTHM CARD (Center Anchor) */}
+        {/* CARD 1: PRIMARY ROOMMATE PROFILE CARD (Center Anchor, Z = 40) */}
         {/* ======================================================== */}
         <div
-          className="absolute z-20 w-[88%] sm:w-[350px] transition-all duration-700 ease-out"
+          className="absolute z-20 w-[90%] sm:w-[360px] transition-all duration-700 ease-out"
           style={{
             transformStyle: 'preserve-3d',
             transform: isLoaded
-              ? `translate3d(${-mousePos.x * 10}px, ${-mousePos.y * 10 + Math.sin(Date.now() / 1200) * 0}px, 40px) scale(${1 - scrollFactor * 0.05})`
+              ? `translate3d(${-mousePos.x * 10}px, ${-mousePos.y * 10}px, 40px) scale(${1 - scrollFactor * 0.05})`
               : 'translate3d(0px, 40px, -60px) scale(0.9)',
             opacity: isLoaded ? 1 : 0,
             transitionDelay: '0.1s'
           }}
         >
           <div className="bg-[#FFF9F1] border border-[#E8DEC8] rounded-3xl p-5 sm:p-6 shadow-2xl backdrop-blur-md hover:border-[#3E737C]/40 transition-colors">
-            {/* Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-[#E8DEC8]">
-              <div className="flex items-center gap-2">
-                <span className="w-8 h-8 rounded-xl bg-[#DCE8E8] text-[#234653] flex items-center justify-center text-sm shadow-2xs font-bold">
-                  🧹
-                </span>
+            {/* Header / Roommate Info */}
+            <div className="flex items-start justify-between pb-3.5 border-b border-[#E8DEC8]">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-[#DCE8E8] text-[#234653] font-bold text-lg flex items-center justify-center border border-[#E8DEC8] font-serif shadow-2xs">
+                  M
+                </div>
                 <div>
-                  <h4 className="text-sm font-bold text-[#234653] font-serif-editorial">
-                    Kitchen & Stove Rotation
-                  </h4>
-                  <span className="text-[10px] text-[#3E737C]">The Maple Flat • Morning Rhythm</span>
+                  <div className="flex items-center gap-1.5">
+                    <h4 className="text-base font-bold text-[#234653] font-serif-editorial">
+                      Maya Sharma, 23
+                    </h4>
+                    <span className="text-emerald-600 text-xs font-bold" title="Verified Roommate">✓</span>
+                  </div>
+                  <span className="text-xs text-[#3E737C]">Product Designer • Hyderabad</span>
                 </div>
               </div>
-              <span className="text-[10px] font-bold text-[#234653] bg-[#FAF5ED] px-2.5 py-0.5 rounded-full border border-[#E8DEC8]">
-                ✓ Complete
+              <span className="text-[11px] font-bold text-[#E86F5A] bg-[#FBF1EB] px-2.5 py-1 rounded-full border border-[#F2D4C8]">
+                ₹12,000 / mo
               </span>
             </div>
 
-            {/* Task Item */}
+            {/* Living Habits & Preferences */}
             <div className="mt-3.5 space-y-2">
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF5ED] border border-[#E8DEC8]/70 text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="w-4 h-4 rounded-full bg-[#E86F5A] text-white flex items-center justify-center text-[9px] font-bold">
-                    ✓
-                  </span>
-                  <span className="font-semibold text-[#234653]">Alex wiped down counters</span>
-                </div>
-                <span className="text-[10px] font-mono text-[#3E737C]">08:45 AM</span>
+              <div className="flex items-center justify-between text-xs text-[#3E737C]">
+                <span>Move-in Date:</span>
+                <span className="font-semibold text-[#234653]">1st of Next Month</span>
               </div>
-
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FFF9F1] border border-[#E8DEC8] text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="w-4 h-4 rounded-full border border-[#3E737C]/50 flex items-center justify-center text-[9px]"></span>
-                  <span className="text-[#234653]">Run dishwasher cycle</span>
-                </div>
-                <span className="text-[10px] font-semibold text-[#E86F5A]">Assigned to You</span>
+              <div className="flex items-center justify-between text-xs text-[#3E737C]">
+                <span>Daily Schedule:</span>
+                <span className="font-semibold text-[#234653]">Early riser (07:00 - 23:00)</span>
+              </div>
+              <div className="flex items-center justify-between text-xs text-[#3E737C]">
+                <span>Cleanliness & Chores:</span>
+                <span className="font-semibold text-[#234653]">Shared weekly rotation</span>
               </div>
             </div>
 
-            {/* Progress Footer */}
-            <div className="mt-4 pt-3 border-t border-[#E8DEC8]/80 flex items-center justify-between text-[11px] text-[#3E737C]">
-              <span>Household balance</span>
-              <span className="font-semibold text-[#234653]">4 of 6 tended today</span>
+            {/* Lifestyle Tags */}
+            <div className="mt-3.5 pt-3 border-t border-[#E8DEC8]/80 flex flex-wrap gap-1.5">
+              <span className="px-2.5 py-1 rounded-xl bg-[#FAF5ED] border border-[#E8DEC8] text-[10px] font-semibold text-[#234653]">
+                ☕ Coffee Lover
+              </span>
+              <span className="px-2.5 py-1 rounded-xl bg-[#FAF5ED] border border-[#E8DEC8] text-[10px] font-semibold text-[#234653]">
+                🍳 Shared Cooking
+              </span>
+              <span className="px-2.5 py-1 rounded-xl bg-[#FAF5ED] border border-[#E8DEC8] text-[10px] font-semibold text-[#234653]">
+                🚭 Non-Smoker
+              </span>
+              <span className="px-2.5 py-1 rounded-xl bg-[#FAF5ED] border border-[#E8DEC8] text-[10px] font-semibold text-[#234653]">
+                🌿 Plant Friendly
+              </span>
             </div>
           </div>
         </div>
 
         {/* ======================================================== */}
-        {/* CARD 2: EXPENSE SPLIT PANEL (Upper Left Layer, Z = 85) */}
+        {/* CARD 2: COMPATIBILITY SCORE CARD (Upper Left Layer, Z = 85) */}
         {/* ======================================================== */}
         <div
           className="absolute z-30 -top-8 sm:-top-10 -left-4 sm:-left-12 w-[72%] sm:w-[270px] transition-all duration-700 ease-out"
@@ -182,38 +186,34 @@ export default function Hero3DCardStage({ className = '' }) {
           <div className="bg-[#FAF5ED]/95 border border-[#E8DEC8] rounded-2xl p-4 shadow-xl backdrop-blur-md hover:border-[#E86F5A]/40 transition-colors">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="w-7 h-7 rounded-lg bg-[#F2D4C8] text-[#234653] flex items-center justify-center text-xs shadow-2xs font-bold">
-                  💰
+                <span className="w-7 h-7 rounded-lg bg-[#DCE8E8] text-[#234653] flex items-center justify-center text-xs shadow-2xs font-bold">
+                  ⚡
                 </span>
                 <div>
                   <span className="text-[11px] font-bold text-[#234653] block font-serif-editorial leading-tight">
-                    Shared Groceries
+                    Compatibility Match
                   </span>
-                  <span className="text-[9px] text-[#3E737C]">Split 3 ways</span>
+                  <span className="text-[9px] text-[#3E737C]">With Your Lifestyle</span>
                 </div>
               </div>
-              <span className="text-xs font-bold text-[#234653] font-serif-editorial">₹1,240</span>
+              <span className="text-sm font-bold text-emerald-700 font-serif-editorial">94%</span>
             </div>
 
-            <div className="mt-3 flex items-center justify-between text-[10px] pt-2 border-t border-[#E8DEC8]/80 text-[#3E737C]">
-              <div className="flex -space-x-1.5 overflow-hidden">
-                <span className="inline-block w-5 h-5 rounded-full bg-[#DCE8E8] text-[#234653] text-[9px] font-bold text-center leading-5 border border-[#FFF9F1]">
-                  A
-                </span>
-                <span className="inline-block w-5 h-5 rounded-full bg-[#F2D4C8] text-[#234653] text-[9px] font-bold text-center leading-5 border border-[#FFF9F1]">
-                  M
-                </span>
-                <span className="inline-block w-5 h-5 rounded-full bg-[#234653] text-white text-[9px] font-bold text-center leading-5 border border-[#FFF9F1]">
-                  Y
-                </span>
+            <div className="mt-2.5 space-y-1 text-[10px] text-[#3E737C] pt-2 border-t border-[#E8DEC8]/80">
+              <div className="flex items-center gap-1.5 text-[#234653]">
+                <span className="text-emerald-600 font-bold">✓</span>
+                <span>Matching quiet study hours</span>
               </div>
-              <span className="font-semibold text-[#E86F5A]">₹413.33 / each</span>
+              <div className="flex items-center gap-1.5 text-[#234653]">
+                <span className="text-emerald-600 font-bold">✓</span>
+                <span>Aligned budget & utility split</span>
+              </div>
             </div>
           </div>
         </div>
 
         {/* ======================================================== */}
-        {/* CARD 3: ROOMMATE FAVOR / HELP REQUEST (Lower Right, Z = 65) */}
+        {/* CARD 3: ROOMMATE CONNECTION / REQUEST CARD (Lower Right, Z = 65) */}
         {/* ======================================================== */}
         <div
           className="absolute z-25 -bottom-8 sm:-bottom-10 -right-2 sm:-right-8 w-[76%] sm:w-[280px] transition-all duration-700 ease-out"
@@ -228,27 +228,24 @@ export default function Hero3DCardStage({ className = '' }) {
         >
           <div className="bg-[#FFF9F1]/95 border border-[#E8DEC8] rounded-2xl p-4 shadow-xl backdrop-blur-md hover:border-[#3E737C]/40 transition-colors">
             <div className="flex items-start gap-2.5">
-              <span className="w-7 h-7 rounded-lg bg-[#DCE8E8] text-[#234653] flex items-center justify-center text-xs shadow-2xs font-bold shrink-0">
+              <span className="w-7 h-7 rounded-lg bg-[#F2D4C8] text-[#234653] flex items-center justify-center text-xs shadow-2xs font-bold shrink-0">
                 🤝
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-bold text-[#234653] truncate font-serif-editorial">
-                    Package Pickup Favor
+                    Roommate Request
                   </span>
-                  <span className="text-[9px] text-[#E86F5A] font-bold bg-[#FBF1EB] px-2 py-0.5 rounded-full">
-                    2:30 PM
+                  <span className="text-[9px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    Connected
                   </span>
                 </div>
-                <p className="text-[10px] text-[#3E737C] mt-1 leading-snug line-clamp-2">
-                  "Delivery arriving while I'm at work. Could someone grab it from lobby?"
+                <p className="text-[10px] text-[#3E737C] mt-1 leading-snug">
+                  "Excited to share Maple Flat #3B. Let's sync on chore schedule & move-in."
                 </p>
                 <div className="mt-2.5 flex items-center justify-between text-[10px] text-[#3E737C] pt-2 border-t border-[#E8DEC8]/60">
-                  <span>Maya requested</span>
-                  <span className="font-semibold text-emerald-700 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                    Accepted by You
-                  </span>
+                  <span>Alex & Maya</span>
+                  <span className="font-semibold text-[#E86F5A]">Household Joined</span>
                 </div>
               </div>
             </div>
@@ -256,7 +253,7 @@ export default function Hero3DCardStage({ className = '' }) {
         </div>
 
         {/* ======================================================== */}
-        {/* CARD 4: TOP-RIGHT FLOATING LIVE STATUS BADGE (Z = 110) */}
+        {/* CARD 4: TOP-RIGHT FLOATING VERIFIED PILL (Z = 110) */}
         {/* ======================================================== */}
         <div
           className="absolute z-35 -top-12 sm:-top-14 right-2 sm:right-0 transition-all duration-700 ease-out"
@@ -270,13 +267,13 @@ export default function Hero3DCardStage({ className = '' }) {
           }}
         >
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#234653] text-[#FFF9F1] text-[11px] font-semibold shadow-lg border border-[#234653]">
-            <span className="w-2 h-2 rounded-full bg-[#E86F5A] animate-pulse"></span>
-            <span className="font-serif-editorial">The Maple Flat • Live Sync</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className="font-serif-editorial">Verified Roommate Match</span>
           </div>
         </div>
 
         {/* ======================================================== */}
-        {/* CARD 5: BOTTOM-LEFT FLOATING DECISION POLL (Z = 50) */}
+        {/* CARD 5: BOTTOM-LEFT FLOATING HABIT TAG (Z = 50) */}
         {/* ======================================================== */}
         <div
           className="absolute z-15 -bottom-10 sm:-bottom-12 left-0 sm:-left-8 transition-all duration-700 ease-out"
@@ -290,10 +287,10 @@ export default function Hero3DCardStage({ className = '' }) {
           }}
         >
           <div className="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-[#FFF9F1] border border-[#E8DEC8] text-[11px] text-[#234653] shadow-md">
-            <span className="text-xs">🗳️</span>
-            <span className="font-semibold">Movie night dinner:</span>
+            <span className="text-xs">🏡</span>
+            <span className="font-semibold">Shared Space:</span>
             <span className="font-bold text-[#E86F5A] bg-[#FAF5ED] px-2 py-0.5 rounded-lg border border-[#E8DEC8]">
-              Friday (3 votes)
+              2 BHK • Maple Suite
             </span>
           </div>
         </div>

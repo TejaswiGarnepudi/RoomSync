@@ -23,6 +23,41 @@ export default function LandingPage() {
   ]);
   const [newChoreText, setNewChoreText] = useState('');
 
+  // Sandbox mode: 'compatibility' | 'household'
+  const [sandboxMode, setSandboxMode] = useState('compatibility');
+
+  // Roommate simulator preferences state
+  const [simBudget, setSimBudget] = useState(14000);
+  const [simSchedule, setSimSchedule] = useState('early'); // 'early' | 'night'
+  const [simCleanliness, setSimCleanliness] = useState('weekly'); // 'daily' | 'weekly'
+  const [simCooking, setSimCooking] = useState('shared'); // 'shared' | 'independent'
+  const [simGuestVibe, setSimGuestVibe] = useState('balanced'); // 'quiet' | 'balanced' | 'social'
+  const [requestSent, setRequestSent] = useState(false);
+
+  // Compute live simulated compatibility score with "Maya Sharma" (Early riser, 12k-16k budget, weekly chores, shared cooking, balanced guests)
+  const computeMatchScore = () => {
+    let score = 70;
+    // Budget proximity (optimal around 12,000 - 15,000)
+    if (simBudget >= 11000 && simBudget <= 17000) score += 12;
+    else if (simBudget >= 9000 && simBudget <= 20000) score += 6;
+
+    // Schedule
+    if (simSchedule === 'early') score += 8;
+
+    // Cleanliness
+    if (simCleanliness === 'weekly' || simCleanliness === 'daily') score += 5;
+
+    // Cooking
+    if (simCooking === 'shared') score += 3;
+
+    // Guest vibe
+    if (simGuestVibe === 'balanced') score += 2;
+
+    return Math.min(score, 98);
+  };
+
+  const currentScore = computeMatchScore();
+
   // FAQ accordion state
   const [openFaq, setOpenFaq] = useState(null);
 
@@ -47,8 +82,12 @@ export default function LandingPage() {
 
   const faqs = [
     {
-      q: 'How does RoomSync simplify shared roommate living?',
-      a: 'RoomSync unites recurring chores, shared expenses with automated debt simplification, real-time grocery lists, favor requests, and decision polls into a single synchronized household space.'
+      q: 'How does RoomSync match compatible roommates?',
+      a: 'RoomSync calculates deep lifestyle compatibility based on shared budget parameters, sleep & wake cycles, cleanliness expectations, cooking preferences, and quiet hours to help you find roommates you naturally get along with.'
+    },
+    {
+      q: 'How does RoomSync simplify shared roommate living once we move in?',
+      a: 'RoomSync unites recurring chores with automated fair rotations, shared expenses with multi-party debt simplification, real-time grocery lists, favor requests, and decision polls into a single synchronized household space.'
     },
     {
       q: 'Can roommates join without creating complex accounts?',
@@ -99,7 +138,7 @@ export default function LandingPage() {
                 RoomSync
               </span>
               <span className="text-[9px] uppercase font-bold text-[#3E737C] tracking-widest mt-0.5 opacity-75">
-                Household Journal & OS
+                Roommate Discovery & Shared Living
               </span>
             </div>
           </Link>
@@ -109,14 +148,14 @@ export default function LandingPage() {
             <a href="#why" className="relative py-1 transition-colors hover:text-[#234653] after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:bg-[#E86F5A] after:transition-transform after:duration-200 hover:after:scale-x-100">
               Why RoomSync
             </a>
-            <a href="#workflow" className="relative py-1 transition-colors hover:text-[#234653] after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:bg-[#E86F5A] after:transition-transform after:duration-200 hover:after:scale-x-100">
+            <a href="#process" className="relative py-1 transition-colors hover:text-[#234653] after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:bg-[#E86F5A] after:transition-transform after:duration-200 hover:after:scale-x-100">
               The Process
+            </a>
+            <a href="#sandbox" className="relative py-1 transition-colors hover:text-[#234653] after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:bg-[#E86F5A] after:transition-transform after:duration-200 hover:after:scale-x-100">
+              Live Simulator
             </a>
             <a href="#features" className="relative py-1 transition-colors hover:text-[#234653] after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:bg-[#E86F5A] after:transition-transform after:duration-200 hover:after:scale-x-100">
               Capabilities
-            </a>
-            <a href="#demo" className="relative py-1 transition-colors hover:text-[#234653] after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:bg-[#E86F5A] after:transition-transform after:duration-200 hover:after:scale-x-100">
-              Live Preview
             </a>
             <a href="#faq" className="relative py-1 transition-colors hover:text-[#234653] after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:bg-[#E86F5A] after:transition-transform after:duration-200 hover:after:scale-x-100">
               FAQ
@@ -144,7 +183,7 @@ export default function LandingPage() {
                   to="/register"
                   className="inline-flex items-center gap-2 rounded-full bg-[#E86F5A] hover:bg-[#D65D48] text-white px-5 py-2.5 text-xs font-semibold uppercase tracking-wider shadow-xs hover:shadow-md hover:-translate-y-0.5 btn-shimmer btn-interactive transition-all duration-200 active:scale-95"
                 >
-                  Start creating &rarr;
+                  Find Roommates &rarr;
                 </Link>
               </>
             )}
@@ -176,9 +215,9 @@ export default function LandingPage() {
           <div className="md:hidden border-b border-[#E8DEC8] bg-[#FFF9F1] px-6 py-5 space-y-4 shadow-xl animate-dropdown">
             <nav className="flex flex-col space-y-2 text-sm font-semibold">
               <a href="#why" onClick={() => setMobileMenuOpen(false)} className="py-2 text-[#234653]">Why RoomSync</a>
-              <a href="#workflow" onClick={() => setMobileMenuOpen(false)} className="py-2 text-[#234653]">The Process</a>
+              <a href="#process" onClick={() => setMobileMenuOpen(false)} className="py-2 text-[#234653]">The Process</a>
+              <a href="#sandbox" onClick={() => setMobileMenuOpen(false)} className="py-2 text-[#234653]">Live Simulator</a>
               <a href="#features" onClick={() => setMobileMenuOpen(false)} className="py-2 text-[#234653]">Capabilities</a>
-              <a href="#demo" onClick={() => setMobileMenuOpen(false)} className="py-2 text-[#234653]">Live Preview</a>
               <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="py-2 text-[#234653]">FAQ</a>
             </nav>
             <div className="pt-3 border-t border-[#E8DEC8] flex flex-col gap-2">
@@ -202,22 +241,22 @@ export default function LandingPage() {
             <ScrollReveal direction="up" distance={20} duration={0.65} className="lg:col-span-6 space-y-6">
               {/* Sparkdesign Pill Badge */}
               <a
-                href="#features"
+                href="#sandbox"
                 className="inline-flex items-center gap-2 rounded-full bg-[#FAF5ED] border border-[#E8DEC8] px-4 py-2 text-xs font-medium text-[#234653] shadow-2xs hover:-translate-y-0.5 hover:border-[#3E737C]/40 transition-all duration-200"
               >
                 <span className="w-2 h-2 rounded-full bg-[#E86F5A] animate-pulse"></span>
-                <span>A shared space for everyday shared living</span>
+                <span>Discover compatible roommates & shared living harmony</span>
                 <span className="text-[#E86F5A] font-bold">&rarr;</span>
               </a>
 
               {/* Sparkdesign Display Typography */}
               <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold text-[#234653] tracking-[-0.04em] leading-[1.12] font-serif-editorial">
-                Run your household together.<br />
-                <span className="text-[#E86F5A]">Good living, in sync.</span>
+                Find compatible roommates.<br />
+                <span className="text-[#E86F5A]">Live in perfect sync.</span>
               </h1>
 
               <p className="text-base sm:text-lg text-[#3E737C] leading-relaxed max-w-xl">
-                Bring chores, expenses, grocery runs, favors, and quiet coordination into one beautifully simple household workspace.
+                Match with roommates who share your schedule, cleanliness, and lifestyle preferences. Seamlessly manage chores, shared expenses, grocery lists, and apartment agreements.
               </p>
 
               {/* Sparkdesign Quick Action Input Form */}
@@ -227,7 +266,7 @@ export default function LandingPage() {
                     type="email"
                     value={quickEmail}
                     onChange={(e) => setQuickEmail(e.target.value)}
-                    placeholder="Enter your email to get started"
+                    placeholder="Enter your email to match roommates"
                     className="flex-1 bg-transparent px-4 py-2 text-xs text-[#234653] placeholder-[#3E737C]/70 focus:outline-none"
                   />
                   <button
@@ -239,7 +278,7 @@ export default function LandingPage() {
                   </button>
                 </form>
                 <p className="mt-2 text-[11px] text-[#3E737C] px-3">
-                  No credit card required • Instant roommate invites via shareable code
+                  100% free • Verified roommate profiles • Instant compatibility match
                 </p>
               </div>
 
@@ -247,17 +286,17 @@ export default function LandingPage() {
               <div className="pt-4 flex items-center gap-3.5 text-xs text-[#3E737C]">
                 <div className="flex -space-x-2 overflow-hidden">
                   <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#DCE8E8] text-[#234653] font-bold text-[10px] border-2 border-[#F4EDE3] font-serif">
-                    A
-                  </span>
-                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#F2D4C8] text-[#234653] font-bold text-[10px] border-2 border-[#F4EDE3] font-serif">
                     M
                   </span>
+                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#F2D4C8] text-[#234653] font-bold text-[10px] border-2 border-[#F4EDE3] font-serif">
+                    A
+                  </span>
                   <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#234653] text-white font-bold text-[10px] border-2 border-[#F4EDE3] font-serif">
-                    Y
+                    R
                   </span>
                 </div>
                 <span>
-                  <strong>For the way you share space.</strong> 3 roommates in sync.
+                  <strong>Over 2,400+ roommates matched</strong> and living peacefully together.
                 </span>
               </div>
             </ScrollReveal>
@@ -278,37 +317,37 @@ export default function LandingPage() {
           <ScrollReveal direction="up" className="max-w-2xl mb-14">
             <span className="text-xs font-bold uppercase tracking-widest text-[#E86F5A]">Philosophy</span>
             <h2 className="text-3xl sm:text-4xl font-bold text-[#234653] tracking-[-0.035em] mt-2 font-serif-editorial">
-              Less getting in the way.<br />More getting carried away.
+              Match deeply.<br />Live effortlessly.
             </h2>
             <p className="mt-3 text-base text-[#3E737C] leading-relaxed">
-              Shared living needs room to breathe. We give your apartment a simpler place to think, coordinate, and move forward together.
+              Great roommate relationships start with authentic compatibility and thrive with transparent, automated household coordination.
             </p>
           </ScrollReveal>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Card 1 */}
+            {/* Card 1: Compatibility */}
             <ScrollReveal direction="up" delay={0.1} className="h-full">
               <TiltCard maxTilt={5} className="h-full rounded-3xl shadow-xs">
                 <article className="h-full bg-[#FFF9F1] rounded-3xl border border-[#E8DEC8] p-8 space-y-4 hover:border-[#3E737C]/40 transition-colors flex flex-col justify-between">
                   <div>
                     <div className="w-12 h-12 rounded-2xl bg-[#DCE8E8] text-[#234653] flex items-center justify-center text-xl mb-6 shadow-2xs font-bold">
-                      🧹
+                      ⚡
                     </div>
                     <h3 className="text-xl font-bold text-[#234653] font-serif-editorial">
-                      One place to find your rhythm
+                      Deep Lifestyle Matching
                     </h3>
                     <p className="mt-2 text-sm text-[#3E737C] leading-relaxed">
-                      Chores, shared grocery lists, and utility balances in one quiet space so everyone knows what is done without micro-management.
+                      Discover roommates based on sleep schedules, cleanliness standards, work-from-home habits, and dietary preferences before signing a lease.
                     </p>
                   </div>
                   <div className="pt-4 border-t border-[#E8DEC8]/60 text-xs font-semibold text-[#E86F5A]">
-                    Automated rotation &rarr;
+                    Compatibility algorithms &rarr;
                   </div>
                 </article>
               </TiltCard>
             </ScrollReveal>
 
-            {/* Card 2 */}
+            {/* Card 2: Financial Peace */}
             <ScrollReveal direction="up" delay={0.2} className="h-full">
               <TiltCard maxTilt={5} className="h-full rounded-3xl shadow-xs">
                 <article className="h-full bg-[#FFF9F1] rounded-3xl border border-[#E8DEC8] p-8 space-y-4 hover:border-[#3E737C]/40 transition-colors flex flex-col justify-between">
@@ -317,36 +356,36 @@ export default function LandingPage() {
                       💰
                     </div>
                     <h3 className="text-xl font-bold text-[#234653] font-serif-editorial">
-                      Clarity that keeps the peace
+                      Stress-Free Expense Splits
                     </h3>
                     <p className="mt-2 text-sm text-[#3E737C] leading-relaxed">
-                      Multi-party debt simplification eliminates endless back-and-forth bank transfers. Settle up cleanly with transparency.
+                      Multi-party debt simplification eliminates awkward money talks. Track rent, Wi-Fi, and groceries with automated minimal bank transfers.
                     </p>
                   </div>
                   <div className="pt-4 border-t border-[#E8DEC8]/60 text-xs font-semibold text-[#E86F5A]">
-                    Multi-way settlement &rarr;
+                    Automated debt simplification &rarr;
                   </div>
                 </article>
               </TiltCard>
             </ScrollReveal>
 
-            {/* Card 3 */}
+            {/* Card 3: Harmony */}
             <ScrollReveal direction="up" delay={0.3} className="h-full">
               <TiltCard maxTilt={5} className="h-full rounded-3xl shadow-xs">
                 <article className="h-full bg-[#FFF9F1] rounded-3xl border border-[#E8DEC8] p-8 space-y-4 hover:border-[#3E737C]/40 transition-colors flex flex-col justify-between">
                   <div>
                     <div className="w-12 h-12 rounded-2xl bg-[#FAF5ED] text-[#234653] border border-[#E8DEC8] flex items-center justify-center text-xl mb-6 shadow-2xs font-bold">
-                      🤝
+                      🧹
                     </div>
                     <h3 className="text-xl font-bold text-[#234653] font-serif-editorial">
-                      Space to make it your own
+                      Fair Chore & Household Sync
                     </h3>
                     <p className="mt-2 text-sm text-[#3E737C] leading-relaxed">
-                      From package pickup favors to group decision polls, customize your household workflow to match your home's unique vibe.
+                      Rotated cleaning duties, shared grocery checklists, quick favor requests, and group polls keep everyone accountable and the apartment spotless.
                     </p>
                   </div>
                   <div className="pt-4 border-t border-[#E8DEC8]/60 text-xs font-semibold text-[#E86F5A]">
-                    Instant favors & polls &rarr;
+                    Real-time apartment sync &rarr;
                   </div>
                 </article>
               </TiltCard>
@@ -356,14 +395,14 @@ export default function LandingPage() {
       </section>
 
       {/* ======================================================== */}
-      {/* 4. AUDIENCE MARQUEE ("FOR EVERY SHARED SPACE") */}
+      {/* 4. AUDIENCE MARQUEE ("FOR EVERY SHARED LIVING SITUATION") */}
       {/* ======================================================== */}
       <section className="py-12 border-b border-[#E8DEC8] bg-[#F4EDE3] overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 mb-6 text-center">
-          <span className="text-xs font-bold uppercase tracking-widest text-[#3E737C]">Built for modern shared living</span>
+          <span className="text-xs font-bold uppercase tracking-widest text-[#3E737C]">Built for every shared living setup</span>
         </div>
         <div className="flex items-center justify-center gap-6 flex-wrap px-4">
-          {['Student Apartments', 'Young Professionals', 'Couples & Partners', 'Co-Living Communities', 'Family Homes', 'City Flatmates'].map((aud, i) => (
+          {['Student Apartments', 'Young Working Professionals', 'Co-Living Spaces', 'City Flatmates', 'New Movers & Relocators', 'Budget-Conscious Renters'].map((aud, i) => (
             <div key={i} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#FFF9F1] border border-[#E8DEC8] text-xs font-semibold text-[#234653] shadow-2xs hover:border-[#3E737C]/40 transition-colors">
               <span className="text-[#E86F5A]">✦</span>
               <span>{aud}</span>
@@ -375,15 +414,15 @@ export default function LandingPage() {
       {/* ======================================================== */}
       {/* 5. INTERACTIVE PROCESS / WORKFLOW TABS SECTION */}
       {/* ======================================================== */}
-      <section id="workflow" className="py-20 sm:py-28 border-b border-[#E8DEC8] bg-[#FFF9F1]">
+      <section id="process" className="py-20 sm:py-28 border-b border-[#E8DEC8] bg-[#FFF9F1]">
         <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-14">
           <ScrollReveal direction="up" className="max-w-2xl mb-12">
             <span className="text-xs font-bold uppercase tracking-widest text-[#E86F5A]">The Process</span>
             <h2 className="text-3xl sm:text-4xl font-bold text-[#234653] tracking-[-0.035em] mt-2 font-serif-editorial">
-              How RoomSync keeps your home synchronized.
+              From finding a roommate to living in harmony.
             </h2>
             <p className="mt-3 text-base text-[#3E737C]">
-              Four seamless steps that replace disorganized group chats with calm household flow.
+              A complete end-to-end journey that replaces messy Facebook groups and awkward chores arguments with clarity.
             </p>
           </ScrollReveal>
 
@@ -392,10 +431,10 @@ export default function LandingPage() {
             {/* Left Tabs Menu */}
             <div className="lg:col-span-5 space-y-3">
               {[
-                { id: '01', title: '01 Log & Schedule', desc: 'Add chores, shopping items, or shared expenses in seconds.' },
-                { id: '02', title: '02 Rotate Fairly', desc: 'Intelligent scheduler automates rotations based on member schedules.' },
-                { id: '03', title: '03 Vote & Decide', desc: 'Settle apartment decisions on internet plans or dinner without endless texting.' },
-                { id: '04', title: '04 Settle Balances', desc: 'Debt simplification minimizes transfers so settling up is stress-free.' }
+                { id: '01', title: '01 Create Lifestyle Profile', desc: 'Set your budget, work rhythm, wake-up hours, cleanliness habits, and house rules.' },
+                { id: '02', title: '02 Match & Connect', desc: 'Browse verified roommate profiles ranked by automated compatibility scores.' },
+                { id: '03', title: '03 Form Your Household', desc: 'Invite roommates with a single code and establish shared rules & chore rotations.' },
+                { id: '04', title: '04 Synchronize Everyday Living', desc: 'Log shared grocery items, auto-split bills, and vote on house decisions.' }
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -418,54 +457,60 @@ export default function LandingPage() {
                 <div className="bg-[#FAF5ED] border border-[#E8DEC8] rounded-3xl p-6 sm:p-8 space-y-5">
                   <div className="flex items-center justify-between pb-3 border-b border-[#E8DEC8]">
                     <span className="text-xs font-bold text-[#234653] uppercase tracking-wider font-serif-editorial">
-                      {activeWorkflowTab === '01' && 'Stage 01: Quick Logging'}
-                      {activeWorkflowTab === '02' && 'Stage 02: Intelligent Rotation'}
-                      {activeWorkflowTab === '03' && 'Stage 03: Group Consensus'}
-                      {activeWorkflowTab === '04' && 'Stage 04: Simplified Balances'}
+                      {activeWorkflowTab === '01' && 'Stage 01: Profile & Living Preferences'}
+                      {activeWorkflowTab === '02' && 'Stage 02: Match Algorithm'}
+                      {activeWorkflowTab === '03' && 'Stage 03: Household Space Created'}
+                      {activeWorkflowTab === '04' && 'Stage 04: Real-time Household Harmony'}
                     </span>
                     <span className="text-[10px] font-bold text-[#E86F5A] bg-[#FFF9F1] px-3 py-1 rounded-full border border-[#E8DEC8]">
-                      ● Active Workflow
+                      ● Live Stage
                     </span>
                   </div>
 
                   {activeWorkflowTab === '01' && (
                     <div className="space-y-3 animate-fade-in-up">
-                      <div className="p-3.5 bg-[#FFF9F1] rounded-2xl border border-[#E8DEC8] flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-3">
-                          <span className="w-8 h-8 rounded-xl bg-[#DCE8E8] flex items-center justify-center text-sm">🧹</span>
-                          <div>
-                            <span className="font-bold text-[#234653] block">Deep Clean Living Room</span>
-                            <span className="text-[10px] text-[#3E737C]">Recurring weekly • Saturday 10:00 AM</span>
+                      <div className="p-4 bg-[#FFF9F1] rounded-2xl border border-[#E8DEC8] space-y-2.5 text-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-[#234653]">Your Living Rhythm</span>
+                          <span className="text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-md">Profile Complete</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-[11px] text-[#3E737C]">
+                          <div className="p-2 bg-[#FAF5ED] rounded-xl border border-[#E8DEC8]">
+                            <span className="block font-semibold text-[#234653]">Budget:</span> ₹12,000 - ₹16,000
+                          </div>
+                          <div className="p-2 bg-[#FAF5ED] rounded-xl border border-[#E8DEC8]">
+                            <span className="block font-semibold text-[#234653]">Sleep:</span> Early Riser (07:00 AM)
+                          </div>
+                          <div className="p-2 bg-[#FAF5ED] rounded-xl border border-[#E8DEC8]">
+                            <span className="block font-semibold text-[#234653]">Chores:</span> Equal weekly turns
+                          </div>
+                          <div className="p-2 bg-[#FAF5ED] rounded-xl border border-[#E8DEC8]">
+                            <span className="block font-semibold text-[#234653]">Guests:</span> Weekends only
                           </div>
                         </div>
-                        <span className="text-xs font-bold text-[#E86F5A]">Assigned to Alex</span>
-                      </div>
-                      <div className="p-3.5 bg-[#FFF9F1] rounded-2xl border border-[#E8DEC8] flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-3">
-                          <span className="w-8 h-8 rounded-xl bg-[#F2D4C8] flex items-center justify-center text-sm">🛍️</span>
-                          <div>
-                            <span className="font-bold text-[#234653]">Oat milk & Espresso beans</span>
-                            <span className="text-[10px] text-[#3E737C]">Pantry restock • Added by Maya</span>
-                          </div>
-                        </div>
-                        <span className="text-xs font-bold text-emerald-700">In Shopping Cart</span>
                       </div>
                     </div>
                   )}
 
                   {activeWorkflowTab === '02' && (
                     <div className="space-y-3 animate-fade-in-up">
-                      <div className="p-4 bg-[#FFF9F1] rounded-2xl border border-[#E8DEC8] space-y-2 text-xs">
+                      <div className="p-4 bg-[#FFF9F1] rounded-2xl border border-[#E8DEC8] space-y-3 text-xs">
                         <div className="flex items-center justify-between">
-                          <span className="font-bold text-[#234653]">Weekly Rotation Breakdown</span>
-                          <span className="text-[10px] text-[#3E737C]">Fair algorithm: 100% parity</span>
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-xl bg-[#DCE8E8] text-[#234653] font-bold flex items-center justify-center font-serif">M</div>
+                            <div>
+                              <span className="font-bold text-[#234653] block">Maya Sharma, 23</span>
+                              <span className="text-[10px] text-[#3E737C]">Product Designer • 2 BHK Search</span>
+                            </div>
+                          </div>
+                          <span className="text-sm font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                            94% Match
+                          </span>
                         </div>
-                        <div className="w-full bg-[#FAF5ED] h-2.5 rounded-full overflow-hidden flex border border-[#E8DEC8]">
-                          <div className="bg-[#234653] w-1/3" title="Alex: 33%"></div>
-                          <div className="bg-[#E86F5A] w-1/3" title="Maya: 33%"></div>
-                          <div className="bg-[#E7A83C] w-1/3" title="You: 34%"></div>
+                        <div className="flex gap-1.5 flex-wrap">
+                          <span className="text-[10px] px-2 py-0.5 rounded-lg bg-[#FAF5ED] border border-[#E8DEC8] text-[#234653]">✓ Sleep schedule alignment</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-lg bg-[#FAF5ED] border border-[#E8DEC8] text-[#234653]">✓ Aligned ₹14k budget</span>
                         </div>
-                        <span className="text-[10px] text-[#3E737C] block text-right">3 roommates • Equal workload</span>
                       </div>
                     </div>
                   )}
@@ -473,29 +518,33 @@ export default function LandingPage() {
                   {activeWorkflowTab === '03' && (
                     <div className="space-y-3 animate-fade-in-up">
                       <div className="p-4 bg-[#FFF9F1] rounded-2xl border border-[#E8DEC8] space-y-2 text-xs">
-                        <span className="font-bold text-[#234653] block">Active Poll: Dinner Hosting on Friday</span>
-                        <div className="flex items-center justify-between p-2 rounded-xl bg-[#FAF5ED] border border-[#E8DEC8]">
-                          <span>Yes, sounds great! (Alex, Maya)</span>
-                          <span className="font-bold text-[#E86F5A]">67%</span>
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-[#234653]">Household Invite Code</span>
+                          <span className="font-mono font-bold text-sm bg-[#FAF5ED] px-3 py-1 rounded-lg border border-[#E8DEC8] text-[#E86F5A]">
+                            MAPLE-3B
+                          </span>
                         </div>
-                        <div className="flex items-center justify-between p-2 rounded-xl bg-[#FAF5ED] border border-[#E8DEC8]">
-                          <span>Let's do Saturday instead</span>
-                          <span className="font-bold text-[#3E737C]">33%</span>
-                        </div>
+                        <p className="text-[11px] text-[#3E737C]">
+                          Share this invite code with roommates to link your calendar, shared chore boards, and balance sheet.
+                        </p>
                       </div>
                     </div>
                   )}
 
                   {activeWorkflowTab === '04' && (
                     <div className="space-y-3 animate-fade-in-up">
-                      <div className="p-4 bg-[#FFF9F1] rounded-2xl border border-[#E8DEC8] space-y-3 text-xs">
+                      <div className="p-4 bg-[#FFF9F1] rounded-2xl border border-[#E8DEC8] space-y-2.5 text-xs">
                         <div className="flex items-center justify-between">
-                          <span className="font-bold text-[#234653]">Simplified Debt Graph</span>
-                          <span className="text-xs font-bold text-emerald-700">1 transfer needed</span>
+                          <span className="font-bold text-[#234653]">Live Apartment Synchronizer</span>
+                          <span className="text-[10px] text-emerald-700 font-semibold">● 3 Roommates Connected</span>
                         </div>
-                        <div className="p-3 bg-[#FAF5ED] rounded-xl border border-[#E8DEC8] flex items-center justify-between">
-                          <span>Maya pays Alex ₹413.33</span>
-                          <span className="font-bold text-[#234653]">All settled</span>
+                        <div className="p-2.5 bg-[#FAF5ED] rounded-xl border border-[#E8DEC8] flex items-center justify-between">
+                          <span className="text-[11px]">🧹 Alex completed "Kitchen wipe down"</span>
+                          <span className="text-[10px] text-[#3E737C]">10m ago</span>
+                        </div>
+                        <div className="p-2.5 bg-[#FAF5ED] rounded-xl border border-[#E8DEC8] flex items-center justify-between">
+                          <span className="text-[11px]">💰 Maya added ₹600 Wi-Fi bill (₹200/each)</span>
+                          <span className="text-[10px] text-[#3E737C]">1h ago</span>
                         </div>
                       </div>
                     </div>
@@ -508,87 +557,333 @@ export default function LandingPage() {
       </section>
 
       {/* ======================================================== */}
-      {/* 6. LIVE INTERACTIVE DEMO / PLAYGROUND SANDBOX */}
+      {/* 6. INTERACTIVE ROOMMATE COMPATIBILITY & HOUSEHOLD SIMULATOR */}
       {/* ======================================================== */}
-      <section id="demo" className="py-20 sm:py-28 border-b border-[#E8DEC8] bg-[#F4EDE3]">
-        <div className="max-w-4xl mx-auto px-6 sm:px-10">
+      <section id="sandbox" className="py-20 sm:py-28 border-b border-[#E8DEC8] bg-[#F4EDE3]">
+        <div className="max-w-5xl mx-auto px-6 sm:px-10">
           <ScrollReveal direction="up" className="text-center max-w-2xl mx-auto mb-10">
-            <span className="text-xs font-bold uppercase tracking-widest text-[#E86F5A]">Interactive Sandbox</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-[#E86F5A]">Interactive Simulator</span>
             <h2 className="text-3xl sm:text-4xl font-bold text-[#234653] tracking-[-0.035em] mt-2 font-serif-editorial">
-              Try the household journal right now.
+              Test your roommate compatibility in real-time.
             </h2>
             <p className="mt-3 text-base text-[#3E737C]">
-              Click to check off a chore or add a new task below. Experience the calm feel firsthand.
+              Adjust your living preferences below and watch how our algorithmic matching calculates compatibility with real roommates.
             </p>
+
+            {/* Sandbox Mode Switcher */}
+            <div className="mt-6 inline-flex p-1 bg-[#FAF5ED] border border-[#E8DEC8] rounded-full">
+              <button
+                type="button"
+                onClick={() => setSandboxMode('compatibility')}
+                className={`px-5 py-2 rounded-full text-xs font-semibold transition-all ${
+                  sandboxMode === 'compatibility'
+                    ? 'bg-[#234653] text-[#FFF9F1] shadow-xs'
+                    : 'text-[#3E737C] hover:text-[#234653]'
+                }`}
+              >
+                ⚡ Roommate Match Simulator
+              </button>
+              <button
+                type="button"
+                onClick={() => setSandboxMode('household')}
+                className={`px-5 py-2 rounded-full text-xs font-semibold transition-all ${
+                  sandboxMode === 'household'
+                    ? 'bg-[#234653] text-[#FFF9F1] shadow-xs'
+                    : 'text-[#3E737C] hover:text-[#234653]'
+                }`}
+              >
+                🧹 Shared Household Sandbox
+              </button>
+            </div>
           </ScrollReveal>
 
-          <TiltCard maxTilt={3} className="rounded-3xl shadow-xl">
-            <div className="bg-[#FFF9F1] border border-[#E8DEC8] rounded-3xl p-6 sm:p-8 space-y-5">
-              {/* Header */}
-              <div className="flex items-center justify-between pb-3 border-b border-[#E8DEC8]">
-                <div>
-                  <h3 className="text-base font-bold text-[#234653] font-serif-editorial">
-                    The Maple Flat • Live Sandbox
-                  </h3>
-                  <span className="text-[11px] text-[#3E737C]">Shared apartment demo</span>
-                </div>
-                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-[#FAF5ED] text-[#234653] border border-[#E8DEC8]">
-                  {sandboxChores.filter(c => c.done).length} of {sandboxChores.length} completed
-                </span>
-              </div>
+          {/* SIMULATOR MODE 1: COMPATIBILITY MATCHER */}
+          {sandboxMode === 'compatibility' && (
+            <TiltCard maxTilt={3} className="rounded-3xl shadow-xl">
+              <div className="bg-[#FFF9F1] border border-[#E8DEC8] rounded-3xl p-6 sm:p-8 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+                  {/* Left Preference Controls */}
+                  <div className="md:col-span-6 space-y-5">
+                    <div>
+                      <div className="flex items-center justify-between text-xs font-bold text-[#234653] mb-1.5">
+                        <span>Target Monthly Rent Budget:</span>
+                        <span className="text-[#E86F5A] font-serif-editorial text-sm">₹{simBudget.toLocaleString()} / mo</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="8000"
+                        max="25000"
+                        step="1000"
+                        value={simBudget}
+                        onChange={(e) => setSimBudget(Number(e.target.value))}
+                        className="w-full accent-[#E86F5A] cursor-pointer"
+                      />
+                      <div className="flex justify-between text-[10px] text-[#3E737C] mt-1">
+                        <span>₹8,000</span>
+                        <span>₹16,000</span>
+                        <span>₹25,000</span>
+                      </div>
+                    </div>
 
-              {/* Tasks List */}
-              <div className="space-y-2.5">
-                {sandboxChores.map((c) => (
-                  <div
-                    key={c.id}
-                    onClick={() => toggleChore(c.id)}
-                    className={`flex items-center justify-between p-3 rounded-2xl border cursor-pointer select-none transition-all duration-200 text-xs ${
-                      c.done
-                        ? 'bg-[#FAF5ED]/60 border-[#E8DEC8]/60 text-[#3E737C]'
-                        : 'bg-[#FFF9F1] hover:bg-[#FAF5ED] border-[#E8DEC8] text-[#234653] shadow-2xs hover:shadow-xs'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold transition-colors ${
-                        c.done ? 'bg-[#E86F5A] text-white shadow-2xs' : 'border border-[#3E737C]/50'
-                      }`}>
-                        {c.done && '✓'}
-                      </span>
-                      <span className={c.done ? 'line-through text-[#3E737C]/80' : 'font-semibold text-[#234653]'}>
-                        {c.title}
+                    <div>
+                      <span className="text-xs font-bold text-[#234653] block mb-2">Sleep & Wake Schedule:</span>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setSimSchedule('early')}
+                          className={`p-2.5 rounded-xl border text-xs font-medium transition-all ${
+                            simSchedule === 'early'
+                              ? 'bg-[#234653] text-[#FFF9F1] border-[#234653]'
+                              : 'bg-[#FAF5ED] border-[#E8DEC8] text-[#234653]'
+                          }`}
+                        >
+                          ☀️ Early Riser (06:30 - 23:00)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSimSchedule('night')}
+                          className={`p-2.5 rounded-xl border text-xs font-medium transition-all ${
+                            simSchedule === 'night'
+                              ? 'bg-[#234653] text-[#FFF9F1] border-[#234653]'
+                              : 'bg-[#FAF5ED] border-[#E8DEC8] text-[#234653]'
+                          }`}
+                        >
+                          🌙 Night Owl (01:00 - 09:00)
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <span className="text-xs font-bold text-[#234653] block mb-2">Cleanliness & Chores:</span>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setSimCleanliness('weekly')}
+                          className={`p-2.5 rounded-xl border text-xs font-medium transition-all ${
+                            simCleanliness === 'weekly'
+                              ? 'bg-[#234653] text-[#FFF9F1] border-[#234653]'
+                              : 'bg-[#FAF5ED] border-[#E8DEC8] text-[#234653]'
+                          }`}
+                        >
+                          🧹 Weekly Reset
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSimCleanliness('daily')}
+                          className={`p-2.5 rounded-xl border text-xs font-medium transition-all ${
+                            simCleanliness === 'daily'
+                              ? 'bg-[#234653] text-[#FFF9F1] border-[#234653]'
+                              : 'bg-[#FAF5ED] border-[#E8DEC8] text-[#234653]'
+                          }`}
+                        >
+                          ✨ Daily Tidy-Up
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <span className="text-xs font-bold text-[#234653] block mb-2">Kitchen & Cooking:</span>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setSimCooking('shared')}
+                          className={`p-2.5 rounded-xl border text-xs font-medium transition-all ${
+                            simCooking === 'shared'
+                              ? 'bg-[#234653] text-[#FFF9F1] border-[#234653]'
+                              : 'bg-[#FAF5ED] border-[#E8DEC8] text-[#234653]'
+                          }`}
+                        >
+                          🍳 Cook Together
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSimCooking('independent')}
+                          className={`p-2.5 rounded-xl border text-xs font-medium transition-all ${
+                            simCooking === 'independent'
+                              ? 'bg-[#234653] text-[#FFF9F1] border-[#234653]'
+                              : 'bg-[#FAF5ED] border-[#E8DEC8] text-[#234653]'
+                          }`}
+                        >
+                          🥗 Independent Prep
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Live Roommate Match Card */}
+                  <div className="md:col-span-6 bg-[#FAF5ED] border border-[#E8DEC8] rounded-2xl p-5 sm:p-6 space-y-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-2xl bg-[#DCE8E8] text-[#234653] font-bold text-lg flex items-center justify-center border border-[#E8DEC8] font-serif shadow-2xs">
+                          M
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <h4 className="text-base font-bold text-[#234653] font-serif-editorial">
+                              Maya Sharma, 23
+                            </h4>
+                            <span className="text-emerald-600 text-xs font-bold">✓</span>
+                          </div>
+                          <span className="text-xs text-[#3E737C]">Product Designer • 2 BHK Suite</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-2xl font-bold font-serif-editorial text-emerald-700 block leading-none">
+                          {currentScore}%
+                        </span>
+                        <span className="text-[10px] text-[#3E737C] font-semibold">Match Score</span>
+                      </div>
+                    </div>
+
+                    {/* Dynamic Match Breakdown */}
+                    <div className="space-y-2 pt-2 border-t border-[#E8DEC8] text-xs">
+                      <div className="flex items-center justify-between p-2 rounded-xl bg-[#FFF9F1] border border-[#E8DEC8]">
+                        <span className="text-[#234653] font-medium">Budget Alignment (₹12k - ₹16k):</span>
+                        <span className="font-bold text-emerald-700">
+                          {Math.abs(simBudget - 14000) <= 3000 ? '✓ High Match' : 'Moderate'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 rounded-xl bg-[#FFF9F1] border border-[#E8DEC8]">
+                        <span className="text-[#234653] font-medium">Quiet Sleep Rhythm:</span>
+                        <span className="font-bold text-emerald-700">
+                          {simSchedule === 'early' ? '✓ Synchronized' : 'Different Hours'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 rounded-xl bg-[#FFF9F1] border border-[#E8DEC8]">
+                        <span className="text-[#234653] font-medium">Cleaning & Kitchen Habit:</span>
+                        <span className="font-bold text-emerald-700">
+                          {simCooking === 'shared' ? '✓ Shared Meals Friendly' : 'Independent'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Roommate Action */}
+                    <div className="pt-2">
+                      {requestSent ? (
+                        <div className="w-full text-center py-3 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-xl text-xs font-semibold animate-fade-in-up">
+                          ✓ Connection Request Sent to Maya!
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setRequestSent(true)}
+                          className="w-full py-3 rounded-full bg-[#E86F5A] hover:bg-[#D65D48] text-white text-xs font-semibold uppercase tracking-wider shadow-xs hover:shadow-md transition-all btn-shimmer btn-interactive"
+                        >
+                          Connect with Maya ({currentScore}% Match) &rarr;
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </TiltCard>
+          )}
+
+          {/* SIMULATOR MODE 2: HOUSEHOLD CHORES & EXPENSE SANDBOX */}
+          {sandboxMode === 'household' && (
+            <TiltCard maxTilt={3} className="rounded-3xl shadow-xl">
+              <div className="bg-[#FFF9F1] border border-[#E8DEC8] rounded-3xl p-6 sm:p-8 space-y-5">
+                {/* Header */}
+                <div className="flex items-center justify-between pb-3 border-b border-[#E8DEC8]">
+                  <div>
+                    <h3 className="text-base font-bold text-[#234653] font-serif-editorial">
+                      The Maple Flat • Live Household Space
+                    </h3>
+                    <span className="text-[11px] text-[#3E737C]">Click tasks to mark complete or add new ones</span>
+                  </div>
+                  <span className="text-xs font-semibold px-3 py-1 rounded-full bg-[#FAF5ED] text-[#234653] border border-[#E8DEC8]">
+                    {sandboxChores.filter(c => c.done).length} of {sandboxChores.length} completed
+                  </span>
+                </div>
+
+                {/* Tasks List */}
+                <div className="space-y-2.5">
+                  {sandboxChores.map((c) => (
+                    <div
+                      key={c.id}
+                      onClick={() => toggleChore(c.id)}
+                      className={`flex items-center justify-between p-3 rounded-2xl border cursor-pointer select-none transition-all duration-200 text-xs ${
+                        c.done
+                          ? 'bg-[#FAF5ED]/60 border-[#E8DEC8]/60 text-[#3E737C]'
+                          : 'bg-[#FFF9F1] hover:bg-[#FAF5ED] border-[#E8DEC8] text-[#234653] shadow-2xs hover:shadow-xs'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold transition-colors ${
+                          c.done ? 'bg-[#E86F5A] text-white shadow-2xs' : 'border border-[#3E737C]/50'
+                        }`}>
+                          {c.done && '✓'}
+                        </span>
+                        <span className={c.done ? 'line-through text-[#3E737C]/80' : 'font-semibold text-[#234653]'}>
+                          {c.title}
+                        </span>
+                      </div>
+                      <span className="text-[11px] font-medium text-[#3E737C]">
+                        {c.person} • {c.time}
                       </span>
                     </div>
-                    <span className="text-[11px] font-medium text-[#3E737C]">
-                      {c.person} • {c.time}
-                    </span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
 
-              {/* Add Chore Input */}
-              <form onSubmit={addChore} className="pt-2 flex items-center gap-2">
-                <input
-                  type="text"
-                  value={newChoreText}
-                  onChange={(e) => setNewChoreText(e.target.value)}
-                  placeholder="Type a new task (e.g. Empty recycling, Pick up groceries)..."
-                  className="flex-1 bg-[#FAF5ED] border border-[#E8DEC8] rounded-xl px-4 py-2.5 text-xs text-[#234653] placeholder-[#3E737C]/70 focus:outline-none focus:border-[#3E737C]/50"
-                />
-                <button
-                  type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-[#234653] hover:bg-[#17272C] text-white text-xs font-semibold uppercase tracking-wider transition-all btn-interactive"
-                >
-                  + Add
-                </button>
-              </form>
-            </div>
-          </TiltCard>
+                {/* Add Chore Input */}
+                <form onSubmit={addChore} className="pt-2 flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={newChoreText}
+                    onChange={(e) => setNewChoreText(e.target.value)}
+                    placeholder="Type a new task (e.g. Wipe countertops, Restock paper towels)..."
+                    className="flex-1 bg-[#FAF5ED] border border-[#E8DEC8] rounded-xl px-4 py-2.5 text-xs text-[#234653] placeholder-[#3E737C]/70 focus:outline-none focus:border-[#3E737C]/50"
+                  />
+                  <button
+                    type="submit"
+                    className="px-5 py-2.5 rounded-xl bg-[#234653] hover:bg-[#17272C] text-white text-xs font-semibold uppercase tracking-wider transition-all btn-interactive"
+                  >
+                    + Add Task
+                  </button>
+                </form>
+              </div>
+            </TiltCard>
+          )}
         </div>
       </section>
 
       {/* ======================================================== */}
-      {/* 7. FAQ ACCORDION (SPARKDESIGN STYLE) */}
+      {/* 7. CAPABILITIES / CORE MODULES GRID */}
+      {/* ======================================================== */}
+      <section id="features" className="py-20 sm:py-28 border-b border-[#E8DEC8] bg-[#FAF5ED]">
+        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-14">
+          <ScrollReveal direction="up" className="max-w-2xl mb-14">
+            <span className="text-xs font-bold uppercase tracking-widest text-[#E86F5A]">Capabilities</span>
+            <h2 className="text-3xl sm:text-4xl font-bold text-[#234653] tracking-[-0.035em] mt-2 font-serif-editorial">
+              Everything your shared home needs to thrive.
+            </h2>
+          </ScrollReveal>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              { icon: '🤝', title: 'Roommate Discovery', desc: 'Detailed profiles with verified lifestyle tags, habits, budget, and compatibility indicators.' },
+              { icon: '🔄', title: 'Chore Rotations', desc: 'Automated daily, weekly, or custom schedules with fair workload balancing algorithms.' },
+              { icon: '⚖️', title: 'Expense Splits & Debt Graph', desc: 'Direct bills logging, multi-way splits, and minimal transfer settlement calculations.' },
+              { icon: '🛒', title: 'Shared Shopping Basket', desc: 'Live pantry restock lists with item reservation and instant split-to-expense conversion.' },
+              { icon: '🗳️', title: 'House Decision Polls', desc: 'Vote on weekend plans, guest rules, and furniture purchases without messy group texts.' },
+              { icon: '🙋', title: 'Favor & Help Requests', desc: 'Quick notifications for package pickups, dog walking, or emergency key handoffs.' }
+            ].map((feat, idx) => (
+              <ScrollReveal key={idx} direction="up" delay={idx * 0.08} className="h-full">
+                <TiltCard maxTilt={4} className="h-full rounded-3xl shadow-xs">
+                  <div className="h-full bg-[#FFF9F1] rounded-3xl border border-[#E8DEC8] p-6 space-y-3 hover:border-[#3E737C]/40 transition-colors">
+                    <span className="text-2xl block">{feat.icon}</span>
+                    <h3 className="text-base font-bold text-[#234653] font-serif-editorial">{feat.title}</h3>
+                    <p className="text-xs text-[#3E737C] leading-relaxed">{feat.desc}</p>
+                  </div>
+                </TiltCard>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ======================================================== */}
+      {/* 8. FAQ ACCORDION (SPARKDESIGN STYLE) */}
       {/* ======================================================== */}
       <section id="faq" className="py-20 sm:py-28 border-b border-[#E8DEC8] bg-[#FFF9F1]">
         <div className="max-w-4xl mx-auto px-6 sm:px-10">
@@ -627,7 +922,7 @@ export default function LandingPage() {
       </section>
 
       {/* ======================================================== */}
-      {/* 8. ELEVATED FINAL CTA (SPARKDESIGN DARK THEMED ACCENT) */}
+      {/* 9. ELEVATED FINAL CTA (SPARKDESIGN DARK THEMED ACCENT) */}
       {/* ======================================================== */}
       <section className="py-20 sm:py-28 bg-[#F4EDE3]">
         <div className="max-w-5xl mx-auto px-6 sm:px-10">
@@ -636,19 +931,19 @@ export default function LandingPage() {
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(232,111,90,0.25),transparent_60%)]"></div>
 
             <div className="relative z-10 space-y-4 max-w-2xl mx-auto">
-              <span className="text-xs font-bold uppercase tracking-widest text-[#F2D4C8]">Get Started Today</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-[#F2D4C8]">Join Over 2,400+ Roommates</span>
               <h2 className="text-3xl sm:text-5xl font-bold font-serif-editorial tracking-tight text-[#FFF9F1]">
-                Make your household easier to manage.
+                Find your ideal roommate today.
               </h2>
               <p className="text-sm sm:text-base text-[#DCE8E8] leading-relaxed">
-                Bring all everyday roommate responsibilities into one calm shared space. Set up your home in under two minutes.
+                Discover matching roommates, split costs transparently, and make shared living peaceful and organized.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-4">
                 <Link
                   to="/register"
                   className="w-full sm:w-auto px-8 py-3.5 text-xs font-semibold uppercase tracking-wider rounded-full bg-[#E86F5A] hover:bg-[#D65D48] text-white shadow-md btn-shimmer btn-interactive transition-all active:scale-95"
                 >
-                  Create your household free &rarr;
+                  Find Roommates Free &rarr;
                 </Link>
                 <Link
                   to="/login"
@@ -663,7 +958,7 @@ export default function LandingPage() {
       </section>
 
       {/* ======================================================== */}
-      {/* 9. MINIMALIST EDITORIAL FOOTER */}
+      {/* 10. MINIMALIST EDITORIAL FOOTER */}
       {/* ======================================================== */}
       <footer className="border-t border-[#E8DEC8] bg-[#FAF5ED] py-12 text-xs text-[#3E737C]">
         <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-14 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -673,13 +968,14 @@ export default function LandingPage() {
             </div>
             <div>
               <span className="font-bold text-[#234653] text-sm font-serif-editorial">RoomSync</span>
-              <p className="text-[#3E737C] mt-0.5">A calmer way to coordinate everyday life.</p>
+              <p className="text-[#3E737C] mt-0.5">Roommate discovery & shared living harmony.</p>
             </div>
           </div>
 
           <div className="flex items-center gap-6">
             <a href="#why" className="hover:text-[#234653] transition-colors">Why RoomSync</a>
-            <a href="#workflow" className="hover:text-[#234653] transition-colors">Process</a>
+            <a href="#process" className="hover:text-[#234653] transition-colors">Process</a>
+            <a href="#sandbox" className="hover:text-[#234653] transition-colors">Simulator</a>
             <a href="#features" className="hover:text-[#234653] transition-colors">Capabilities</a>
             <a href="#faq" className="hover:text-[#234653] transition-colors">FAQ</a>
             <Link to="/login" className="hover:text-[#234653] transition-colors">Sign In</Link>
