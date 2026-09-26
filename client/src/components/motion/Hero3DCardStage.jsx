@@ -71,6 +71,14 @@ export default function Hero3DCardStage({ className = '' }) {
     return () => clearTimeout(timer);
   }, []);
 
+  // Automatic smooth slide progression every 4.5 seconds
+  useEffect(() => {
+    const slideTimer = setInterval(() => {
+      setActiveTab(prev => (prev + 1) % projects.length);
+    }, 4500);
+    return () => clearInterval(slideTimer);
+  }, [projects.length]);
+
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener('scroll', handleScroll, { passive: true });

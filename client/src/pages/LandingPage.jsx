@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import ScrollReveal from '../components/motion/ScrollReveal';
@@ -13,8 +13,20 @@ export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [quickEmail, setQuickEmail] = useState('');
 
-  // Workflow tab state
+  // Workflow tab state with automatic continuous progression
   const [activeWorkflowTab, setActiveWorkflowTab] = useState('01');
+  const workflowSteps = ['01', '02', '03', '04'];
+
+  // Automatically cycle through 01 -> 02 -> 03 -> 04 continuously
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveWorkflowTab(prev => {
+        const nextIdx = (workflowSteps.indexOf(prev) + 1) % workflowSteps.length;
+        return workflowSteps[nextIdx];
+      });
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Interactive sandbox state
   const [sandboxChores, setSandboxChores] = useState([
@@ -50,13 +62,22 @@ export default function LandingPage() {
     navigate('/register');
   };
 
-  const audienceList = [
+  const audienceRow1 = [
     { title: 'Student Apartments', img: 'https://images.unsplash.com/photo-1548382131-e0ebb1f0cdea?auto=format&fit=crop&w=120&q=80' },
     { title: 'City Flatmates', img: 'https://images.unsplash.com/photo-1670095044002-3b45b6ad8a01?auto=format&fit=crop&w=120&q=80' },
     { title: 'Young Professionals', img: 'https://images.unsplash.com/photo-1547587091-f883cf8f0c12?auto=format&fit=crop&w=120&q=80' },
     { title: 'Co-Living Communities', img: 'https://images.unsplash.com/photo-1615717146113-495e481c17c9?auto=format&fit=crop&w=120&q=80' },
+    { title: 'Design Partners', img: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=120&q=80' },
+    { title: 'Brand Builders', img: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=120&q=80' }
+  ];
+
+  const audienceRow2 = [
     { title: '2BHK & 3BHK Suites', img: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=120&q=80' },
-    { title: 'Couples & Partners', img: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=120&q=80' }
+    { title: 'Couples & Partners', img: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=120&q=80' },
+    { title: 'Creative Studios', img: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=120&q=80' },
+    { title: 'Growing Flatmates', img: 'https://images.unsplash.com/photo-1548382131-e0ebb1f0cdea?auto=format&fit=crop&w=120&q=80' },
+    { title: 'Product Thinkers', img: 'https://images.unsplash.com/photo-1670095044002-3b45b6ad8a01?auto=format&fit=crop&w=120&q=80' },
+    { title: 'Side Projects', img: 'https://images.unsplash.com/photo-1615717146113-495e481c17c9?auto=format&fit=crop&w=120&q=80' }
   ];
 
   const faqs = [
@@ -376,21 +397,57 @@ export default function LandingPage() {
       </section>
 
       {/* ======================================================== */}
-      {/* 4. AUDIENCE MARQUEE (SPARKDESIGN INFINITE TICKER) */}
+      {/* 4. AUDIENCE MARQUEE (SPARKDESIGN DUAL INFINITE TICKER) */}
       {/* ======================================================== */}
       <section className="overflow-hidden py-20 border-b border-[#E8E7E1] bg-[#FAF9F5]">
-        <div className="max-w-7xl mx-auto px-6 mb-10 text-center">
+        <div className="max-w-7xl mx-auto px-6 mb-12 text-center">
           <h2 className="text-3xl sm:text-4xl font-normal tracking-[-0.035em] text-[#1A1A1A]">
             For every shared living space.
           </h2>
+          <p className="mt-2 text-sm text-[#71716E]">
+            Designed for flats, suites, co-living homes, and shared apartments of every size.
+          </p>
         </div>
-        <div className="flex items-center gap-8 overflow-x-auto no-scrollbar py-4 px-6 justify-center flex-wrap">
-          {audienceList.map((aud, i) => (
-            <div key={i} className="flex items-center gap-4 text-lg font-medium tracking-[-0.02em] text-[#1A1A1A] bg-white px-5 py-3 rounded-2xl border border-[#E8E7E1] shadow-xs">
-              <img src={aud.img} alt="" className="size-10 rounded-lg -rotate-6 object-cover border border-[#E8E7E1]" />
-              <span>{aud.title}</span>
+
+        {/* Dual-Row Continuous Infinite Marquee with Soft Edge Mask */}
+        <div className="space-y-4 [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
+          {/* Row 1: Leftward Marquee */}
+          <div className="overflow-hidden whitespace-nowrap">
+            <div className="animate-marquee gap-5 py-1 flex items-center">
+              {[...audienceRow1, ...audienceRow1, ...audienceRow1].map((aud, i) => (
+                <div
+                  key={`row1-${i}`}
+                  className="flex items-center gap-3.5 text-base font-medium tracking-[-0.02em] text-[#1A1A1A] bg-white px-5 py-3 rounded-2xl border border-[#E8E7E1] shadow-xs shrink-0 select-none transition-transform hover:scale-[1.02]"
+                >
+                  <img
+                    src={aud.img}
+                    alt=""
+                    className="size-9 rounded-lg -rotate-6 object-cover border border-[#E8E7E1] shadow-2xs"
+                  />
+                  <span>{aud.title}</span>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
+
+          {/* Row 2: Rightward Reverse Marquee */}
+          <div className="overflow-hidden whitespace-nowrap">
+            <div className="animate-marquee-reverse gap-5 py-1 flex items-center">
+              {[...audienceRow2, ...audienceRow2, ...audienceRow2].map((aud, i) => (
+                <div
+                  key={`row2-${i}`}
+                  className="flex items-center gap-3.5 text-base font-medium tracking-[-0.02em] text-[#1A1A1A] bg-white px-5 py-3 rounded-2xl border border-[#E8E7E1] shadow-xs shrink-0 select-none transition-transform hover:scale-[1.02]"
+                >
+                  <img
+                    src={aud.img}
+                    alt=""
+                    className="size-9 rounded-lg rotate-6 object-cover border border-[#E8E7E1] shadow-2xs"
+                  />
+                  <span>{aud.title}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
