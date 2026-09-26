@@ -6,17 +6,17 @@ export default function BentoFeatures() {
   const [activeTabTool, setActiveTabTool] = useState('select');
 
   return (
-    <section id="features" className="py-24 border-b border-[#E8E7E1] bg-[#FAF9F5]">
+    <section id="features" className="py-24 border-b border-[#E8E7E1] dark:border-[#2A2A28] bg-[#FAF9F5] dark:bg-[#0E0E0D]">
       <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-14">
         {/* Section Header */}
         <ScrollReveal direction="up" className="max-w-xl mb-14">
-          <span className="text-xs font-semibold uppercase tracking-widest text-[#71716E]">
+          <span className="text-xs font-semibold uppercase tracking-widest text-[#71716E] dark:text-[#8E8E88]">
             Features & Capabilities
           </span>
-          <h2 className="text-3xl sm:text-4xl lg:text-[44px] leading-[1.18] font-normal tracking-[-0.035em] text-[#1A1A1A] mt-2">
+          <h2 className="text-3xl sm:text-4xl lg:text-[44px] leading-[1.18] font-normal tracking-[-0.035em] text-[#1A1A1A] dark:text-[#FAF9F5] mt-2">
             Everything your shared home needs to thrive.
           </h2>
-          <p className="mt-3 text-base text-[#71716E]">
+          <p className="mt-3 text-base text-[#71716E] dark:text-[#A8A7A0]">
             Built with calm craftsmanship to replace chaotic group chats, unbalanced chores, and awkward bill splitting.
           </p>
         </ScrollReveal>

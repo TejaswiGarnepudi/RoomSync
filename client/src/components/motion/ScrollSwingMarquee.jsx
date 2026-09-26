@@ -59,12 +59,12 @@ export default function ScrollSwingMarquee({ row1Items = [], row2Items = [] }) {
           {[...row1Items, ...row1Items, ...row1Items].map((aud, i) => (
             <div
               key={`row1-${i}`}
-              className="flex items-center gap-3.5 text-base font-medium tracking-[-0.02em] text-[#1A1A1A] bg-white px-5 py-3 rounded-2xl border border-[#E8E7E1] shadow-xs shrink-0 select-none transition-transform hover:scale-[1.03] hover:border-[#1A1A1A]/30"
+              className="flex items-center gap-3.5 text-base font-medium tracking-[-0.02em] text-[#1A1A1A] dark:text-[#FAF9F5] bg-white dark:bg-[#141413] px-5 py-3 rounded-2xl border border-[#E8E7E1] dark:border-[#2A2A28] shadow-xs shrink-0 select-none transition-transform hover:scale-[1.03] hover:border-[#1A1A1A]/30 dark:hover:border-white/20"
             >
               <img
                 src={aud.img}
                 alt=""
-                className="size-9 rounded-lg -rotate-6 object-cover border border-[#E8E7E1] shadow-2xs pointer-events-none"
+                className="size-9 rounded-lg -rotate-6 object-cover border border-[#E8E7E1] dark:border-[#2E2E2A] shadow-2xs pointer-events-none"
               />
               <span>{aud.title}</span>
             </div>
@@ -83,12 +83,12 @@ export default function ScrollSwingMarquee({ row1Items = [], row2Items = [] }) {
           {[...row2Items, ...row2Items, ...row2Items].map((aud, i) => (
             <div
               key={`row2-${i}`}
-              className="flex items-center gap-3.5 text-base font-medium tracking-[-0.02em] text-[#1A1A1A] bg-white px-5 py-3 rounded-2xl border border-[#E8E7E1] shadow-xs shrink-0 select-none transition-transform hover:scale-[1.03] hover:border-[#1A1A1A]/30"
+              className="flex items-center gap-3.5 text-base font-medium tracking-[-0.02em] text-[#1A1A1A] dark:text-[#FAF9F5] bg-white dark:bg-[#141413] px-5 py-3 rounded-2xl border border-[#E8E7E1] dark:border-[#2A2A28] shadow-xs shrink-0 select-none transition-transform hover:scale-[1.03] hover:border-[#1A1A1A]/30 dark:hover:border-white/20"
             >
               <img
                 src={aud.img}
                 alt=""
-                className="size-9 rounded-lg rotate-6 object-cover border border-[#E8E7E1] shadow-2xs pointer-events-none"
+                className="size-9 rounded-lg rotate-6 object-cover border border-[#E8E7E1] dark:border-[#2E2E2A] shadow-2xs pointer-events-none"
               />
               <span>{aud.title}</span>
             </div>
