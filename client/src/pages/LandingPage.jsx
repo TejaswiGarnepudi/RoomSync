@@ -7,12 +7,45 @@ import Hero3DCardStage from '../components/motion/Hero3DCardStage';
 import FloatingOrbs from '../components/motion/FloatingOrbs';
 import Magnet from '../components/motion/Magnet';
 import ScrollSwingMarquee from '../components/motion/ScrollSwingMarquee';
+import BentoFeatures from '../components/motion/BentoFeatures';
 
 export default function LandingPage() {
   const { isAuthenticated, user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [quickEmail, setQuickEmail] = useState('');
+  const [activeSection, setActiveSection] = useState('why');
+
+  // ScrollSpy to dynamically highlight active section in Navbar
+  useEffect(() => {
+    const sectionIds = ['why', 'features', 'process', 'sandbox', 'faq'];
+    const handleScroll = () => {
+      const scrollPos = window.scrollY + 140;
+      for (let i = sectionIds.length - 1; i >= 0; i--) {
+        const id = sectionIds[i];
+        const el = document.getElementById(id);
+        if (el && el.offsetTop <= scrollPos) {
+          setActiveSection(id);
+          break;
+        }
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Smooth scroll handler with header offset
+  const scrollToSection = (e, id) => {
+    if (e) e.preventDefault();
+    const element = document.getElementById(id);
+    if (element) {
+      const yOffset = -80;
+      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+    setMobileMenuOpen(false);
+  };
 
   // Workflow tab state with automatic continuous progression
   const [activeWorkflowTab, setActiveWorkflowTab] = useState('01');
@@ -137,23 +170,28 @@ export default function LandingPage() {
             </span>
           </Link>
 
-          {/* Desktop Navigation Links with Sparkdesign Micro-Underline */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium tracking-[-0.025em] text-[#71716E]">
-            <a href="#why" className="relative py-1 transition-colors hover:text-[#1A1A1A] after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-left after:scale-x-0 after:bg-current after:transition-transform after:duration-250 hover:after:scale-x-100">
-              Why RoomSync
-            </a>
-            <a href="#process" className="relative py-1 transition-colors hover:text-[#1A1A1A] after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-left after:scale-x-0 after:bg-current after:transition-transform after:duration-250 hover:after:scale-x-100">
-              The process
-            </a>
-            <a href="#features" className="relative py-1 transition-colors hover:text-[#1A1A1A] after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-left after:scale-x-0 after:bg-current after:transition-transform after:duration-250 hover:after:scale-x-100">
-              Capabilities
-            </a>
-            <a href="#sandbox" className="relative py-1 transition-colors hover:text-[#1A1A1A] after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-left after:scale-x-0 after:bg-current after:transition-transform after:duration-250 hover:after:scale-x-100">
-              Live Preview
-            </a>
-            <a href="#faq" className="relative py-1 transition-colors hover:text-[#1A1A1A] after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-left after:scale-x-0 after:bg-current after:transition-transform after:duration-250 hover:after:scale-x-100">
-              FAQ
-            </a>
+          {/* Desktop Navigation Links with Sparkdesign Micro-Underline and ScrollSpy */}
+          <nav className="hidden md:flex items-center gap-8 text-sm font-medium tracking-[-0.025em]">
+            {[
+              { id: 'why', label: 'Why RoomSync' },
+              { id: 'features', label: 'Features' },
+              { id: 'process', label: 'The process' },
+              { id: 'sandbox', label: 'Live Preview' },
+              { id: 'faq', label: 'FAQ' },
+            ].map((item) => (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                onClick={(e) => scrollToSection(e, item.id)}
+                className={`relative py-1 transition-colors duration-200 ${
+                  activeSection === item.id
+                    ? 'text-[#1A1A1A] font-semibold after:scale-x-100'
+                    : 'text-[#71716E] hover:text-[#1A1A1A] after:scale-x-0'
+                } after:absolute after:inset-x-0 after:bottom-0 after:h-[2px] after:bg-[#1A1A1A] after:origin-left after:transition-transform after:duration-250 hover:after:scale-x-100`}
+              >
+                {item.label}
+              </a>
+            ))}
           </nav>
 
           {/* Desktop Actions */}
@@ -218,11 +256,24 @@ export default function LandingPage() {
         {mobileMenuOpen && (
           <div className="md:hidden border-b border-[#E8E7E1] bg-white px-6 py-6 space-y-4 shadow-xl animate-dropdown">
             <nav className="flex flex-col space-y-3 text-base font-medium">
-              <a href="#why" onClick={() => setMobileMenuOpen(false)} className="py-2 text-[#1A1A1A] border-b border-[#E8E7E1]">01 Why RoomSync</a>
-              <a href="#process" onClick={() => setMobileMenuOpen(false)} className="py-2 text-[#1A1A1A] border-b border-[#E8E7E1]">02 The process</a>
-              <a href="#features" onClick={() => setMobileMenuOpen(false)} className="py-2 text-[#1A1A1A] border-b border-[#E8E7E1]">03 Capabilities</a>
-              <a href="#sandbox" onClick={() => setMobileMenuOpen(false)} className="py-2 text-[#1A1A1A] border-b border-[#E8E7E1]">04 Live Preview</a>
-              <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="py-2 text-[#1A1A1A]">05 FAQ</a>
+              {[
+                { id: 'why', label: '01 Why RoomSync' },
+                { id: 'features', label: '02 Features' },
+                { id: 'process', label: '03 The process' },
+                { id: 'sandbox', label: '04 Live Preview' },
+                { id: 'faq', label: '05 FAQ' },
+              ].map((item) => (
+                <a
+                  key={item.id}
+                  href={`#${item.id}`}
+                  onClick={(e) => scrollToSection(e, item.id)}
+                  className={`py-2 border-b border-[#E8E7E1] transition-colors ${
+                    activeSection === item.id ? 'text-[#1A1A1A] font-semibold pl-2' : 'text-[#71716E]'
+                  }`}
+                >
+                  {item.label}
+                </a>
+              ))}
             </nav>
             <div className="pt-3 border-t border-[#E8E7E1] flex flex-col gap-2">
               <Link to="/register" className="w-full text-center py-3 rounded-full bg-[#1A1A1A] text-white text-sm font-medium">
@@ -415,7 +466,12 @@ export default function LandingPage() {
       </section>
 
       {/* ======================================================== */}
-      {/* 5. THE PROCESS / WORKFLOW (SPARKDESIGN STAGE TABS) */}
+      {/* 5. RICH BENTO FEATURES SHOWCASE (SPARKDESIGN IMAGE 3) */}
+      {/* ======================================================== */}
+      <BentoFeatures />
+
+      {/* ======================================================== */}
+      {/* 6. THE PROCESS / WORKFLOW (SPARKDESIGN STAGE TABS) */}
       {/* ======================================================== */}
       <section id="process" className="py-24 border-b border-[#E8E7E1] bg-white">
         <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-14">
@@ -643,38 +699,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ======================================================== */}
-      {/* 7. CAPABILITIES GRID */}
-      {/* ======================================================== */}
-      <section id="features" className="py-24 border-b border-[#E8E7E1] bg-white">
-        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-14">
-          <ScrollReveal direction="up" className="max-w-xl mb-14">
-            <span className="text-xs font-semibold uppercase tracking-widest text-[#71716E]">Capabilities</span>
-            <h2 className="text-3xl sm:text-4xl font-normal tracking-[-0.035em] text-[#1A1A1A] mt-2">
-              Everything your shared home needs to thrive.
-            </h2>
-          </ScrollReveal>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[
-              { icon: '🔄', title: 'Automated Chore Cycles', desc: 'Daily, weekly, or custom cleaning rotations with fair workload balancing algorithms.' },
-              { icon: '⚖️', title: 'Expense Splits & Debt Graph', desc: 'Track shared bills, split costs equally or by shares, and minimize transfer debts.' },
-              { icon: '🛒', title: 'Shared Shopping Basket', desc: 'Live pantry restock lists with item reservation and instant split-to-expense conversion.' },
-              { icon: '🗳️', title: 'House Decision Polls', desc: 'Vote on weekend plans, guest rules, and furniture purchases without messy group texts.' },
-              { icon: '🙋', title: 'Favor & Help Requests', desc: 'Quick notifications for package pickups, dog walking, or emergency key handoffs.' },
-              { icon: '📅', title: 'Household Calendar', desc: 'Coordinate quiet hours, member availability, and upcoming apartment events in sync.' }
-            ].map((feat, idx) => (
-              <ScrollReveal key={idx} direction="up" delay={idx * 0.06} className="h-full">
-                <div className="h-full bg-[#FAF9F5] rounded-3xl border border-[#E8E7E1] p-7 space-y-3 hover:border-[#1A1A1A]/30 transition-colors">
-                  <span className="text-2xl block">{feat.icon}</span>
-                  <h3 className="text-base font-medium text-[#1A1A1A]">{feat.title}</h3>
-                  <p className="text-xs text-[#71716E] leading-relaxed">{feat.desc}</p>
-                </div>
-              </ScrollReveal>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ======================================================== */}
       {/* 8. FAQ ACCORDION */}

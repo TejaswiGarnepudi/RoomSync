@@ -11,6 +11,10 @@
     --header-height: 80px;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     background-color: #FAF9F5;
     color: #1A1A1A;
