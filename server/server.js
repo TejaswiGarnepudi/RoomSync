@@ -31,9 +31,22 @@ connectDB();
 const app = express();
 const server = http.createServer(app);
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  process.env.CLIENT_URL
+].filter(Boolean);
+
+const checkOrigin = (origin, callback) => {
+  if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+    return callback(null, true);
+  }
+  return callback(new Error('Blocked by CORS'));
+};
+
 const io = new Server(server, {
   cors: {
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+    origin: checkOrigin,
     credentials: true
   }
 });
@@ -89,7 +102,7 @@ io.on('connection', (socket) => {
 app.set('io', io);
 
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+  origin: checkOrigin,
   credentials: true
 }));
 
