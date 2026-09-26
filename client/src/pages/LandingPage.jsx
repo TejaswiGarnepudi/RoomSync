@@ -617,41 +617,108 @@ export default function LandingPage() {
       </section>
 
       {/* ======================================================== */}
-      {/* 9. ELEVATED FINAL CTA (SPARKDESIGN DARK THEMED ACCENT) */}
+      {/* 9. ELEVATED FINAL CTA (SPARKDESIGN FLOATING CANVAS) */}
       {/* ======================================================== */}
-      <section className="py-24 bg-[#FAF9F5]">
-        <div className="max-w-5xl mx-auto px-6 sm:px-10">
-          <ScrollReveal direction="zoom" className="rounded-[32px] bg-[#1A1A1A] text-white p-10 sm:p-16 text-center space-y-6 shadow-xl relative overflow-hidden">
-            <div className="relative z-10 space-y-4 max-w-2xl mx-auto">
-              <span className="text-xs font-semibold uppercase tracking-widest text-[#A8A7A0]">Get Started Today</span>
-              <h2 className="text-3xl sm:text-5xl font-normal tracking-tight text-white">
-                Make your household easier to manage.
-              </h2>
-              <p className="text-sm sm:text-base text-[#D0CFC9] leading-relaxed">
-                Bring all everyday flatmate responsibilities into one calm shared space. Set up your home in under two minutes.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-4">
-                <Magnet magnetStrength={0.18}>
-                  <Link
-                    to="/register"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 text-sm font-medium rounded-full bg-white text-[#1A1A1A] hover:bg-[#FAF9F5] shadow-md transition-all active:scale-95"
-                  >
-                    <span>Create your household free</span>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M7 7h10v10" /><path d="M7 17 17 7" />
-                    </svg>
-                  </Link>
-                </Magnet>
-                <Magnet magnetStrength={0.18}>
-                  <Link
-                    to="/login"
-                    className="w-full sm:w-auto inline-block px-8 py-3.5 text-sm font-medium rounded-full bg-[#2A2A2A] hover:bg-[#333333] text-white transition-all active:scale-95"
-                  >
-                    Sign in
-                  </Link>
-                </Magnet>
-              </div>
+      <section className="relative overflow-hidden py-32 sm:py-40 bg-[#141413] text-white border-b border-[#2A2A28]">
+        {/* Subtle Background Radial Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-white/[0.02] rounded-full blur-[120px] pointer-events-none" />
+
+        {/* 6 Scattered Floating Lifestyle & Apartment Image Tiles */}
+        {/* 1. Top Left - Happy Flatmate */}
+        <img
+          src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80"
+          alt="Flatmate"
+          className="absolute left-6 sm:left-12 lg:left-24 top-12 sm:top-16 size-20 sm:size-28 md:size-32 rounded-3xl object-cover -rotate-6 border border-white/10 shadow-2xl animate-float-a hidden sm:block pointer-events-none"
+        />
+
+        {/* 2. Top Right - Creative Roommate Work */}
+        <img
+          src="https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=300&q=80"
+          alt="Sketchbook"
+          className="absolute right-6 sm:right-12 lg:right-24 top-12 sm:top-20 size-20 sm:size-28 md:size-32 rounded-3xl object-cover rotate-6 border border-white/10 shadow-2xl animate-float-b hidden sm:block pointer-events-none"
+        />
+
+        {/* 3. Middle Left - Minimalist Apartment Corner */}
+        <img
+          src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=300&q=80"
+          alt="Apartment space"
+          className="absolute left-8 lg:left-32 top-1/2 -translate-y-12 size-18 sm:size-24 md:size-28 rounded-3xl object-cover -rotate-3 border border-white/10 shadow-2xl animate-float-c hidden md:block pointer-events-none"
+        />
+
+        {/* 4. Middle Right - Flatmate Portrait */}
+        <img
+          src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80"
+          alt="Flatmate"
+          className="absolute right-8 lg:right-32 top-1/2 -translate-y-8 size-18 sm:size-24 md:size-28 rounded-3xl object-cover rotate-3 border border-white/10 shadow-2xl animate-float-a hidden md:block pointer-events-none"
+        />
+
+        {/* 5. Bottom Left - Sunlit Living Space */}
+        <img
+          src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=300&q=80"
+          alt="Architecture hallway"
+          className="absolute left-6 sm:left-12 lg:left-20 bottom-10 sm:bottom-16 size-24 sm:size-32 md:size-36 rounded-3xl object-cover rotate-2 border border-white/10 shadow-2xl animate-float-b hidden sm:block pointer-events-none"
+        />
+
+        {/* 6. Bottom Right - Balcony Courtyard View */}
+        <img
+          src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=300&q=80"
+          alt="Patio garden"
+          className="absolute right-6 sm:right-12 lg:right-20 bottom-10 sm:bottom-14 size-24 sm:size-32 md:size-36 rounded-3xl object-cover -rotate-6 border border-white/10 shadow-2xl animate-float-c hidden sm:block pointer-events-none"
+        />
+
+        {/* Centered Main Content */}
+        <div className="relative z-10 max-w-3xl mx-auto px-6 text-center space-y-7">
+          {/* Top Logo Icon */}
+          <ScrollReveal direction="zoom">
+            <div className="size-14 rounded-2xl bg-[#1E1E1C] border border-[#2E2E2A] flex items-center justify-center text-white mx-auto shadow-xl">
+              <svg width="26" height="26" viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <rect x="4" y="4" width="23" height="23" rx="8" />
+                <rect x="13" y="13" width="23" height="23" rx="8" />
+                <path d="M13 20h14M20 13v14" />
+              </svg>
             </div>
+          </ScrollReveal>
+
+          {/* Sparkdesign Centered Headline */}
+          <ScrollReveal direction="up" delay={0.1} className="space-y-3">
+            <h2 className="text-4xl sm:text-5xl lg:text-[56px] font-normal tracking-[-0.045em] text-white leading-[1.12]">
+              A good idea is just the start.<br />
+              Let's make something of it.
+            </h2>
+            <p className="text-base sm:text-lg text-[#A8A7A0] tracking-[-0.02em] max-w-lg mx-auto">
+              A fresh canvas. A few good people. Your next chapter.
+            </p>
+          </ScrollReveal>
+
+          {/* Quick Action Input Form with Magnet Button */}
+          <ScrollReveal direction="up" delay={0.2} className="pt-2">
+            <form onSubmit={handleQuickSubmit} className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto">
+              <input
+                type="email"
+                value={quickEmail}
+                onChange={(e) => setQuickEmail(e.target.value)}
+                placeholder="Your email goes here"
+                className="h-12 w-full sm:w-72 rounded-full border border-[#2E2E2A] bg-[#1E1E1C] px-5 text-sm text-white placeholder-[#71716E] focus:outline-none focus:border-white transition-colors"
+              />
+              <Magnet magnetStrength={0.2}>
+                <button
+                  type="submit"
+                  className="h-12 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 text-sm font-medium text-[#1A1A1A] hover:bg-[#FAF9F5] shadow-lg transition-all active:scale-95 shrink-0 cursor-pointer"
+                >
+                  <span>Start creating</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                    <path d="M7 7h10v10" /><path d="M7 17 17 7" />
+                  </svg>
+                </button>
+              </Magnet>
+            </form>
+
+            <p className="mt-3 text-[11px] text-[#71716E] tracking-tight">
+              A little preview. No account needed. No email sent.
+            </p>
+            <p className="mt-6 text-xs text-[#888880]">
+              Made for the things you haven't made yet.
+            </p>
           </ScrollReveal>
         </div>
       </section>
@@ -659,31 +726,34 @@ export default function LandingPage() {
       {/* ======================================================== */}
       {/* 10. MINIMALIST EDITORIAL FOOTER */}
       {/* ======================================================== */}
-      <footer className="border-t border-[#E8E7E1] bg-white py-12 text-xs text-[#71716E]">
+      <footer className="border-t border-[#2A2A28] bg-[#0E0E0D] py-12 text-xs text-[#8E8E88]">
         <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-14 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <svg width="24" height="24" viewBox="0 0 40 40" fill="none" className="text-[#1A1A1A]">
+            <svg width="24" height="24" viewBox="0 0 40 40" fill="none" className="text-white">
               <rect x="4" y="4" width="23" height="23" rx="8" stroke="currentColor" strokeWidth="1.8" />
               <rect x="13" y="13" width="23" height="23" rx="8" stroke="currentColor" strokeWidth="1.8" />
               <path d="M13 20h14M20 13v14" stroke="currentColor" strokeWidth="1.8" />
             </svg>
             <div>
-              <span className="font-medium text-[#1A1A1A] text-sm tracking-[-0.8px]">roomsync</span>
-              <p className="text-[#71716E] mt-0.5">Household journal and shared living operating system.</p>
+              <span className="font-medium text-white text-sm tracking-[-0.8px]">roomsync</span>
+              <p className="text-[#8E8E88] mt-0.5">Household journal and shared living operating system.</p>
             </div>
           </div>
 
           <div className="flex items-center gap-6">
-            <a href="#why" className="hover:text-[#1A1A1A] transition-colors">Why RoomSync</a>
-            <a href="#process" className="hover:text-[#1A1A1A] transition-colors">The process</a>
-            <a href="#features" className="hover:text-[#1A1A1A] transition-colors">Capabilities</a>
-            <a href="#faq" className="hover:text-[#1A1A1A] transition-colors">FAQ</a>
-            <Link to="/login" className="hover:text-[#1A1A1A] transition-colors">Sign in</Link>
-            <Link to="/register" className="hover:text-[#1A1A1A] transition-colors">Register</Link>
+            <a href="#why" onClick={(e) => scrollToSection(e, 'why')} className="hover:text-white transition-colors">Why RoomSync</a>
+            <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="hover:text-white transition-colors">Features</a>
+            <a href="#process" onClick={(e) => scrollToSection(e, 'process')} className="hover:text-white transition-colors">The process</a>
+            <a href="#faq" onClick={(e) => scrollToSection(e, 'faq')} className="hover:text-white transition-colors">FAQ</a>
+            <Link to="/login" className="hover:text-white transition-colors">Sign in</Link>
+            <Link to="/register" className="hover:text-white transition-colors">Register</Link>
           </div>
 
-          <div>
-            &copy; {new Date().getFullYear()} roomsync. Good things, together.
+          <div className="flex items-center gap-4 text-[#8E8E88]">
+            <span>&copy; {new Date().getFullYear()} roomsync. Good things, together.</span>
+            <div className="size-7 rounded-lg bg-[#1E1E1C] border border-[#2E2E2A] flex items-center justify-center text-[#A8A7A0]">
+              ☼
+            </div>
           </div>
         </div>
       </footer>
