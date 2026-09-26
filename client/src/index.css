@@ -2,31 +2,27 @@
 
 @layer base {
   :root {
-    --bg-warm: #F4EDE3;
-    --surface-creamy: #FFF9F1;
-    --text-primary: #234653;
-    --text-secondary: #3E737C;
-    --action-coral: #E86F5A;
-    --action-coral-hover: #D65D48;
-    --accent-peach: #F2D4C8;
-    --accent-honey: #E7A83C;
-    --soft-blue: #DCE8E8;
-    --dark-ink: #17272C;
-    --border-warm: #E8DEC8;
+    --bg-page: #FAF9F5;
+    --surface-white: #FFFFFF;
+    --text-primary: #1A1A1A;
+    --text-muted: #71716E;
+    --border-subtle: #E8E7E1;
+    --action-dark: #1A1A1A;
+    --header-height: 80px;
   }
 
   body {
-    background-color: #F4EDE3;
-    color: #234653;
+    background-color: #FAF9F5;
+    color: #1A1A1A;
     font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
   }
 
-  h1, h2, h3, .font-serif-editorial {
-    font-family: 'Fraunces', Georgia, Cambria, "Times New Roman", Times, serif;
-    font-optical-sizing: auto;
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    letter-spacing: -0.04em;
   }
 }
 

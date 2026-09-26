@@ -2,24 +2,67 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 
 /**
  * Hero3DCardStage
- * Interactive 3D floating Household Management cards (Chores, Expense Splits, Shopping, Polls).
- * Features:
- * - Staggered 3D entrance animation on initial mount
- * - Multi-layer depth parallax (foreground moves faster than background)
- * - Continuous harmonic floating motion
- * - Responsive pointer damping and perspective tilt
- * - Scroll-driven 3D dispersion
- * - 60fps hardware acceleration & mobile/reduced-motion awareness
+ * Directly adapted from the Sparkdesign Hero Canvas Preview:
+ * - Rounded 32px aspect canvas card with ambient blurred glow backdrop
+ * - Top category tags ("Maple Flat #3B", "Live Journal")
+ * - Interior title ("A study in shared harmony.")
+ * - Floating Roommate Cursor tag ("Maya" / "Alex")
+ * - Floating Comment Card ("Maya: Kitchen cleaned & coffee restocked!")
+ * - Floating Status Pill ("3 flatmates. One shared home.")
+ * - Interactive sample preview tabs (Chores, Splits, Grocery)
+ * - 3D mouse parallax and scroll dispersion
  */
 export default function Hero3DCardStage({ className = '' }) {
   const containerRef = useRef(null);
+  const [activeTab, setActiveTab] = useState(0);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0, targetX: 0, targetY: 0 });
   const [scrollY, setScrollY] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const [commentResolved, setCommentResolved] = useState(false);
   const animFrameRef = useRef(null);
 
-  // Trigger staggered 3D entrance on mount
+  const projects = [
+    {
+      title: 'A study in shared harmony.',
+      tag: 'Maple Flat #3B / Chore OS',
+      badge: 'Active Rotation',
+      img: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1200&q=80',
+      comment: 'Kitchen cleaned & cold brew restocked! Who is taking dinner duty tonight?',
+      commentAuthor: 'Maya',
+      commentTime: 'just now',
+      roommates: '3 flatmates. All chores synced.',
+      pointerName: 'Maya',
+      pointerPos: { top: '38%', right: '22%' }
+    },
+    {
+      title: 'Clarity that keeps the peace.',
+      tag: 'Expense Splitter / Wi-Fi & Rent',
+      badge: 'Debt Simplified',
+      img: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80',
+      comment: 'Uploaded ₹2,400 grocery bill — automatic 3-way split calculated!',
+      commentAuthor: 'Alex',
+      commentTime: '2m ago',
+      roommates: '1 transfer needed. No awkward math.',
+      pointerName: 'Alex',
+      pointerPos: { top: '44%', right: '28%' }
+    },
+    {
+      title: 'Pantry always in stock.',
+      tag: 'Shared Basket / Real-time',
+      badge: '4 Items Pending',
+      img: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=1200&q=80',
+      comment: 'Added oat milk & espresso beans to the list. Grabbing it at 5 PM.',
+      commentAuthor: 'You',
+      commentTime: '5m ago',
+      roommates: 'Live basket updated on 3 phones.',
+      pointerName: 'You',
+      pointerPos: { top: '35%', right: '20%' }
+    }
+  ];
+
+  const currentProject = projects[activeTab];
+
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 60);
     if (window.matchMedia('(pointer: coarse)').matches) {
@@ -28,16 +71,12 @@ export default function Hero3DCardStage({ className = '' }) {
     return () => clearTimeout(timer);
   }, []);
 
-  // Track scroll position for spatial dispersion
   useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-    };
+    const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Mouse move handler with normalized bounds
   const handleMouseMove = useCallback((e) => {
     if (isTouchDevice || !containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
@@ -50,7 +89,6 @@ export default function Hero3DCardStage({ className = '' }) {
     setMousePos(prev => ({ ...prev, targetX: 0, targetY: 0 }));
   };
 
-  // Continuous physics damping loop for silky-smooth pointer response
   useEffect(() => {
     let active = true;
     const updatePhysics = () => {
@@ -58,9 +96,7 @@ export default function Hero3DCardStage({ className = '' }) {
       setMousePos(prev => {
         const dx = prev.targetX - prev.x;
         const dy = prev.targetY - prev.y;
-        if (Math.abs(dx) < 0.001 && Math.abs(dy) < 0.001) {
-          return prev;
-        }
+        if (Math.abs(dx) < 0.001 && Math.abs(dy) < 0.001) return prev;
         return {
           ...prev,
           x: prev.x + dx * 0.08,
@@ -77,228 +113,157 @@ export default function Hero3DCardStage({ className = '' }) {
     };
   }, []);
 
-  // Scroll reaction factors (cards disperse gently as user scrolls past hero)
   const scrollFactor = Math.min(scrollY / 500, 1.2);
-  const scrollRotateX = scrollFactor * 12;
-  const scrollSpread = scrollFactor * 35;
-
-  // Pointer tilt factors
-  const tiltX = -mousePos.y * 8 - scrollRotateX;
-  const tiltY = mousePos.x * 10;
+  const tiltX = -mousePos.y * 6 - scrollFactor * 8;
+  const tiltY = mousePos.x * 8;
 
   return (
     <div
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className={`relative w-full max-w-lg lg:max-w-xl mx-auto select-none ${className}`}
-      style={{
-        perspective: '1200px',
-        minHeight: '480px'
-      }}
+      className={`relative w-full max-w-[580px] mx-auto select-none ${className}`}
+      style={{ perspective: '1200px' }}
     >
-      {/* 3D Scene Root */}
+      {/* Ambient Blurred Background Glow (Sparkdesign Signature) */}
       <div
-        className="relative w-full h-full min-h-[480px] flex items-center justify-center transition-transform duration-200 ease-out"
+        className="pointer-events-none absolute -inset-3 scale-[1.08] bg-cover bg-center opacity-25 blur-[64px] transition-all duration-700 rounded-[40px]"
+        style={{ backgroundImage: `url(${currentProject.img})` }}
+      />
+
+      {/* 3D Root Stage */}
+      <div
+        className="relative transition-transform duration-200 ease-out"
         style={{
           transformStyle: 'preserve-3d',
           transform: `rotateX(${tiltX.toFixed(2)}deg) rotateY(${tiltY.toFixed(2)}deg)`
         }}
       >
-        {/* ======================================================== */}
-        {/* CARD 1: PRIMARY HOUSEHOLD CHORES & JOURNAL (Center Anchor, Z = 40) */}
-        {/* ======================================================== */}
-        <div
-          className="absolute z-20 w-[90%] sm:w-[360px] transition-all duration-700 ease-out animate-float-a"
-          style={{
-            transformStyle: 'preserve-3d',
-            transform: isLoaded
-              ? `translate3d(${-mousePos.x * 10}px, ${-mousePos.y * 10}px, 40px) scale(${1 - scrollFactor * 0.05})`
-              : 'translate3d(0px, 40px, -60px) scale(0.9)',
-            opacity: isLoaded ? 1 : 0,
-            transitionDelay: '0.1s'
-          }}
-        >
-          <div className="bg-[#FFF9F1] border border-[#E8DEC8] rounded-3xl p-5 sm:p-6 shadow-2xl backdrop-blur-md hover:border-[#3E737C]/40 transition-colors">
-            {/* Household Header */}
-            <div className="flex items-start justify-between pb-3.5 border-b border-[#E8DEC8]">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-[#DCE8E8] text-[#234653] font-bold text-base flex items-center justify-center border border-[#E8DEC8] font-serif shadow-2xs">
-                  🏡
-                </div>
-                <div>
-                  <h4 className="text-base font-bold text-[#234653] font-serif-editorial">
-                    The Maple Flat
-                  </h4>
-                  <span className="text-xs text-[#3E737C]">3 Roommates • Code: MAPLE-3B</span>
-                </div>
-              </div>
-              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                ● Synchronized
-              </span>
-            </div>
+        {/* Main Canvas Card */}
+        <div className="relative isolate aspect-[1/1.02] w-full overflow-hidden rounded-[32px] bg-[#d9d8d4] shadow-[2px_7px_15px_#0000001a,8px_27px_28px_#00000017] border border-[#E2E1DA]">
+          {/* Background Image */}
+          <img
+            src={currentProject.img}
+            alt="RoomSync shared space"
+            className="absolute inset-0 h-full w-full object-cover transition-opacity duration-500"
+          />
 
-            {/* Active Chores & Shared Schedule */}
-            <div className="mt-3.5 space-y-2.5">
-              <div className="p-2.5 rounded-2xl bg-[#FAF5ED] border border-[#E8DEC8] flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-[#234653] text-[#FFF9F1] flex items-center justify-center text-[10px] font-bold">
-                    ✓
-                  </span>
-                  <span className="font-semibold text-[#234653]">Kitchen island & counters</span>
-                </div>
-                <span className="text-[10px] font-bold text-[#3E737C]">Done by Alex</span>
-              </div>
+          {/* Gradient Overlay */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/65 via-black/35 to-black/75" />
 
-              <div className="p-2.5 rounded-2xl bg-[#FAF5ED] border border-[#E8DEC8] flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full border border-[#3E737C]/50 flex items-center justify-center text-[10px]">
-                  </span>
-                  <span className="font-semibold text-[#234653]">Living room & balcony sweep</span>
-                </div>
-                <span className="text-[10px] font-bold text-[#E86F5A]">Assigned to You</span>
-              </div>
-            </div>
-
-            {/* Household Status Pills */}
-            <div className="mt-3.5 pt-3 border-t border-[#E8DEC8]/80 flex flex-wrap gap-1.5">
-              <span className="px-2.5 py-1 rounded-xl bg-[#FAF5ED] border border-[#E8DEC8] text-[10px] font-semibold text-[#234653]">
-                🔄 Weekly Rotation
-              </span>
-              <span className="px-2.5 py-1 rounded-xl bg-[#FAF5ED] border border-[#E8DEC8] text-[10px] font-semibold text-[#234653]">
-                🛒 3 Shopping Items
-              </span>
-              <span className="px-2.5 py-1 rounded-xl bg-[#FAF5ED] border border-[#E8DEC8] text-[10px] font-semibold text-[#234653]">
-                📊 0 Unsettled Debts
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* ======================================================== */}
-        {/* CARD 2: SMART EXPENSE SPLIT CARD (Upper Left Layer, Z = 85) */}
-        {/* ======================================================== */}
-        <div
-          className="absolute z-30 -top-8 sm:-top-10 -left-4 sm:-left-12 w-[72%] sm:w-[270px] transition-all duration-700 ease-out animate-float-b"
-          style={{
-            transformStyle: 'preserve-3d',
-            transform: isLoaded
-              ? `translate3d(${-mousePos.x * 20 - scrollSpread * 0.4}px, ${-mousePos.y * 18 - scrollSpread * 0.2}px, 85px) rotateZ(-4deg)`
-              : 'translate3d(-40px, -20px, 0px) rotateZ(-10deg)',
-            opacity: isLoaded ? 1 : 0,
-            transitionDelay: '0.22s'
-          }}
-        >
-          <div className="bg-[#FAF5ED]/95 border border-[#E8DEC8] rounded-2xl p-4 shadow-xl backdrop-blur-md hover:border-[#E86F5A]/40 transition-colors">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="w-7 h-7 rounded-lg bg-[#DCE8E8] text-[#234653] flex items-center justify-center text-xs shadow-2xs font-bold">
-                  💰
-                </span>
-                <div>
-                  <span className="text-[11px] font-bold text-[#234653] block font-serif-editorial leading-tight">
-                    Expense Split
-                  </span>
-                  <span className="text-[9px] text-[#3E737C]">Wi-Fi & Groceries</span>
-                </div>
-              </div>
-              <span className="text-xs font-bold text-[#E86F5A] font-serif-editorial">₹2,400</span>
-            </div>
-
-            <div className="mt-2.5 space-y-1 text-[10px] text-[#3E737C] pt-2 border-t border-[#E8DEC8]/80">
-              <div className="flex items-center justify-between text-[#234653]">
-                <span>Equal split (3 members):</span>
-                <span className="font-bold">₹800 / each</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-emerald-700">
-                <span className="font-bold">✓</span>
-                <span>Debt simplified automatically</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ======================================================== */}
-        {/* CARD 3: ACTIVE HOUSEHOLD POLL & DECISION (Lower Right, Z = 65) */}
-        {/* ======================================================== */}
-        <div
-          className="absolute z-25 -bottom-8 sm:-bottom-10 -right-2 sm:-right-8 w-[76%] sm:w-[280px] transition-all duration-700 ease-out animate-float-c"
-          style={{
-            transformStyle: 'preserve-3d',
-            transform: isLoaded
-              ? `translate3d(${-mousePos.x * 16 + scrollSpread * 0.5}px, ${-mousePos.y * 14 + scrollSpread * 0.3}px, 65px) rotateZ(3deg)`
-              : 'translate3d(40px, 40px, 0px) rotateZ(8deg)',
-            opacity: isLoaded ? 1 : 0,
-            transitionDelay: '0.34s'
-          }}
-        >
-          <div className="bg-[#FFF9F1]/95 border border-[#E8DEC8] rounded-2xl p-4 shadow-xl backdrop-blur-md hover:border-[#3E737C]/40 transition-colors">
-            <div className="flex items-start gap-2.5">
-              <span className="w-7 h-7 rounded-lg bg-[#F2D4C8] text-[#234653] flex items-center justify-center text-xs shadow-2xs font-bold shrink-0">
-                🗳️
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-[#234653] truncate font-serif-editorial">
-                    House Decision Poll
-                  </span>
-                  <span className="text-[9px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                    67% Passed
-                  </span>
-                </div>
-                <p className="text-[10px] text-[#3E737C] mt-1 leading-snug">
-                  "Host Friday dinner for flatmates & friends?"
-                </p>
-                <div className="mt-2.5 flex items-center justify-between text-[10px] text-[#3E737C] pt-2 border-t border-[#E8DEC8]/60">
-                  <span>Alex & Maya voted Yes</span>
-                  <span className="font-semibold text-[#E86F5A]">Resolved</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ======================================================== */}
-        {/* CARD 4: TOP-RIGHT FLOATING STATUS PILL (Z = 110) */}
-        {/* ======================================================== */}
-        <div
-          className="absolute z-35 -top-12 sm:-top-14 right-2 sm:right-0 transition-all duration-700 ease-out animate-float-b"
-          style={{
-            transformStyle: 'preserve-3d',
-            transform: isLoaded
-              ? `translate3d(${-mousePos.x * 24 + scrollSpread * 0.2}px, ${-mousePos.y * 22}px, 110px) rotateZ(2deg)`
-              : 'translate3d(20px, -30px, 40px)',
-            opacity: isLoaded ? 1 : 0,
-            transitionDelay: '0.45s'
-          }}
-        >
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#234653] text-[#FFF9F1] text-[11px] font-semibold shadow-lg border border-[#234653]">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span className="font-serif-editorial">Household OS • Real-Time</span>
-          </div>
-        </div>
-
-        {/* ======================================================== */}
-        {/* CARD 5: BOTTOM-LEFT FLOATING PANTRY TAG (Z = 50) */}
-        {/* ======================================================== */}
-        <div
-          className="absolute z-15 -bottom-10 sm:-bottom-12 left-0 sm:-left-8 transition-all duration-700 ease-out animate-float-a"
-          style={{
-            transformStyle: 'preserve-3d',
-            transform: isLoaded
-              ? `translate3d(${-mousePos.x * 12 - scrollSpread * 0.3}px, ${-mousePos.y * 12 + scrollSpread * 0.2}px, 50px) rotateZ(-3deg)`
-              : 'translate3d(-20px, 30px, 0px)',
-            opacity: isLoaded ? 1 : 0,
-            transitionDelay: '0.55s'
-          }}
-        >
-          <div className="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-[#FFF9F1] border border-[#E8DEC8] text-[11px] text-[#234653] shadow-md">
-            <span className="text-xs">🛒</span>
-            <span className="font-semibold">Shared Basket:</span>
-            <span className="font-bold text-[#E86F5A] bg-[#FAF5ED] px-2 py-0.5 rounded-lg border border-[#E8DEC8]">
-              Oat Milk & Coffee Beans
+          {/* Top Pill Header */}
+          <div className="absolute inset-x-6 top-6 flex justify-between gap-3 text-[11px] font-medium tracking-[0.01em] text-[#1A1A1A] z-10">
+            <span className="rounded-full bg-white/90 px-3 py-1.5 backdrop-blur-md shadow-xs">
+              {currentProject.tag}
+            </span>
+            <span className="rounded-full bg-white/90 px-3 py-1.5 backdrop-blur-md shadow-xs">
+              {currentProject.badge}
             </span>
           </div>
+
+          {/* Canvas Title */}
+          <div className="absolute inset-x-7 top-20 max-w-[340px] text-white text-3xl sm:text-[36px] leading-[1.12] font-normal tracking-[-0.035em] drop-shadow-md z-10">
+            {currentProject.title}
+          </div>
+
+          {/* Floating Pointer Cursor */}
+          <div
+            className="absolute z-20 transition-all duration-500"
+            style={{ top: currentProject.pointerPos.top, right: currentProject.pointerPos.right }}
+          >
+            <div className="flex items-center gap-1.5 -rotate-6 text-[#1A1A1A]">
+              <svg className="w-5 h-5 fill-current text-white drop-shadow-md" viewBox="0 0 24 24">
+                <path d="M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z" />
+              </svg>
+              <span className="rounded-md bg-[#dae8b8] px-2 py-0.5 text-[11px] font-semibold text-[#1A2E1A] shadow-md">
+                {currentProject.pointerName}
+              </span>
+            </div>
+          </div>
+
+          {/* Bottom Left Pill */}
+          <span className="absolute bottom-6 left-7 inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/60 px-3 py-1.5 text-xs text-white backdrop-blur-md z-10">
+            <span className="w-2 h-2 rounded-full bg-[#ddf0a6] animate-pulse"></span>
+            <span>In this together</span>
+          </span>
+        </div>
+
+        {/* ======================================================== */}
+        {/* FLOATING OVERLAY CARD 1: ROOMMATE CHAT & TASK (Mid-Left) */}
+        {/* ======================================================== */}
+        <div
+          className="absolute top-[48%] -left-6 sm:-left-10 z-30 w-[270px] sm:w-[290px] rounded-2xl border border-[#E2E1DA] bg-white p-4 text-[#1A1A1A] shadow-[0_12px_32px_rgba(0,0,0,0.12)] transition-all duration-500 ease-out"
+          style={{
+            transform: isLoaded
+              ? `translate3d(${-mousePos.x * 14}px, ${-mousePos.y * 12}px, 60px)`
+              : 'translate3d(-20px, 30px, 0px)',
+            opacity: isLoaded ? 1 : 0
+          }}
+        >
+          <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-[#EAE8E1] text-[#1A1A1A] font-bold text-[11px] flex items-center justify-center">
+                {currentProject.commentAuthor[0]}
+              </div>
+              <div>
+                <span className="font-semibold text-xs text-[#1A1A1A]">{currentProject.commentAuthor}</span>
+                <span className="text-[10px] text-[#71716E] ml-1.5">{currentProject.commentTime}</span>
+              </div>
+            </div>
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+          </div>
+
+          <p className="mt-2.5 text-xs leading-relaxed text-[#4A4A48]">
+            "{currentProject.comment}"
+          </p>
+
+          <button
+            type="button"
+            onClick={() => setCommentResolved(!commentResolved)}
+            className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all ${
+              commentResolved
+                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                : 'bg-[#F4F3ED] text-[#71716E] hover:text-[#1A1A1A] hover:bg-[#EAE8E1]'
+            }`}
+          >
+            <span>✓</span>
+            <span>{commentResolved ? 'Resolved' : 'Mark completed'}</span>
+          </button>
+        </div>
+
+        {/* ======================================================== */}
+        {/* FLOATING OVERLAY CARD 2: ROOMMATES STATUS (Bottom-Right) */}
+        {/* ======================================================== */}
+        <div
+          className="absolute -bottom-6 -right-4 sm:-right-8 z-30 flex items-center gap-2.5 rounded-xl border border-[#E2E1DA] bg-white px-4 py-3 text-xs text-[#1A1A1A] shadow-[0_8px_24px_rgba(0,0,0,0.1)] transition-all duration-500 ease-out"
+          style={{
+            transform: isLoaded
+              ? `translate3d(${-mousePos.x * 18}px, ${-mousePos.y * 16}px, 80px)`
+              : 'translate3d(20px, 40px, 0px)',
+            opacity: isLoaded ? 1 : 0
+          }}
+        >
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="font-medium">{currentProject.roommates}</span>
+          <span className="ml-2 text-[10px] text-[#71716E] border-l border-[#E2E1DA] pl-2.5 hidden sm:inline">
+            ✓ Live Sync
+          </span>
+        </div>
+
+        {/* Sample Tabs Switcher at Bottom */}
+        <div className="absolute inset-x-0 -bottom-14 flex items-center justify-center gap-2 z-20">
+          {projects.map((p, idx) => (
+            <button
+              key={idx}
+              onClick={() => setActiveTab(idx)}
+              className={`h-2.5 rounded-full transition-all duration-300 ${
+                activeTab === idx
+                  ? 'w-8 bg-[#1A1A1A]'
+                  : 'w-2.5 bg-[#1A1A1A]/25 hover:bg-[#1A1A1A]/50'
+              }`}
+              aria-label={`Show ${p.tag}`}
+            />
+          ))}
         </div>
       </div>
     </div>

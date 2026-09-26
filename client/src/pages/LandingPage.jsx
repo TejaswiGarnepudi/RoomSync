@@ -50,13 +50,22 @@ export default function LandingPage() {
     navigate('/register');
   };
 
+  const audienceList = [
+    { title: 'Student Apartments', img: 'https://images.unsplash.com/photo-1548382131-e0ebb1f0cdea?auto=format&fit=crop&w=120&q=80' },
+    { title: 'City Flatmates', img: 'https://images.unsplash.com/photo-1670095044002-3b45b6ad8a01?auto=format&fit=crop&w=120&q=80' },
+    { title: 'Young Professionals', img: 'https://images.unsplash.com/photo-1547587091-f883cf8f0c12?auto=format&fit=crop&w=120&q=80' },
+    { title: 'Co-Living Communities', img: 'https://images.unsplash.com/photo-1615717146113-495e481c17c9?auto=format&fit=crop&w=120&q=80' },
+    { title: '2BHK & 3BHK Suites', img: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=120&q=80' },
+    { title: 'Couples & Partners', img: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=120&q=80' }
+  ];
+
   const faqs = [
     {
       q: 'How does RoomSync simplify shared household living?',
       a: 'RoomSync brings all everyday roommate responsibilities—recurring chores with automated rotations, shared expenses with automated debt simplification, real-time grocery lists, favor requests, and house polls—into a single calm, synchronized workspace.'
     },
     {
-      q: 'How do my roommates join our household?',
+      q: 'How do my flatmates join our household?',
       a: 'Once you create a household space in RoomSync, you receive a shareable 8-character invite code (e.g. MAPLE-3B). Your flatmates simply enter the code to instantly access the shared calendar, lists, and balances.'
     },
     {
@@ -78,12 +87,12 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F4EDE3] text-[#234653] flex flex-col font-sans selection:bg-[#F2D4C8] selection:text-[#234653] overflow-x-hidden">
+    <div className="min-h-screen bg-[#FAF9F5] text-[#1A1A1A] flex flex-col font-sans selection:bg-[#EAE8E1] selection:text-[#1A1A1A] overflow-x-hidden antialiased">
       {/* Top Banner if logged in */}
       {isAuthenticated && (
-        <div className="bg-[#234653] text-[#FFF9F1] px-4 py-2.5 text-xs text-center font-medium flex items-center justify-center gap-2 animate-fade-in-up z-50">
+        <div className="bg-[#1A1A1A] text-white px-4 py-2 text-xs text-center font-medium flex items-center justify-center gap-2 animate-fade-in-up z-50">
           <span>Signed in as <strong>{user?.name}</strong>.</span>
-          <Link to="/dashboard" className="underline hover:text-[#F2D4C8] font-semibold transition-colors">
+          <Link to="/dashboard" className="underline hover:text-[#dae8b8] font-semibold transition-colors">
             Go to your household space &rarr;
           </Link>
         </div>
@@ -92,38 +101,35 @@ export default function LandingPage() {
       {/* ======================================================== */}
       {/* 1. SPARKDESIGN FIXED HEADER */}
       {/* ======================================================== */}
-      <header className="sticky top-0 z-40 bg-[#F4EDE3]/85 backdrop-blur-[24px] border-b border-[#E8DEC8]/80 transition-all duration-300">
+      <header className="sticky top-0 z-40 bg-[#FAF9F5]/90 backdrop-blur-[24px] border-b border-[#E8E7E1] transition-all duration-300">
         <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-14 flex items-center justify-between h-20">
-          {/* Logo Brand Mark */}
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-2xl bg-[#234653] text-[#FFF9F1] flex items-center justify-center font-serif text-lg font-bold shadow-xs group-hover:bg-[#17272C] group-hover:scale-105 group-active:scale-95 transition-all duration-200">
-              ✦
-            </div>
-            <div className="flex flex-col">
-              <span className="text-xl font-bold tracking-tight text-[#234653] font-serif-editorial leading-none group-hover:text-[#17272C] transition-colors">
-                RoomSync
-              </span>
-              <span className="text-[9px] uppercase font-bold text-[#3E737C] tracking-widest mt-0.5 opacity-75">
-                Household Journal & Operating System
-              </span>
-            </div>
+          {/* Logo Brand Mark (Sparkdesign double box icon + lowercase text) */}
+          <Link to="/" className="flex items-center gap-3 group border-r border-[#E8E7E1] pr-8 max-md:border-0 max-md:pr-0">
+            <svg width="34" height="34" viewBox="0 0 40 40" fill="none" className="text-[#1A1A1A] transition-transform group-hover:scale-105">
+              <rect x="4" y="4" width="23" height="23" rx="8" stroke="currentColor" strokeWidth="1.8" />
+              <rect x="13" y="13" width="23" height="23" rx="8" stroke="currentColor" strokeWidth="1.8" />
+              <path d="M13 20h14M20 13v14" stroke="currentColor" strokeWidth="1.8" />
+            </svg>
+            <span className="text-2xl font-medium tracking-[-1.2px] text-[#1A1A1A]">
+              roomsync
+            </span>
           </Link>
 
           {/* Desktop Navigation Links with Sparkdesign Micro-Underline */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium tracking-[-0.02em] text-[#3E737C]">
-            <a href="#why" className="relative py-1 transition-colors hover:text-[#234653] after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:bg-[#E86F5A] after:transition-transform after:duration-200 hover:after:scale-x-100">
+          <nav className="hidden md:flex items-center gap-8 text-sm font-medium tracking-[-0.025em] text-[#71716E]">
+            <a href="#why" className="relative py-1 transition-colors hover:text-[#1A1A1A] after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-left after:scale-x-0 after:bg-current after:transition-transform after:duration-250 hover:after:scale-x-100">
               Why RoomSync
             </a>
-            <a href="#process" className="relative py-1 transition-colors hover:text-[#234653] after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:bg-[#E86F5A] after:transition-transform after:duration-200 hover:after:scale-x-100">
-              How It Works
+            <a href="#process" className="relative py-1 transition-colors hover:text-[#1A1A1A] after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-left after:scale-x-0 after:bg-current after:transition-transform after:duration-250 hover:after:scale-x-100">
+              The process
             </a>
-            <a href="#sandbox" className="relative py-1 transition-colors hover:text-[#234653] after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:bg-[#E86F5A] after:transition-transform after:duration-200 hover:after:scale-x-100">
-              Live Sandbox
-            </a>
-            <a href="#features" className="relative py-1 transition-colors hover:text-[#234653] after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:bg-[#E86F5A] after:transition-transform after:duration-200 hover:after:scale-x-100">
+            <a href="#features" className="relative py-1 transition-colors hover:text-[#1A1A1A] after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-left after:scale-x-0 after:bg-current after:transition-transform after:duration-250 hover:after:scale-x-100">
               Capabilities
             </a>
-            <a href="#faq" className="relative py-1 transition-colors hover:text-[#234653] after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:bg-[#E86F5A] after:transition-transform after:duration-200 hover:after:scale-x-100">
+            <a href="#sandbox" className="relative py-1 transition-colors hover:text-[#1A1A1A] after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-left after:scale-x-0 after:bg-current after:transition-transform after:duration-250 hover:after:scale-x-100">
+              Live Preview
+            </a>
+            <a href="#faq" className="relative py-1 transition-colors hover:text-[#1A1A1A] after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-left after:scale-x-0 after:bg-current after:transition-transform after:duration-250 hover:after:scale-x-100">
               FAQ
             </a>
           </nav>
@@ -134,25 +140,31 @@ export default function LandingPage() {
               <Magnet magnetStrength={0.2}>
                 <Link
                   to="/dashboard"
-                  className="inline-flex items-center gap-2 rounded-full bg-[#E86F5A] hover:bg-[#D65D48] text-white px-5 py-2.5 text-xs font-semibold uppercase tracking-wider shadow-xs hover:shadow-md hover:-translate-y-0.5 btn-shimmer btn-interactive transition-all duration-200 active:scale-95"
+                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-transparent bg-[#1A1A1A] px-5 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_5px_12px_rgba(0,0,0,0.14)] active:translate-y-0"
                 >
-                  Open Household &rarr;
+                  <span>Open Household</span>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M7 7h10v10" /><path d="M7 17 17 7" />
+                  </svg>
                 </Link>
               </Magnet>
             ) : (
               <>
                 <Link
                   to="/login"
-                  className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#234653] hover:text-[#17272C] hover:bg-[#FAF5ED] rounded-xl transition-all"
+                  className="px-4 py-2 text-sm font-medium text-[#71716E] hover:text-[#1A1A1A] transition-colors"
                 >
-                  Sign In
+                  Sign in
                 </Link>
                 <Magnet magnetStrength={0.2}>
                   <Link
                     to="/register"
-                    className="inline-flex items-center gap-2 rounded-full bg-[#E86F5A] hover:bg-[#D65D48] text-white px-5 py-2.5 text-xs font-semibold uppercase tracking-wider shadow-xs hover:shadow-md hover:-translate-y-0.5 btn-shimmer btn-interactive transition-all duration-200 active:scale-95"
+                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-transparent bg-[#1A1A1A] px-5 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_5px_12px_rgba(0,0,0,0.14)] active:translate-y-0"
                   >
-                    Start Free &rarr;
+                    <span>Start creating</span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M7 7h10v10" /><path d="M7 17 17 7" />
+                    </svg>
                   </Link>
                 </Magnet>
               </>
@@ -164,16 +176,16 @@ export default function LandingPage() {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2.5 rounded-2xl text-[#3E737C] hover:text-[#234653] bg-[#FAF5ED] border border-[#E8DEC8] transition-all"
+              className="p-2 rounded-full text-[#1A1A1A] hover:bg-[#EAE8E1] transition-all"
               aria-label="Toggle navigation menu"
             >
               {mobileMenuOpen ? (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               ) : (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               )}
             </button>
@@ -182,17 +194,17 @@ export default function LandingPage() {
 
         {/* Mobile Dropdown */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-b border-[#E8DEC8] bg-[#FFF9F1] px-6 py-5 space-y-4 shadow-xl animate-dropdown">
-            <nav className="flex flex-col space-y-2 text-sm font-semibold">
-              <a href="#why" onClick={() => setMobileMenuOpen(false)} className="py-2 text-[#234653]">Why RoomSync</a>
-              <a href="#process" onClick={() => setMobileMenuOpen(false)} className="py-2 text-[#234653]">How It Works</a>
-              <a href="#sandbox" onClick={() => setMobileMenuOpen(false)} className="py-2 text-[#234653]">Live Sandbox</a>
-              <a href="#features" onClick={() => setMobileMenuOpen(false)} className="py-2 text-[#234653]">Capabilities</a>
-              <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="py-2 text-[#234653]">FAQ</a>
+          <div className="md:hidden border-b border-[#E8E7E1] bg-white px-6 py-6 space-y-4 shadow-xl animate-dropdown">
+            <nav className="flex flex-col space-y-3 text-base font-medium">
+              <a href="#why" onClick={() => setMobileMenuOpen(false)} className="py-2 text-[#1A1A1A] border-b border-[#E8E7E1]">01 Why RoomSync</a>
+              <a href="#process" onClick={() => setMobileMenuOpen(false)} className="py-2 text-[#1A1A1A] border-b border-[#E8E7E1]">02 The process</a>
+              <a href="#features" onClick={() => setMobileMenuOpen(false)} className="py-2 text-[#1A1A1A] border-b border-[#E8E7E1]">03 Capabilities</a>
+              <a href="#sandbox" onClick={() => setMobileMenuOpen(false)} className="py-2 text-[#1A1A1A] border-b border-[#E8E7E1]">04 Live Preview</a>
+              <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="py-2 text-[#1A1A1A]">05 FAQ</a>
             </nav>
-            <div className="pt-3 border-t border-[#E8DEC8] flex flex-col gap-2">
-              <Link to="/register" className="w-full text-center py-3 rounded-full bg-[#E86F5A] text-white text-xs font-semibold uppercase tracking-wider">
-                Get Started Free
+            <div className="pt-3 border-t border-[#E8E7E1] flex flex-col gap-2">
+              <Link to="/register" className="w-full text-center py-3 rounded-full bg-[#1A1A1A] text-white text-sm font-medium">
+                Start creating &rarr;
               </Link>
             </div>
           </div>
@@ -200,450 +212,430 @@ export default function LandingPage() {
       </header>
 
       {/* ======================================================== */}
-      {/* 2. SPARKDESIGN SPLIT HERO SECTION WITH 3D PRODUCT CARDS */}
+      {/* 2. SPARKDESIGN SPLIT HERO SECTION WITH CANVAS PREVIEW */}
       {/* ======================================================== */}
-      <section className="relative pt-12 pb-20 sm:pt-20 sm:pb-28 overflow-hidden border-b border-[#E8DEC8]/80">
-        <FloatingOrbs />
+      <section className="overflow-clip border-b border-[#E8E7E1] pt-12 pb-24 sm:pt-20 sm:pb-28">
+        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 lg:grid-cols-2 items-center gap-12 lg:gap-16 px-6 sm:px-10 lg:px-14">
+          {/* Left Hero Content */}
+          <ScrollReveal direction="up" distance={20} duration={0.65} className="space-y-6 max-w-xl">
+            {/* Sparkdesign Pill Badge */}
+            <a
+              href="#features"
+              className="inline-flex items-center gap-2 rounded-full bg-[#EAE8E1] px-3.5 py-1.5 text-xs font-medium text-[#1A1A1A] transition-all hover:-translate-y-0.5 hover:bg-[#E2E1DA]"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <rect width="18" height="18" x="3" y="3" rx="2" /><path d="M3 9h18" /><path d="M9 21V9" />
+              </svg>
+              <span>A shared space for good ideas & shared living</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M7 7h10v10" /><path d="M7 17 17 7" />
+              </svg>
+            </a>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-10 lg:px-14">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-14 items-center">
-            {/* Left Hero Content */}
-            <ScrollReveal direction="up" distance={20} duration={0.65} className="lg:col-span-6 space-y-6">
-              {/* Sparkdesign Pill Badge */}
-              <a
-                href="#sandbox"
-                className="inline-flex items-center gap-2 rounded-full bg-[#FAF5ED] border border-[#E8DEC8] px-4 py-2 text-xs font-medium text-[#234653] shadow-2xs hover:-translate-y-0.5 hover:border-[#3E737C]/40 transition-all duration-200"
-              >
-                <span className="w-2 h-2 rounded-full bg-[#E86F5A] animate-pulse"></span>
-                <span>A shared space for everyday flatmate living</span>
-                <span className="text-[#E86F5A] font-bold">&rarr;</span>
-              </a>
+            {/* Sparkdesign Large Clean Sans Headline */}
+            <h1 className="text-4xl sm:text-5xl lg:text-[54px] leading-[1.12] font-normal tracking-[-0.045em] text-[#1A1A1A]">
+              Organize. Split. Harmonize.<br />
+              <span className="text-[#71716E]">Good living, together.</span>
+            </h1>
 
-              {/* Sparkdesign Display Typography */}
-              <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold text-[#234653] tracking-[-0.04em] leading-[1.12] font-serif-editorial">
-                Run your household together.<br />
-                <span className="text-[#E86F5A]">Good living, in sync.</span>
-              </h1>
+            <p className="text-base sm:text-lg leading-normal tracking-[-0.025em] text-[#71716E] max-w-md">
+              Bring your chores, expenses, grocery runs, and house decisions into one beautifully simple workspace for you and your flatmates.
+            </p>
 
-              <p className="text-base sm:text-lg text-[#3E737C] leading-relaxed max-w-xl">
-                Bring chores, expenses, grocery runs, favor requests, and house polls into one beautifully simple shared workspace for you and your roommates.
+            {/* Sparkdesign Quick Action Input Form */}
+            <div className="w-full max-w-md pt-2">
+              <form onSubmit={handleQuickSubmit} className="flex items-center gap-2.5">
+                <input
+                  type="email"
+                  value={quickEmail}
+                  onChange={(e) => setQuickEmail(e.target.value)}
+                  placeholder="Your email goes here"
+                  className="h-12 flex-1 rounded-full border border-transparent bg-[#EAE8E1] px-5 py-3 text-sm text-[#1A1A1A] placeholder-[#71716E] focus:outline-none focus:border-[#1A1A1A] transition-colors"
+                />
+                <button
+                  type="submit"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-transparent bg-[#1A1A1A] hover:bg-black px-6 py-3 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_5px_12px_rgba(0,0,0,0.14)] shrink-0 active:scale-95"
+                >
+                  <span>Start creating</span>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M7 7h10v10" /><path d="M7 17 17 7" />
+                  </svg>
+                </button>
+              </form>
+              <p className="mt-2.5 text-[11px] text-[#71716E] px-3">
+                A little preview. No credit card needed. Instant invite code.
               </p>
+            </div>
 
-              {/* Sparkdesign Quick Action Input Form */}
-              <div className="pt-2 max-w-md">
-                <form onSubmit={handleQuickSubmit} className="flex items-center gap-2 bg-[#FAF5ED] p-1.5 rounded-full border border-[#E8DEC8] shadow-2xs focus-within:border-[#3E737C]/50 transition-colors">
-                  <input
-                    type="email"
-                    value={quickEmail}
-                    onChange={(e) => setQuickEmail(e.target.value)}
-                    placeholder="Enter your email to set up your home"
-                    className="flex-1 bg-transparent px-4 py-2 text-xs text-[#234653] placeholder-[#3E737C]/70 focus:outline-none"
-                  />
-                  <button
-                    type="submit"
-                    className="inline-flex items-center gap-1.5 rounded-full bg-[#E86F5A] hover:bg-[#D65D48] text-white px-5 py-2.5 text-xs font-semibold uppercase tracking-wider shadow-xs hover:shadow-md btn-shimmer btn-interactive transition-all shrink-0 active:scale-95"
-                  >
-                    <span>Start Free</span>
-                    <span>&rarr;</span>
-                  </button>
-                </form>
-                <p className="mt-2 text-[11px] text-[#3E737C] px-3">
-                  No credit card required • Instant roommate invites via shareable code
-                </p>
-              </div>
-
-              {/* Sparkdesign Roommate Social Proof Row */}
-              <div className="pt-4 flex items-center gap-3.5 text-xs text-[#3E737C]">
-                <div className="flex -space-x-2 overflow-hidden">
-                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#DCE8E8] text-[#234653] font-bold text-[10px] border-2 border-[#F4EDE3] font-serif">
-                    A
-                  </span>
-                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#F2D4C8] text-[#234653] font-bold text-[10px] border-2 border-[#F4EDE3] font-serif">
-                    M
-                  </span>
-                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#234653] text-white font-bold text-[10px] border-2 border-[#F4EDE3] font-serif">
-                    Y
-                  </span>
-                </div>
-                <span>
-                  <strong>For the way you share space.</strong> Real-time flatmate sync.
+            {/* Sparkdesign Roommate Social Proof Stack */}
+            <div className="pt-2 flex items-center gap-3 text-xs tracking-[-0.025em] text-[#71716E]">
+              <div className="flex items-center -space-x-2">
+                <img
+                  src="https://images.unsplash.com/photo-1548382131-e0ebb1f0cdea?auto=format&fit=crop&w=64&q=80"
+                  alt="Alex"
+                  className="w-7 h-7 rounded-lg border-2 border-[#FAF9F5] object-cover"
+                />
+                <img
+                  src="https://images.unsplash.com/photo-1670095044002-3b45b6ad8a01?auto=format&fit=crop&w=64&q=80"
+                  alt="Maya"
+                  className="w-7 h-7 rounded-lg border-2 border-[#FAF9F5] object-cover"
+                />
+                <span className="w-7 h-7 rounded-lg border-2 border-[#FAF9F5] bg-[#EAE8E1] text-[#1A1A1A] font-medium text-[9px] flex items-center justify-center">
+                  you
                 </span>
               </div>
-            </ScrollReveal>
-
-            {/* Right Hero Column: 3D Floating Household Cards Stage */}
-            <div className="lg:col-span-6 relative flex items-center justify-center">
-              <Hero3DCardStage />
+              <span>
+                <strong className="text-[#1A1A1A] font-medium">For the way you share space.</strong> Solo, or together.
+              </span>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ======================================================== */}
-      {/* 3. "WHY ROOMSYNC" / PHILOSOPHY (3-COLUMN EDITORIAL CARDS) */}
-      {/* ======================================================== */}
-      <section id="why" className="py-20 sm:py-28 border-b border-[#E8DEC8] bg-[#FAF5ED]">
-        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-14">
-          <ScrollReveal direction="up" className="max-w-2xl mb-14">
-            <span className="text-xs font-bold uppercase tracking-widest text-[#E86F5A]">Philosophy</span>
-            <h2 className="text-3xl sm:text-4xl font-bold text-[#234653] tracking-[-0.035em] mt-2 font-serif-editorial">
-              Less getting in the way.<br />More getting carried away.
-            </h2>
-            <p className="mt-3 text-base text-[#3E737C] leading-relaxed">
-              Shared living needs room to breathe. We give your apartment a simpler place to coordinate chores, split bills, and live peacefully.
-            </p>
           </ScrollReveal>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Card 1: Chores */}
-            <ScrollReveal direction="up" delay={0.1} className="h-full">
-              <TiltCard maxTilt={5} className="h-full rounded-3xl shadow-xs">
-                <article className="h-full bg-[#FFF9F1] rounded-3xl border border-[#E8DEC8] p-8 space-y-4 hover:border-[#3E737C]/40 transition-colors flex flex-col justify-between">
-                  <div>
-                    <div className="w-12 h-12 rounded-2xl bg-[#DCE8E8] text-[#234653] flex items-center justify-center text-xl mb-6 shadow-2xs font-bold">
-                      🧹
-                    </div>
-                    <h3 className="text-xl font-bold text-[#234653] font-serif-editorial">
-                      Automated Chore Rotations
-                    </h3>
-                    <p className="mt-2 text-sm text-[#3E737C] leading-relaxed">
-                      Say goodbye to chore charts on the fridge. Set daily or weekly recurring rotations that distribute cleaning fairly among roommates.
-                    </p>
-                  </div>
-                  <div className="pt-4 border-t border-[#E8DEC8]/60 text-xs font-semibold text-[#E86F5A]">
-                    Equal workload algorithms &rarr;
-                  </div>
-                </article>
-              </TiltCard>
-            </ScrollReveal>
-
-            {/* Card 2: Financial Peace */}
-            <ScrollReveal direction="up" delay={0.2} className="h-full">
-              <TiltCard maxTilt={5} className="h-full rounded-3xl shadow-xs">
-                <article className="h-full bg-[#FFF9F1] rounded-3xl border border-[#E8DEC8] p-8 space-y-4 hover:border-[#3E737C]/40 transition-colors flex flex-col justify-between">
-                  <div>
-                    <div className="w-12 h-12 rounded-2xl bg-[#F2D4C8] text-[#234653] flex items-center justify-center text-xl mb-6 shadow-2xs font-bold">
-                      💰
-                    </div>
-                    <h3 className="text-xl font-bold text-[#234653] font-serif-editorial">
-                      Smart Debt Simplification
-                    </h3>
-                    <p className="mt-2 text-sm text-[#3E737C] leading-relaxed">
-                      Log shared groceries, utilities, and rent. Our multi-party debt algorithm minimizes transfers so settling up is completely painless.
-                    </p>
-                  </div>
-                  <div className="pt-4 border-t border-[#E8DEC8]/60 text-xs font-semibold text-[#E86F5A]">
-                    Automated debt settlement &rarr;
-                  </div>
-                </article>
-              </TiltCard>
-            </ScrollReveal>
-
-            {/* Card 3: Coordination */}
-            <ScrollReveal direction="up" delay={0.3} className="h-full">
-              <TiltCard maxTilt={5} className="h-full rounded-3xl shadow-xs">
-                <article className="h-full bg-[#FFF9F1] rounded-3xl border border-[#E8DEC8] p-8 space-y-4 hover:border-[#3E737C]/40 transition-colors flex flex-col justify-between">
-                  <div>
-                    <div className="w-12 h-12 rounded-2xl bg-[#FAF5ED] text-[#234653] border border-[#E8DEC8] flex items-center justify-center text-xl mb-6 shadow-2xs font-bold">
-                      🤝
-                    </div>
-                    <h3 className="text-xl font-bold text-[#234653] font-serif-editorial">
-                      Shopping, Favors & Polls
-                    </h3>
-                    <p className="mt-2 text-sm text-[#3E737C] leading-relaxed">
-                      Shared pantry lists, quick package pickup favor requests, and house decision polls keep the whole home in sync without messy group chats.
-                    </p>
-                  </div>
-                  <div className="pt-4 border-t border-[#E8DEC8]/60 text-xs font-semibold text-[#E86F5A]">
-                    Real-time household sync &rarr;
-                  </div>
-                </article>
-              </TiltCard>
-            </ScrollReveal>
+          {/* Right Hero Column: Sparkdesign Aspect Canvas Card */}
+          <div className="relative flex items-center justify-center">
+            <Hero3DCardStage />
           </div>
         </div>
       </section>
 
       {/* ======================================================== */}
-      {/* 4. AUDIENCE MARQUEE */}
+      {/* 3. "WHY ROOMSYNC" / PHILOSOPHY (SPARKDESIGN 3-COLUMN) */}
       {/* ======================================================== */}
-      <section className="py-12 border-b border-[#E8DEC8] bg-[#F4EDE3] overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 mb-6 text-center">
-          <span className="text-xs font-bold uppercase tracking-widest text-[#3E737C]">Built for modern shared living</span>
+      <section id="why" className="w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-14 pt-28 pb-20 border-b border-[#E8E7E1]">
+        <ScrollReveal direction="up" className="grid grid-cols-1 md:grid-cols-2 items-end gap-8 mb-14">
+          <h2 className="text-3xl sm:text-4xl lg:text-[44px] leading-[1.2] font-normal tracking-[-0.035em] text-[#1A1A1A]">
+            Less getting in the way.<br />More getting carried away.
+          </h2>
+          <p className="text-base sm:text-lg leading-normal tracking-[-0.025em] text-[#71716E] max-w-md md:ml-auto">
+            Shared living needs room to breathe. We give your home a simpler place to coordinate chores, split bills, and live peacefully.
+          </p>
+        </ScrollReveal>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {/* Card 1 */}
+          <ScrollReveal direction="up" delay={0.1} className="h-full">
+            <article className="h-full rounded-3xl border border-[#E8E7E1] bg-white p-8 transition-all duration-250 hover:-translate-y-1 hover:border-[#1A1A1A]/30 hover:bg-[#FAF9F5] flex flex-col justify-between">
+              <div>
+                <span className="mb-6 grid size-12 place-items-center rounded-[14px] bg-[#EAE8E1] text-[#1A1A1A]">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" />
+                    <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" />
+                    <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" />
+                  </svg>
+                </span>
+                <h3 className="mb-2.5 text-xl font-medium tracking-[-0.04em] text-[#1A1A1A]">
+                  One place to find your rhythm
+                </h3>
+                <p className="text-sm sm:text-base leading-normal tracking-[-0.025em] text-[#71716E]">
+                  Chores, grocery lists, and utility balances in one quiet space so everyone knows what is done without micro-management.
+                </p>
+              </div>
+              <span className="mt-6 text-xs font-medium text-[#1A1A1A]">Automated rotations &rarr;</span>
+            </article>
+          </ScrollReveal>
+
+          {/* Card 2 */}
+          <ScrollReveal direction="up" delay={0.2} className="h-full">
+            <article className="h-full rounded-3xl border border-[#E8E7E1] bg-white p-8 transition-all duration-250 hover:-translate-y-1 hover:border-[#1A1A1A]/30 hover:bg-[#FAF9F5] flex flex-col justify-between">
+              <div>
+                <span className="mb-6 grid size-12 place-items-center rounded-[14px] bg-[#EAE8E1] text-[#1A1A1A]">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" />
+                  </svg>
+                </span>
+                <h3 className="mb-2.5 text-xl font-medium tracking-[-0.04em] text-[#1A1A1A]">
+                  Clarity that keeps the peace
+                </h3>
+                <p className="text-sm sm:text-base leading-normal tracking-[-0.025em] text-[#71716E]">
+                  Multi-party debt simplification eliminates endless back-and-forth bank transfers. Settle up cleanly with total transparency.
+                </p>
+              </div>
+              <span className="mt-6 text-xs font-medium text-[#1A1A1A]">Debt simplification &rarr;</span>
+            </article>
+          </ScrollReveal>
+
+          {/* Card 3 */}
+          <ScrollReveal direction="up" delay={0.3} className="h-full">
+            <article className="h-full rounded-3xl border border-[#E8E7E1] bg-white p-8 transition-all duration-250 hover:-translate-y-1 hover:border-[#1A1A1A]/30 hover:bg-[#FAF9F5] flex flex-col justify-between">
+              <div>
+                <span className="mb-6 grid size-12 place-items-center rounded-[14px] bg-[#EAE8E1] text-[#1A1A1A]">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M3 7V5a2 2 0 0 1 2-2h2" /><path d="M17 3h2a2 2 0 0 1 2 2v2" /><path d="M21 17v2a2 2 0 0 1-2 2h-2" /><path d="M7 21H5a2 2 0 0 1-2-2v-2" /><path d="M7 12h10" />
+                  </svg>
+                </span>
+                <h3 className="mb-2.5 text-xl font-medium tracking-[-0.04em] text-[#1A1A1A]">
+                  Space to make it your own
+                </h3>
+                <p className="text-sm sm:text-base leading-normal tracking-[-0.025em] text-[#71716E]">
+                  From package pickup favors to group decision polls, customize your household workflow to match your home's unique rhythm.
+                </p>
+              </div>
+              <span className="mt-6 text-xs font-medium text-[#1A1A1A]">Favors & Polls &rarr;</span>
+            </article>
+          </ScrollReveal>
         </div>
-        <div className="flex items-center justify-center gap-6 flex-wrap px-4">
-          {['Student Apartments', 'City Flatmates', 'Young Professionals', 'Co-Living Houses', 'Couples & Partners', 'Shared Suites'].map((aud, i) => (
-            <div key={i} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#FFF9F1] border border-[#E8DEC8] text-xs font-semibold text-[#234653] shadow-2xs hover:border-[#3E737C]/40 transition-colors">
-              <span className="text-[#E86F5A]">✦</span>
-              <span>{aud}</span>
+      </section>
+
+      {/* ======================================================== */}
+      {/* 4. AUDIENCE MARQUEE (SPARKDESIGN INFINITE TICKER) */}
+      {/* ======================================================== */}
+      <section className="overflow-hidden py-20 border-b border-[#E8E7E1] bg-[#FAF9F5]">
+        <div className="max-w-7xl mx-auto px-6 mb-10 text-center">
+          <h2 className="text-3xl sm:text-4xl font-normal tracking-[-0.035em] text-[#1A1A1A]">
+            For every shared living space.
+          </h2>
+        </div>
+        <div className="flex items-center gap-8 overflow-x-auto no-scrollbar py-4 px-6 justify-center flex-wrap">
+          {audienceList.map((aud, i) => (
+            <div key={i} className="flex items-center gap-4 text-lg font-medium tracking-[-0.02em] text-[#1A1A1A] bg-white px-5 py-3 rounded-2xl border border-[#E8E7E1] shadow-xs">
+              <img src={aud.img} alt="" className="size-10 rounded-lg -rotate-6 object-cover border border-[#E8E7E1]" />
+              <span>{aud.title}</span>
             </div>
           ))}
         </div>
       </section>
 
       {/* ======================================================== */}
-      {/* 5. INTERACTIVE PROCESS / HOW IT WORKS SECTION */}
+      {/* 5. THE PROCESS / WORKFLOW (SPARKDESIGN STAGE TABS) */}
       {/* ======================================================== */}
-      <section id="process" className="py-20 sm:py-28 border-b border-[#E8DEC8] bg-[#FFF9F1]">
+      <section id="process" className="py-24 border-b border-[#E8E7E1] bg-white">
         <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-14">
-          <ScrollReveal direction="up" className="max-w-2xl mb-12">
-            <span className="text-xs font-bold uppercase tracking-widest text-[#E86F5A]">The Process</span>
-            <h2 className="text-3xl sm:text-4xl font-bold text-[#234653] tracking-[-0.035em] mt-2 font-serif-editorial">
+          <ScrollReveal direction="up" className="max-w-xl mb-14">
+            <span className="text-xs font-semibold uppercase tracking-widest text-[#71716E]">The Process</span>
+            <h2 className="text-3xl sm:text-4xl font-normal tracking-[-0.035em] text-[#1A1A1A] mt-2">
               How RoomSync keeps your home synchronized.
             </h2>
-            <p className="mt-3 text-base text-[#3E737C]">
-              Four seamless steps that replace disorganized group chats with calm household flow.
+            <p className="mt-3 text-base text-[#71716E]">
+              Four simple steps that replace disorganized group chats with calm household flow.
             </p>
           </ScrollReveal>
 
-          {/* Workflow Tabs */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            {/* Left Tabs Menu */}
-            <div className="lg:col-span-5 space-y-3">
+            {/* Left Tabs */}
+            <div className="lg:col-span-5 space-y-2.5">
               {[
-                { id: '01', title: '01 Create & Invite', desc: 'Create your household space in seconds and share the 8-character invite code with roommates.' },
-                { id: '02', title: '02 Set Chore Rotations', desc: 'Add recurring tasks (kitchen, garbage, bathroom) and let the scheduler automate turns.' },
-                { id: '03', title: '03 Track & Split Expenses', desc: 'Add shared receipts and utility bills with automatic debt simplification.' },
-                { id: '04', title: '04 Vote & Coordinate', desc: 'Create decision polls, manage grocery restocks, and request quick favors in real-time.' }
+                { id: '01', title: '01 Create & Invite', desc: 'Create your household space in seconds and share the 8-character code.' },
+                { id: '02', title: '02 Set Chore Rotations', desc: 'Add recurring cleaning tasks and let the scheduler automate turns.' },
+                { id: '03', title: '03 Track & Split Expenses', desc: 'Log shared bills and receipts with automatic debt simplification.' },
+                { id: '04', title: '04 Vote & Coordinate', desc: 'Create decision polls, manage grocery restocks, and request quick favors.' }
               ].map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveWorkflowTab(tab.id)}
-                  className={`w-full text-left p-5 rounded-2xl border transition-all duration-200 text-xs ${
+                  className={`w-full text-left p-5 rounded-2xl border transition-all duration-200 ${
                     activeWorkflowTab === tab.id
-                      ? 'bg-[#FAF5ED] border-[#E8DEC8] shadow-xs translate-x-1'
-                      : 'bg-transparent border-transparent hover:bg-[#FAF5ED]/50 text-[#3E737C]'
+                      ? 'bg-[#FAF9F5] border-[#1A1A1A] shadow-xs'
+                      : 'bg-transparent border-transparent hover:bg-[#FAF9F5]/60 text-[#71716E]'
                   }`}
                 >
-                  <span className="font-bold text-sm text-[#234653] block font-serif-editorial">{tab.title}</span>
-                  <p className="text-xs text-[#3E737C] mt-1">{tab.desc}</p>
+                  <span className="font-medium text-base text-[#1A1A1A] block">{tab.title}</span>
+                  <p className="text-xs text-[#71716E] mt-1">{tab.desc}</p>
                 </button>
               ))}
             </div>
 
-            {/* Right Interactive Preview Panel */}
+            {/* Right Preview */}
             <div className="lg:col-span-7">
-              <TiltCard maxTilt={4} className="rounded-3xl shadow-xl">
-                <div className="bg-[#FAF5ED] border border-[#E8DEC8] rounded-3xl p-6 sm:p-8 space-y-5">
-                  <div className="flex items-center justify-between pb-3 border-b border-[#E8DEC8]">
-                    <span className="text-xs font-bold text-[#234653] uppercase tracking-wider font-serif-editorial">
-                      {activeWorkflowTab === '01' && 'Stage 01: Household Space Created'}
-                      {activeWorkflowTab === '02' && 'Stage 02: Intelligent Chore Rotations'}
-                      {activeWorkflowTab === '03' && 'Stage 03: Expense Splitting & Debt Graph'}
-                      {activeWorkflowTab === '04' && 'Stage 04: Group Decisions & Living Sync'}
-                    </span>
-                    <span className="text-[10px] font-bold text-[#E86F5A] bg-[#FFF9F1] px-3 py-1 rounded-full border border-[#E8DEC8]">
-                      ● Active Workflow
-                    </span>
-                  </div>
-
-                  {activeWorkflowTab === '01' && (
-                    <div className="space-y-3 animate-fade-in-up">
-                      <div className="p-4 bg-[#FFF9F1] rounded-2xl border border-[#E8DEC8] space-y-2.5 text-xs">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-[#234653]">Household Invite Code</span>
-                          <span className="font-mono font-bold text-sm bg-[#FAF5ED] px-3 py-1 rounded-lg border border-[#E8DEC8] text-[#E86F5A]">
-                            MAPLE-3B
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-[#3E737C]">
-                          Share this invite code with your flatmates to link their accounts to the shared calendar, chores, and balances instantly.
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {activeWorkflowTab === '02' && (
-                    <div className="space-y-3 animate-fade-in-up">
-                      <div className="p-4 bg-[#FFF9F1] rounded-2xl border border-[#E8DEC8] space-y-2.5 text-xs">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-[#234653]">Weekly Rotation Balance</span>
-                          <span className="text-[10px] text-emerald-700 font-semibold">100% Equal Parity</span>
-                        </div>
-                        <div className="w-full bg-[#FAF5ED] h-2.5 rounded-full overflow-hidden flex border border-[#E8DEC8]">
-                          <div className="bg-[#234653] w-1/3" title="Alex: 33%"></div>
-                          <div className="bg-[#E86F5A] w-1/3" title="Maya: 33%"></div>
-                          <div className="bg-[#E7A83C] w-1/3" title="You: 34%"></div>
-                        </div>
-                        <span className="text-[10px] text-[#3E737C] block text-right">3 flatmates • Automatic turns</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {activeWorkflowTab === '03' && (
-                    <div className="space-y-3 animate-fade-in-up">
-                      <div className="p-4 bg-[#FFF9F1] rounded-2xl border border-[#E8DEC8] space-y-2 text-xs">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-[#234653]">Simplified Balances</span>
-                          <span className="text-xs font-bold text-emerald-700">1 transfer needed</span>
-                        </div>
-                        <div className="p-2.5 bg-[#FAF5ED] rounded-xl border border-[#E8DEC8] flex items-center justify-between">
-                          <span>Maya pays Alex ₹413.33</span>
-                          <span className="font-bold text-[#234653]">All settled</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {activeWorkflowTab === '04' && (
-                    <div className="space-y-3 animate-fade-in-up">
-                      <div className="p-4 bg-[#FFF9F1] rounded-2xl border border-[#E8DEC8] space-y-2 text-xs">
-                        <span className="font-bold text-[#234653] block">Active Poll: Host Friday Dinner</span>
-                        <div className="flex items-center justify-between p-2 rounded-xl bg-[#FAF5ED] border border-[#E8DEC8]">
-                          <span>Yes, let's host! (Alex, Maya)</span>
-                          <span className="font-bold text-[#E86F5A]">67%</span>
-                        </div>
-                        <div className="flex items-center justify-between p-2 rounded-xl bg-[#FAF5ED] border border-[#E8DEC8]">
-                          <span>Let's do Saturday instead</span>
-                          <span className="font-bold text-[#3E737C]">33%</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+              <div className="bg-[#FAF9F5] border border-[#E8E7E1] rounded-3xl p-6 sm:p-8 space-y-5 shadow-sm">
+                <div className="flex items-center justify-between pb-3 border-b border-[#E8E7E1]">
+                  <span className="text-xs font-semibold text-[#1A1A1A]">
+                    {activeWorkflowTab === '01' && 'Stage 01: Household Space Created'}
+                    {activeWorkflowTab === '02' && 'Stage 02: Intelligent Chore Rotations'}
+                    {activeWorkflowTab === '03' && 'Stage 03: Expense Splitting & Debt Graph'}
+                    {activeWorkflowTab === '04' && 'Stage 04: Group Decisions & Living Sync'}
+                  </span>
+                  <span className="text-[10px] font-medium text-[#1A1A1A] bg-white px-3 py-1 rounded-full border border-[#E8E7E1]">
+                    ● Active
+                  </span>
                 </div>
-              </TiltCard>
+
+                {activeWorkflowTab === '01' && (
+                  <div className="p-4 bg-white rounded-2xl border border-[#E8E7E1] space-y-2 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-[#1A1A1A]">Household Invite Code</span>
+                      <span className="font-mono font-bold text-sm bg-[#FAF9F5] px-3 py-1 rounded-lg border border-[#E8E7E1] text-[#1A1A1A]">
+                        MAPLE-3B
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-[#71716E]">
+                      Share this code with your flatmates to link their accounts to the shared calendar, chores, and balances instantly.
+                    </p>
+                  </div>
+                )}
+
+                {activeWorkflowTab === '02' && (
+                  <div className="p-4 bg-white rounded-2xl border border-[#E8E7E1] space-y-2.5 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-[#1A1A1A]">Weekly Rotation Balance</span>
+                      <span className="text-[10px] text-emerald-700 font-semibold">100% Equal Parity</span>
+                    </div>
+                    <div className="w-full bg-[#FAF9F5] h-2.5 rounded-full overflow-hidden flex border border-[#E8E7E1]">
+                      <div className="bg-[#1A1A1A] w-1/3" title="Alex: 33%"></div>
+                      <div className="bg-[#71716E] w-1/3" title="Maya: 33%"></div>
+                      <div className="bg-[#A8A7A0] w-1/3" title="You: 34%"></div>
+                    </div>
+                    <span className="text-[10px] text-[#71716E] block text-right">3 flatmates • Automatic turns</span>
+                  </div>
+                )}
+
+                {activeWorkflowTab === '03' && (
+                  <div className="p-4 bg-white rounded-2xl border border-[#E8E7E1] space-y-2 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-[#1A1A1A]">Simplified Balances</span>
+                      <span className="text-xs font-semibold text-emerald-700">1 transfer needed</span>
+                    </div>
+                    <div className="p-2.5 bg-[#FAF9F5] rounded-xl border border-[#E8E7E1] flex items-center justify-between">
+                      <span>Maya pays Alex ₹413.33</span>
+                      <span className="font-semibold text-[#1A1A1A]">All settled</span>
+                    </div>
+                  </div>
+                )}
+
+                {activeWorkflowTab === '04' && (
+                  <div className="p-4 bg-white rounded-2xl border border-[#E8E7E1] space-y-2 text-xs">
+                    <span className="font-medium text-[#1A1A1A] block">Active Poll: Host Friday Dinner</span>
+                    <div className="flex items-center justify-between p-2 rounded-xl bg-[#FAF9F5] border border-[#E8E7E1]">
+                      <span>Yes, let's host! (Alex, Maya)</span>
+                      <span className="font-semibold text-[#1A1A1A]">67%</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* ======================================================== */}
-      {/* 6. LIVE INTERACTIVE HOUSEHOLD SANDBOX */}
+      {/* 6. INTERACTIVE LIVE SANDBOX */}
       {/* ======================================================== */}
-      <section id="sandbox" className="py-20 sm:py-28 border-b border-[#E8DEC8] bg-[#F4EDE3]">
+      <section id="sandbox" className="py-24 border-b border-[#E8E7E1] bg-[#FAF9F5]">
         <div className="max-w-4xl mx-auto px-6 sm:px-10">
-          <ScrollReveal direction="up" className="text-center max-w-2xl mx-auto mb-10">
-            <span className="text-xs font-bold uppercase tracking-widest text-[#E86F5A]">Live Sandbox</span>
-            <h2 className="text-3xl sm:text-4xl font-bold text-[#234653] tracking-[-0.035em] mt-2 font-serif-editorial">
+          <ScrollReveal direction="up" className="text-center max-w-xl mx-auto mb-12">
+            <span className="text-xs font-semibold uppercase tracking-widest text-[#71716E]">Interactive Preview</span>
+            <h2 className="text-3xl sm:text-4xl font-normal tracking-[-0.035em] text-[#1A1A1A] mt-2">
               Try the household workspace right now.
             </h2>
-            <p className="mt-3 text-base text-[#3E737C]">
-              Click tasks to check them off, add a custom chore, or test the live expense split calculator below.
-            </p>
           </ScrollReveal>
 
-          <TiltCard maxTilt={3} className="rounded-3xl shadow-xl">
-            <div className="bg-[#FFF9F1] border border-[#E8DEC8] rounded-3xl p-6 sm:p-8 space-y-6">
-              {/* Header */}
-              <div className="flex items-center justify-between pb-3 border-b border-[#E8DEC8]">
-                <div>
-                  <h3 className="text-base font-bold text-[#234653] font-serif-editorial">
-                    The Maple Flat • Interactive Sandbox
-                  </h3>
-                  <span className="text-[11px] text-[#3E737C]">Shared household demo</span>
-                </div>
-                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-[#FAF5ED] text-[#234653] border border-[#E8DEC8]">
-                  {sandboxChores.filter(c => c.done).length} of {sandboxChores.length} tasks completed
-                </span>
+          <div className="bg-white border border-[#E8E7E1] rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-[#E8E7E1]">
+              <div>
+                <h3 className="text-base font-medium text-[#1A1A1A]">
+                  The Maple Flat • Live Demo
+                </h3>
+                <span className="text-[11px] text-[#71716E]">Click tasks to complete or add new ones</span>
               </div>
+              <span className="text-xs font-medium px-3 py-1 rounded-full bg-[#FAF9F5] text-[#1A1A1A] border border-[#E8E7E1]">
+                {sandboxChores.filter(c => c.done).length} of {sandboxChores.length} completed
+              </span>
+            </div>
 
-              {/* Chores Interactive Checklist */}
-              <div className="space-y-2.5">
-                <span className="text-xs font-bold text-[#234653] block">Today's Chore Rotation:</span>
-                {sandboxChores.map((c) => (
-                  <div
-                    key={c.id}
-                    onClick={() => toggleChore(c.id)}
-                    className={`flex items-center justify-between p-3 rounded-2xl border cursor-pointer select-none transition-all duration-200 text-xs ${
-                      c.done
-                        ? 'bg-[#FAF5ED]/60 border-[#E8DEC8]/60 text-[#3E737C]'
-                        : 'bg-[#FFF9F1] hover:bg-[#FAF5ED] border-[#E8DEC8] text-[#234653] shadow-2xs hover:shadow-xs'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold transition-colors ${
-                        c.done ? 'bg-[#E86F5A] text-white shadow-2xs' : 'border border-[#3E737C]/50'
-                      }`}>
-                        {c.done && '✓'}
-                      </span>
-                      <span className={c.done ? 'line-through text-[#3E737C]/80' : 'font-semibold text-[#234653]'}>
-                        {c.title}
-                      </span>
-                    </div>
-                    <span className="text-[11px] font-medium text-[#3E737C]">
-                      {c.person} • {c.time}
+            {/* Task list */}
+            <div className="space-y-2.5">
+              {sandboxChores.map((c) => (
+                <div
+                  key={c.id}
+                  onClick={() => toggleChore(c.id)}
+                  className={`flex items-center justify-between p-3.5 rounded-2xl border cursor-pointer select-none transition-all duration-200 text-xs ${
+                    c.done
+                      ? 'bg-[#FAF9F5] border-[#E8E7E1] text-[#71716E]'
+                      : 'bg-white hover:bg-[#FAF9F5] border-[#E8E7E1] text-[#1A1A1A] shadow-2xs'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold transition-colors ${
+                      c.done ? 'bg-[#1A1A1A] text-white' : 'border border-[#71716E]/40'
+                    }`}>
+                      {c.done && '✓'}
+                    </span>
+                    <span className={c.done ? 'line-through text-[#71716E]' : 'font-medium text-[#1A1A1A]'}>
+                      {c.title}
                     </span>
                   </div>
-                ))}
-              </div>
-
-              {/* Add Chore Input */}
-              <form onSubmit={addChore} className="pt-1 flex items-center gap-2">
-                <input
-                  type="text"
-                  value={newChoreText}
-                  onChange={(e) => setNewChoreText(e.target.value)}
-                  placeholder="Type a new task (e.g. Empty recycling, Restock dish soap)..."
-                  className="flex-1 bg-[#FAF5ED] border border-[#E8DEC8] rounded-xl px-4 py-2.5 text-xs text-[#234653] placeholder-[#3E737C]/70 focus:outline-none focus:border-[#3E737C]/50"
-                />
-                <button
-                  type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-[#234653] hover:bg-[#17272C] text-white text-xs font-semibold uppercase tracking-wider transition-all btn-interactive"
-                >
-                  + Add Task
-                </button>
-              </form>
-
-              {/* Interactive Expense Split Preview */}
-              <div className="pt-4 border-t border-[#E8DEC8] space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#234653]">Instant Split Calculator:</span>
-                  <span className="text-xs font-bold text-[#E86F5A] font-serif-editorial">
-                    ₹{Math.round(simBillAmount / simRoommateCount).toLocaleString()} / roommate
+                  <span className="text-[11px] text-[#71716E]">
+                    {c.person} • {c.time}
                   </span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                  <div>
-                    <label className="text-[11px] text-[#3E737C] block mb-1">Total Bill: ₹{simBillAmount}</label>
-                    <input
-                      type="range"
-                      min="300"
-                      max="6000"
-                      step="150"
-                      value={simBillAmount}
-                      onChange={(e) => setSimBillAmount(Number(e.target.value))}
-                      className="w-full accent-[#E86F5A] cursor-pointer"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] text-[#3E737C] block mb-1">Roommates: {simRoommateCount} people</label>
-                    <div className="flex gap-2">
-                      {[2, 3, 4, 5].map((count) => (
-                        <button
-                          key={count}
-                          type="button"
-                          onClick={() => setSimRoommateCount(count)}
-                          className={`flex-1 py-1.5 rounded-lg border text-xs font-bold transition-all ${
-                            simRoommateCount === count
-                              ? 'bg-[#234653] text-white border-[#234653]'
-                              : 'bg-[#FAF5ED] border-[#E8DEC8] text-[#234653]'
-                          }`}
-                        >
-                          {count}
-                        </button>
-                      ))}
-                    </div>
+              ))}
+            </div>
+
+            {/* Add task input */}
+            <form onSubmit={addChore} className="pt-1 flex items-center gap-2">
+              <input
+                type="text"
+                value={newChoreText}
+                onChange={(e) => setNewChoreText(e.target.value)}
+                placeholder="Type a new task (e.g. Empty recycling, Restock dish soap)..."
+                className="flex-1 bg-[#FAF9F5] border border-[#E8E7E1] rounded-xl px-4 py-2.5 text-xs text-[#1A1A1A] placeholder-[#71716E] focus:outline-none focus:border-[#1A1A1A]"
+              />
+              <button
+                type="submit"
+                className="px-5 py-2.5 rounded-xl bg-[#1A1A1A] hover:bg-black text-white text-xs font-medium transition-all"
+              >
+                + Add Task
+              </button>
+            </form>
+
+            {/* Split Calculator */}
+            <div className="pt-4 border-t border-[#E8E7E1] space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-[#1A1A1A]">Instant Split Calculator:</span>
+                <span className="text-xs font-bold text-[#1A1A1A]">
+                  ₹{Math.round(simBillAmount / simRoommateCount).toLocaleString()} / flatmate
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div>
+                  <label className="text-[11px] text-[#71716E] block mb-1">Total Bill: ₹{simBillAmount}</label>
+                  <input
+                    type="range"
+                    min="300"
+                    max="6000"
+                    step="150"
+                    value={simBillAmount}
+                    onChange={(e) => setSimBillAmount(Number(e.target.value))}
+                    className="w-full accent-[#1A1A1A] cursor-pointer"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] text-[#71716E] block mb-1">Roommates: {simRoommateCount} people</label>
+                  <div className="flex gap-2">
+                    {[2, 3, 4, 5].map((count) => (
+                      <button
+                        key={count}
+                        type="button"
+                        onClick={() => setSimRoommateCount(count)}
+                        className={`flex-1 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                          simRoommateCount === count
+                            ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]'
+                            : 'bg-[#FAF9F5] border-[#E8E7E1] text-[#1A1A1A]'
+                        }`}
+                      >
+                        {count}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
             </div>
-          </TiltCard>
+          </div>
         </div>
       </section>
 
       {/* ======================================================== */}
-      {/* 7. CAPABILITIES / CORE MODULES GRID */}
+      {/* 7. CAPABILITIES GRID */}
       {/* ======================================================== */}
-      <section id="features" className="py-20 sm:py-28 border-b border-[#E8DEC8] bg-[#FAF5ED]">
+      <section id="features" className="py-24 border-b border-[#E8E7E1] bg-white">
         <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-14">
-          <ScrollReveal direction="up" className="max-w-2xl mb-14">
-            <span className="text-xs font-bold uppercase tracking-widest text-[#E86F5A]">Capabilities</span>
-            <h2 className="text-3xl sm:text-4xl font-bold text-[#234653] tracking-[-0.035em] mt-2 font-serif-editorial">
+          <ScrollReveal direction="up" className="max-w-xl mb-14">
+            <span className="text-xs font-semibold uppercase tracking-widest text-[#71716E]">Capabilities</span>
+            <h2 className="text-3xl sm:text-4xl font-normal tracking-[-0.035em] text-[#1A1A1A] mt-2">
               Everything your shared home needs to thrive.
             </h2>
           </ScrollReveal>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {[
               { icon: '🔄', title: 'Automated Chore Cycles', desc: 'Daily, weekly, or custom cleaning rotations with fair workload balancing algorithms.' },
               { icon: '⚖️', title: 'Expense Splits & Debt Graph', desc: 'Track shared bills, split costs equally or by shares, and minimize transfer debts.' },
@@ -652,14 +644,12 @@ export default function LandingPage() {
               { icon: '🙋', title: 'Favor & Help Requests', desc: 'Quick notifications for package pickups, dog walking, or emergency key handoffs.' },
               { icon: '📅', title: 'Household Calendar', desc: 'Coordinate quiet hours, member availability, and upcoming apartment events in sync.' }
             ].map((feat, idx) => (
-              <ScrollReveal key={idx} direction="up" delay={idx * 0.08} className="h-full">
-                <TiltCard maxTilt={4} className="h-full rounded-3xl shadow-xs">
-                  <div className="h-full bg-[#FFF9F1] rounded-3xl border border-[#E8DEC8] p-6 space-y-3 hover:border-[#3E737C]/40 transition-colors">
-                    <span className="text-2xl block">{feat.icon}</span>
-                    <h3 className="text-base font-bold text-[#234653] font-serif-editorial">{feat.title}</h3>
-                    <p className="text-xs text-[#3E737C] leading-relaxed">{feat.desc}</p>
-                  </div>
-                </TiltCard>
+              <ScrollReveal key={idx} direction="up" delay={idx * 0.06} className="h-full">
+                <div className="h-full bg-[#FAF9F5] rounded-3xl border border-[#E8E7E1] p-7 space-y-3 hover:border-[#1A1A1A]/30 transition-colors">
+                  <span className="text-2xl block">{feat.icon}</span>
+                  <h3 className="text-base font-medium text-[#1A1A1A]">{feat.title}</h3>
+                  <p className="text-xs text-[#71716E] leading-relaxed">{feat.desc}</p>
+                </div>
               </ScrollReveal>
             ))}
           </div>
@@ -669,33 +659,30 @@ export default function LandingPage() {
       {/* ======================================================== */}
       {/* 8. FAQ ACCORDION */}
       {/* ======================================================== */}
-      <section id="faq" className="py-20 sm:py-28 border-b border-[#E8DEC8] bg-[#FFF9F1]">
+      <section id="faq" className="py-24 border-b border-[#E8E7E1] bg-[#FAF9F5]">
         <div className="max-w-4xl mx-auto px-6 sm:px-10">
-          <ScrollReveal direction="up" className="text-center max-w-2xl mx-auto mb-12">
-            <span className="text-xs font-bold uppercase tracking-widest text-[#E86F5A]">Questions & Answers</span>
-            <h2 className="text-3xl sm:text-4xl font-bold text-[#234653] tracking-[-0.035em] mt-2 font-serif-editorial">
+          <ScrollReveal direction="up" className="text-center max-w-xl mx-auto mb-12">
+            <span className="text-xs font-semibold uppercase tracking-widest text-[#71716E]">Questions & Answers</span>
+            <h2 className="text-3xl sm:text-4xl font-normal tracking-[-0.035em] text-[#1A1A1A] mt-2">
               Frequently asked questions.
             </h2>
           </ScrollReveal>
 
-          <div className="space-y-4">
+          <div className="space-y-3.5">
             {faqs.map((faq, idx) => (
-              <div
-                key={idx}
-                className="bg-[#FAF5ED] border border-[#E8DEC8] rounded-2xl overflow-hidden transition-colors"
-              >
+              <div key={idx} className="bg-white border border-[#E8E7E1] rounded-2xl overflow-hidden transition-colors">
                 <button
                   type="button"
                   onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                  className="w-full text-left p-5 sm:p-6 flex items-center justify-between gap-4 text-sm sm:text-base font-bold text-[#234653] font-serif-editorial focus:outline-none"
+                  className="w-full text-left p-5 sm:p-6 flex items-center justify-between gap-4 text-base font-medium text-[#1A1A1A] focus:outline-none"
                 >
                   <span>{faq.q}</span>
-                  <span className={`text-[#E86F5A] text-lg transition-transform duration-200 ${openFaq === idx ? 'rotate-45' : ''}`}>
+                  <span className={`text-[#1A1A1A] text-xl transition-transform duration-200 ${openFaq === idx ? 'rotate-45' : ''}`}>
                     +
                   </span>
                 </button>
                 {openFaq === idx && (
-                  <div className="px-5 pb-6 text-xs sm:text-sm text-[#3E737C] leading-relaxed animate-fade-in-up">
+                  <div className="px-5 pb-6 text-sm text-[#71716E] leading-relaxed animate-fade-in-up">
                     {faq.a}
                   </div>
                 )}
@@ -708,35 +695,35 @@ export default function LandingPage() {
       {/* ======================================================== */}
       {/* 9. ELEVATED FINAL CTA (SPARKDESIGN DARK THEMED ACCENT) */}
       {/* ======================================================== */}
-      <section className="py-20 sm:py-28 bg-[#F4EDE3]">
+      <section className="py-24 bg-[#FAF9F5]">
         <div className="max-w-5xl mx-auto px-6 sm:px-10">
-          <ScrollReveal direction="zoom" className="rounded-3xl bg-[#234653] text-[#FFF9F1] p-10 sm:p-16 text-center space-y-6 shadow-xl relative overflow-hidden">
-            {/* Ambient Background Radial Glow */}
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(232,111,90,0.25),transparent_60%)]"></div>
-
+          <ScrollReveal direction="zoom" className="rounded-[32px] bg-[#1A1A1A] text-white p-10 sm:p-16 text-center space-y-6 shadow-xl relative overflow-hidden">
             <div className="relative z-10 space-y-4 max-w-2xl mx-auto">
-              <span className="text-xs font-bold uppercase tracking-widest text-[#F2D4C8]">Get Started Today</span>
-              <h2 className="text-3xl sm:text-5xl font-bold font-serif-editorial tracking-tight text-[#FFF9F1]">
+              <span className="text-xs font-semibold uppercase tracking-widest text-[#A8A7A0]">Get Started Today</span>
+              <h2 className="text-3xl sm:text-5xl font-normal tracking-tight text-white">
                 Make your household easier to manage.
               </h2>
-              <p className="text-sm sm:text-base text-[#DCE8E8] leading-relaxed">
+              <p className="text-sm sm:text-base text-[#D0CFC9] leading-relaxed">
                 Bring all everyday flatmate responsibilities into one calm shared space. Set up your home in under two minutes.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-4">
                 <Magnet magnetStrength={0.18}>
                   <Link
                     to="/register"
-                    className="w-full sm:w-auto inline-block px-8 py-3.5 text-xs font-semibold uppercase tracking-wider rounded-full bg-[#E86F5A] hover:bg-[#D65D48] text-white shadow-md btn-shimmer btn-interactive transition-all active:scale-95"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 text-sm font-medium rounded-full bg-white text-[#1A1A1A] hover:bg-[#FAF9F5] shadow-md transition-all active:scale-95"
                   >
-                    Create your household free &rarr;
+                    <span>Create your household free</span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M7 7h10v10" /><path d="M7 17 17 7" />
+                    </svg>
                   </Link>
                 </Magnet>
                 <Magnet magnetStrength={0.18}>
                   <Link
                     to="/login"
-                    className="w-full sm:w-auto inline-block px-8 py-3.5 text-xs font-semibold uppercase tracking-wider rounded-full bg-[#FFF9F1] hover:bg-[#FAF5ED] text-[#234653] btn-interactive transition-all active:scale-95"
+                    className="w-full sm:w-auto inline-block px-8 py-3.5 text-sm font-medium rounded-full bg-[#2A2A2A] hover:bg-[#333333] text-white transition-all active:scale-95"
                   >
-                    Sign In
+                    Sign in
                   </Link>
                 </Magnet>
               </div>
@@ -748,30 +735,31 @@ export default function LandingPage() {
       {/* ======================================================== */}
       {/* 10. MINIMALIST EDITORIAL FOOTER */}
       {/* ======================================================== */}
-      <footer className="border-t border-[#E8DEC8] bg-[#FAF5ED] py-12 text-xs text-[#3E737C]">
+      <footer className="border-t border-[#E8E7E1] bg-white py-12 text-xs text-[#71716E]">
         <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-14 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-[#234653] text-[#FFF9F1] flex items-center justify-center font-serif text-base font-bold">
-              ✦
-            </div>
+            <svg width="24" height="24" viewBox="0 0 40 40" fill="none" className="text-[#1A1A1A]">
+              <rect x="4" y="4" width="23" height="23" rx="8" stroke="currentColor" strokeWidth="1.8" />
+              <rect x="13" y="13" width="23" height="23" rx="8" stroke="currentColor" strokeWidth="1.8" />
+              <path d="M13 20h14M20 13v14" stroke="currentColor" strokeWidth="1.8" />
+            </svg>
             <div>
-              <span className="font-bold text-[#234653] text-sm font-serif-editorial">RoomSync</span>
-              <p className="text-[#3E737C] mt-0.5">Household journal and shared living operating system.</p>
+              <span className="font-medium text-[#1A1A1A] text-sm tracking-[-0.8px]">roomsync</span>
+              <p className="text-[#71716E] mt-0.5">Household journal and shared living operating system.</p>
             </div>
           </div>
 
           <div className="flex items-center gap-6">
-            <a href="#why" className="hover:text-[#234653] transition-colors">Why RoomSync</a>
-            <a href="#process" className="hover:text-[#234653] transition-colors">How It Works</a>
-            <a href="#sandbox" className="hover:text-[#234653] transition-colors">Sandbox</a>
-            <a href="#features" className="hover:text-[#234653] transition-colors">Capabilities</a>
-            <a href="#faq" className="hover:text-[#234653] transition-colors">FAQ</a>
-            <Link to="/login" className="hover:text-[#234653] transition-colors">Sign In</Link>
-            <Link to="/register" className="hover:text-[#234653] transition-colors">Register</Link>
+            <a href="#why" className="hover:text-[#1A1A1A] transition-colors">Why RoomSync</a>
+            <a href="#process" className="hover:text-[#1A1A1A] transition-colors">The process</a>
+            <a href="#features" className="hover:text-[#1A1A1A] transition-colors">Capabilities</a>
+            <a href="#faq" className="hover:text-[#1A1A1A] transition-colors">FAQ</a>
+            <Link to="/login" className="hover:text-[#1A1A1A] transition-colors">Sign in</Link>
+            <Link to="/register" className="hover:text-[#1A1A1A] transition-colors">Register</Link>
           </div>
 
           <div>
-            &copy; {new Date().getFullYear()} RoomSync. Good living, together.
+            &copy; {new Date().getFullYear()} roomsync. Good things, together.
           </div>
         </div>
       </footer>
