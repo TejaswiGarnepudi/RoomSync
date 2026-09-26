@@ -8,6 +8,7 @@ import FloatingOrbs from '../components/motion/FloatingOrbs';
 import Magnet from '../components/motion/Magnet';
 import ScrollSwingMarquee from '../components/motion/ScrollSwingMarquee';
 import BentoFeatures from '../components/motion/BentoFeatures';
+import TheProcessStage from '../components/motion/TheProcessStage';
 
 export default function LandingPage() {
   const { isAuthenticated, user } = useContext(AuthContext);
@@ -46,21 +47,6 @@ export default function LandingPage() {
     }
     setMobileMenuOpen(false);
   };
-
-  // Workflow tab state with automatic continuous progression
-  const [activeWorkflowTab, setActiveWorkflowTab] = useState('01');
-  const workflowSteps = ['01', '02', '03', '04'];
-
-  // Automatically cycle through 01 -> 02 -> 03 -> 04 continuously
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveWorkflowTab(prev => {
-        const nextIdx = (workflowSteps.indexOf(prev) + 1) % workflowSteps.length;
-        return workflowSteps[nextIdx];
-      });
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
 
   // Interactive sandbox state
   const [sandboxChores, setSandboxChores] = useState([
@@ -471,115 +457,9 @@ export default function LandingPage() {
       <BentoFeatures />
 
       {/* ======================================================== */}
-      {/* 6. THE PROCESS / WORKFLOW (SPARKDESIGN STAGE TABS) */}
+      {/* 6. THE PROCESS / WORKFLOW (SPARKDESIGN CENTERED STAGE) */}
       {/* ======================================================== */}
-      <section id="process" className="py-24 border-b border-[#E8E7E1] bg-white">
-        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-14">
-          <ScrollReveal direction="up" className="max-w-xl mb-14">
-            <span className="text-xs font-semibold uppercase tracking-widest text-[#71716E]">The Process</span>
-            <h2 className="text-3xl sm:text-4xl font-normal tracking-[-0.035em] text-[#1A1A1A] mt-2">
-              How RoomSync keeps your home synchronized.
-            </h2>
-            <p className="mt-3 text-base text-[#71716E]">
-              Four simple steps that replace disorganized group chats with calm household flow.
-            </p>
-          </ScrollReveal>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            {/* Left Tabs */}
-            <div className="lg:col-span-5 space-y-2.5">
-              {[
-                { id: '01', title: '01 Create & Invite', desc: 'Create your household space in seconds and share the 8-character code.' },
-                { id: '02', title: '02 Set Chore Rotations', desc: 'Add recurring cleaning tasks and let the scheduler automate turns.' },
-                { id: '03', title: '03 Track & Split Expenses', desc: 'Log shared bills and receipts with automatic debt simplification.' },
-                { id: '04', title: '04 Vote & Coordinate', desc: 'Create decision polls, manage grocery restocks, and request quick favors.' }
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveWorkflowTab(tab.id)}
-                  className={`w-full text-left p-5 rounded-2xl border transition-all duration-200 ${
-                    activeWorkflowTab === tab.id
-                      ? 'bg-[#FAF9F5] border-[#1A1A1A] shadow-xs'
-                      : 'bg-transparent border-transparent hover:bg-[#FAF9F5]/60 text-[#71716E]'
-                  }`}
-                >
-                  <span className="font-medium text-base text-[#1A1A1A] block">{tab.title}</span>
-                  <p className="text-xs text-[#71716E] mt-1">{tab.desc}</p>
-                </button>
-              ))}
-            </div>
-
-            {/* Right Preview */}
-            <div className="lg:col-span-7">
-              <div className="bg-[#FAF9F5] border border-[#E8E7E1] rounded-3xl p-6 sm:p-8 space-y-5 shadow-sm">
-                <div className="flex items-center justify-between pb-3 border-b border-[#E8E7E1]">
-                  <span className="text-xs font-semibold text-[#1A1A1A]">
-                    {activeWorkflowTab === '01' && 'Stage 01: Household Space Created'}
-                    {activeWorkflowTab === '02' && 'Stage 02: Intelligent Chore Rotations'}
-                    {activeWorkflowTab === '03' && 'Stage 03: Expense Splitting & Debt Graph'}
-                    {activeWorkflowTab === '04' && 'Stage 04: Group Decisions & Living Sync'}
-                  </span>
-                  <span className="text-[10px] font-medium text-[#1A1A1A] bg-white px-3 py-1 rounded-full border border-[#E8E7E1]">
-                    ● Active
-                  </span>
-                </div>
-
-                {activeWorkflowTab === '01' && (
-                  <div className="p-4 bg-white rounded-2xl border border-[#E8E7E1] space-y-2 text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-[#1A1A1A]">Household Invite Code</span>
-                      <span className="font-mono font-bold text-sm bg-[#FAF9F5] px-3 py-1 rounded-lg border border-[#E8E7E1] text-[#1A1A1A]">
-                        MAPLE-3B
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-[#71716E]">
-                      Share this code with your flatmates to link their accounts to the shared calendar, chores, and balances instantly.
-                    </p>
-                  </div>
-                )}
-
-                {activeWorkflowTab === '02' && (
-                  <div className="p-4 bg-white rounded-2xl border border-[#E8E7E1] space-y-2.5 text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-[#1A1A1A]">Weekly Rotation Balance</span>
-                      <span className="text-[10px] text-emerald-700 font-semibold">100% Equal Parity</span>
-                    </div>
-                    <div className="w-full bg-[#FAF9F5] h-2.5 rounded-full overflow-hidden flex border border-[#E8E7E1]">
-                      <div className="bg-[#1A1A1A] w-1/3" title="Alex: 33%"></div>
-                      <div className="bg-[#71716E] w-1/3" title="Maya: 33%"></div>
-                      <div className="bg-[#A8A7A0] w-1/3" title="You: 34%"></div>
-                    </div>
-                    <span className="text-[10px] text-[#71716E] block text-right">3 flatmates • Automatic turns</span>
-                  </div>
-                )}
-
-                {activeWorkflowTab === '03' && (
-                  <div className="p-4 bg-white rounded-2xl border border-[#E8E7E1] space-y-2 text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-[#1A1A1A]">Simplified Balances</span>
-                      <span className="text-xs font-semibold text-emerald-700">1 transfer needed</span>
-                    </div>
-                    <div className="p-2.5 bg-[#FAF9F5] rounded-xl border border-[#E8E7E1] flex items-center justify-between">
-                      <span>Maya pays Alex ₹413.33</span>
-                      <span className="font-semibold text-[#1A1A1A]">All settled</span>
-                    </div>
-                  </div>
-                )}
-
-                {activeWorkflowTab === '04' && (
-                  <div className="p-4 bg-white rounded-2xl border border-[#E8E7E1] space-y-2 text-xs">
-                    <span className="font-medium text-[#1A1A1A] block">Active Poll: Host Friday Dinner</span>
-                    <div className="flex items-center justify-between p-2 rounded-xl bg-[#FAF9F5] border border-[#E8E7E1]">
-                      <span>Yes, let's host! (Alex, Maya)</span>
-                      <span className="font-semibold text-[#1A1A1A]">67%</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <TheProcessStage />
 
       {/* ======================================================== */}
       {/* 6. INTERACTIVE LIVE SANDBOX */}
