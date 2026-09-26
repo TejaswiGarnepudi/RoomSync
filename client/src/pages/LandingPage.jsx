@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import ScrollReveal from '../components/motion/ScrollReveal';
 import TiltCard from '../components/motion/TiltCard';
-import Signature3DScroll from '../components/motion/Signature3DScroll';
+import Hero3DCardStage from '../components/motion/Hero3DCardStage';
 import FloatingOrbs from '../components/motion/FloatingOrbs';
 
 export default function LandingPage() {
@@ -256,45 +256,10 @@ export default function LandingPage() {
               </div>
             </ScrollReveal>
 
-            {/* Hero Right: Bespoke Artwork Showcase with 3D TiltCard */}
-            <ScrollReveal direction="perspective" delay={0.15} duration={0.8} className="lg:col-span-6 relative">
-              <div className="relative mx-auto max-w-lg lg:max-w-none">
-                <TiltCard maxTilt={5} spotlightColor="rgba(232, 111, 90, 0.12)" className="rounded-3xl shadow-xl">
-                  {/* Visual Artwork Container with Hover Lift */}
-                  <div className="relative bg-[#FFF9F1] border border-[#E8DEC8] rounded-3xl p-3 sm:p-4 hover-lift group">
-                    <div className="relative rounded-2xl overflow-hidden border border-[#E8DEC8]/80 aspect-4/3">
-                      <img
-                        src="/assets/hero-living-room.jpg"
-                        alt="RoomSync Living Room Morning"
-                        className="w-full h-full object-cover transform group-hover:scale-103 transition-transform duration-700 ease-out"
-                      />
-                      
-                      {/* Editorial Badge Tag */}
-                      <div className="absolute bottom-3 left-3 bg-[#FFF9F1]/95 backdrop-blur-xs border border-[#E8DEC8] px-3.5 py-1.5 rounded-xl text-xs font-semibold text-[#234653] flex items-center gap-2 shadow-2xs group-hover:border-[#3E737C]/40 transition-colors">
-                        <span>🏠</span>
-                        <span className="font-serif-editorial">The Maple Flat • Morning Rhythm</span>
-                      </div>
-
-                      <div className="absolute top-3 right-3 bg-[#234653]/90 text-[#FFF9F1] px-3 py-1 rounded-full text-[10px] font-semibold tracking-wider uppercase flex items-center gap-1.5 shadow-xs">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#E86F5A] animate-pulse"></span>
-                        Synchronized
-                      </div>
-                    </div>
-
-                    {/* Overlaid Mini Journal Strip with Hover Effect */}
-                    <div className="mt-3 p-3 bg-[#FAF5ED] hover:bg-[#FBF1EB]/60 rounded-xl border border-[#E8DEC8]/80 flex items-center justify-between text-xs transition-colors">
-                      <div className="flex items-center gap-2.5">
-                        <span className="w-5 h-5 rounded-full bg-[#E86F5A] text-white flex items-center justify-center text-[10px] font-bold shadow-2xs">
-                          ✓
-                        </span>
-                        <span className="font-semibold text-[#234653]">Alex made fresh coffee & emptied dishwasher</span>
-                      </div>
-                      <span className="text-[10px] text-[#3E737C] font-mono">08:45 AM</span>
-                    </div>
-                  </div>
-                </TiltCard>
-              </div>
-            </ScrollReveal>
+            {/* Hero Right: Interactive 3D Floating Product Cards */}
+            <div className="lg:col-span-6 relative flex items-center justify-center">
+              <Hero3DCardStage />
+            </div>
           </div>
         </div>
       </section>
@@ -433,15 +398,6 @@ export default function LandingPage() {
               </div>
             </ScrollReveal>
           </div>
-        </div>
-      </section>
-
-      {/* SIGNATURE 3D SCROLL EXPERIENCE: Interactive Real-Time Synchronization Core */}
-      <section className="py-12 sm:py-16 bg-[#F4EDE3]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <ScrollReveal direction="perspective" distance={30} duration={0.8}>
-            <Signature3DScroll />
-          </ScrollReveal>
         </div>
       </section>
 
