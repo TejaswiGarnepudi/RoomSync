@@ -6,6 +6,7 @@ import TiltCard from '../components/motion/TiltCard';
 import Hero3DCardStage from '../components/motion/Hero3DCardStage';
 import FloatingOrbs from '../components/motion/FloatingOrbs';
 import Magnet from '../components/motion/Magnet';
+import ScrollSwingMarquee from '../components/motion/ScrollSwingMarquee';
 
 export default function LandingPage() {
   const { isAuthenticated, user } = useContext(AuthContext);
@@ -397,7 +398,7 @@ export default function LandingPage() {
       </section>
 
       {/* ======================================================== */}
-      {/* 4. AUDIENCE MARQUEE (SPARKDESIGN DUAL INFINITE TICKER) */}
+      {/* 4. AUDIENCE MARQUEE (SPARKDESIGN SCROLL-DRIVEN SWING) */}
       {/* ======================================================== */}
       <section className="overflow-hidden py-20 border-b border-[#E8E7E1] bg-[#FAF9F5]">
         <div className="max-w-7xl mx-auto px-6 mb-12 text-center">
@@ -409,46 +410,8 @@ export default function LandingPage() {
           </p>
         </div>
 
-        {/* Dual-Row Continuous Infinite Marquee with Soft Edge Mask */}
-        <div className="space-y-4 [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
-          {/* Row 1: Leftward Marquee */}
-          <div className="overflow-hidden whitespace-nowrap">
-            <div className="animate-marquee gap-5 py-1 flex items-center">
-              {[...audienceRow1, ...audienceRow1, ...audienceRow1].map((aud, i) => (
-                <div
-                  key={`row1-${i}`}
-                  className="flex items-center gap-3.5 text-base font-medium tracking-[-0.02em] text-[#1A1A1A] bg-white px-5 py-3 rounded-2xl border border-[#E8E7E1] shadow-xs shrink-0 select-none transition-transform hover:scale-[1.02]"
-                >
-                  <img
-                    src={aud.img}
-                    alt=""
-                    className="size-9 rounded-lg -rotate-6 object-cover border border-[#E8E7E1] shadow-2xs"
-                  />
-                  <span>{aud.title}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Row 2: Rightward Reverse Marquee */}
-          <div className="overflow-hidden whitespace-nowrap">
-            <div className="animate-marquee-reverse gap-5 py-1 flex items-center">
-              {[...audienceRow2, ...audienceRow2, ...audienceRow2].map((aud, i) => (
-                <div
-                  key={`row2-${i}`}
-                  className="flex items-center gap-3.5 text-base font-medium tracking-[-0.02em] text-[#1A1A1A] bg-white px-5 py-3 rounded-2xl border border-[#E8E7E1] shadow-xs shrink-0 select-none transition-transform hover:scale-[1.02]"
-                >
-                  <img
-                    src={aud.img}
-                    alt=""
-                    className="size-9 rounded-lg rotate-6 object-cover border border-[#E8E7E1] shadow-2xs"
-                  />
-                  <span>{aud.title}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        {/* Scroll-Driven Side-by-Side Swing Motion */}
+        <ScrollSwingMarquee row1Items={audienceRow1} row2Items={audienceRow2} />
       </section>
 
       {/* ======================================================== */}
