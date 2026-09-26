@@ -17,174 +17,187 @@ export default function AuthLayout({
       {/* ======================================================== */}
       {/* LEFT PANEL: ANIMATED VISUAL CANVAS (DESKTOP ONLY) */}
       {/* ======================================================== */}
-      <div className="relative hidden lg:flex lg:w-[48%] xl:w-[50%] flex-col justify-between p-10 xl:p-14 overflow-hidden bg-[#121211] text-white border-r border-[#262624] select-none">
-        {/* Ambient Gradient Glows */}
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none animate-pulse-glow" />
-        <div className="absolute top-1/2 -right-24 w-96 h-96 bg-amber-500/10 rounded-full blur-[140px] pointer-events-none animate-pulse-glow" style={{ animationDelay: '3s' }} />
-        <div className="absolute -bottom-24 left-1/3 w-80 h-80 bg-cyan-500/10 rounded-full blur-[130px] pointer-events-none animate-pulse-glow" style={{ animationDelay: '5s' }} />
+      <div className="relative hidden lg:flex lg:w-[48%] xl:w-[50%] flex-col justify-between p-10 xl:p-14 2xl:p-16 overflow-hidden bg-[#121211] text-white border-r border-[#262624] select-none">
+        {/* Ambient Multi-Hue Gradient Glows */}
+        <div className="absolute -top-20 -left-20 w-[480px] h-[480px] bg-emerald-500/15 rounded-full blur-[140px] pointer-events-none animate-pulse-glow" />
+        <div className="absolute top-1/3 -right-24 w-[420px] h-[420px] bg-cyan-500/12 rounded-full blur-[150px] pointer-events-none animate-pulse-glow" style={{ animationDelay: '2.5s' }} />
+        <div className="absolute -bottom-20 left-1/4 w-[460px] h-[460px] bg-amber-500/12 rounded-full blur-[150px] pointer-events-none animate-pulse-glow" style={{ animationDelay: '5s' }} />
+        <div className="absolute top-2/3 right-1/4 w-80 h-80 bg-indigo-500/10 rounded-full blur-[130px] pointer-events-none animate-pulse-glow" style={{ animationDelay: '7s' }} />
 
-        {/* Decorative Animated Flowing SVG Paths */}
+        {/* Rich Multi-Layered Flowing Decorative SVG Pattern Background */}
         <svg
-          className="absolute inset-0 w-full h-full pointer-events-none opacity-40"
+          className="absolute inset-0 w-full h-full pointer-events-none opacity-60"
           xmlns="http://www.w3.org/2000/svg"
         >
           <defs>
-            <linearGradient id="auth-spline-1" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#10B981" stopOpacity="0.8" />
-              <stop offset="50%" stopColor="#06B6D4" stopOpacity="0.5" />
-              <stop offset="100%" stopColor="#F59E0B" stopOpacity="0.8" />
+            <linearGradient id="auth-grad-1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#10B981" stopOpacity="0.85" />
+              <stop offset="45%" stopColor="#06B6D4" stopOpacity="0.75" />
+              <stop offset="85%" stopColor="#6366F1" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="#F59E0B" stopOpacity="0.85" />
             </linearGradient>
-            <linearGradient id="auth-spline-2" x1="100%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#6366F1" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="#EC4899" stopOpacity="0.4" />
+            <linearGradient id="auth-grad-2" x1="100%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.75" />
+              <stop offset="50%" stopColor="#EC4899" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#10B981" stopOpacity="0.75" />
+            </linearGradient>
+            <linearGradient id="auth-grad-3" x1="0%" y1="50%" x2="100%" y2="50%">
+              <stop offset="0%" stopColor="#06B6D4" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="#F59E0B" stopOpacity="0.7" />
             </linearGradient>
             <radialGradient id="mesh-glow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.08" />
+              <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.06" />
               <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
             </radialGradient>
+            {/* Subtle Dot Grid Pattern */}
+            <pattern id="auth-dot-grid" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse">
+              <circle cx="2" cy="2" r="1" fill="rgba(255,255,255,0.07)" />
+            </pattern>
           </defs>
 
-          {/* Background Radial Tint */}
+          {/* Background Ambient Fill and Dot Matrix */}
           <rect width="100%" height="100%" fill="url(#mesh-glow)" />
+          <rect width="100%" height="100%" fill="url(#auth-dot-grid)" />
 
-          {/* Animated Flowing Spline Curves */}
+          {/* Layered Topographical & Wave Spline Curves */}
+          {/* Wave Set 1: High Energy Top-to-Bottom Flow */}
           <path
-            d="M -100 150 C 200 80, 250 450, 600 380 C 850 330, 700 700, 1000 650"
+            d="M -150 120 C 220 40, 260 480, 640 360 C 880 280, 720 780, 1150 680"
             fill="none"
-            stroke="url(#auth-spline-1)"
+            stroke="url(#auth-grad-1)"
+            strokeWidth="2"
+            strokeDasharray="8 6"
+            className="animate-dash-flow"
+          />
+          <path
+            d="M -130 150 C 240 70, 280 510, 660 390 C 900 310, 740 810, 1170 710"
+            fill="none"
+            stroke="url(#auth-grad-1)"
+            strokeWidth="1.2"
+            strokeOpacity="0.4"
+          />
+
+          {/* Wave Set 2: Diagonal Cross Flow */}
+          <path
+            d="M -80 440 C 320 320, 160 820, 680 720 C 940 660, 840 1020, 1200 940"
+            fill="none"
+            stroke="url(#auth-grad-2)"
             strokeWidth="1.75"
+            strokeDasharray="10 8"
+            className="animate-dash-flow"
+            style={{ animationDirection: 'reverse', animationDuration: '36s' }}
+          />
+          <path
+            d="M -60 470 C 340 350, 180 850, 700 750 C 960 690, 860 1050, 1220 970"
+            fill="none"
+            stroke="url(#auth-grad-2)"
+            strokeWidth="1"
+            strokeOpacity="0.35"
+          />
+
+          {/* Wave Set 3: Gentle Horizontal Crest Waves */}
+          <path
+            d="M -100 280 C 250 200, 450 420, 850 260 C 1050 180, 1150 400, 1300 320"
+            fill="none"
+            stroke="url(#auth-grad-3)"
+            strokeWidth="1.5"
             strokeDasharray="6 6"
             className="animate-dash-flow"
+            style={{ animationDuration: '24s' }}
           />
           <path
-            d="M -50 400 C 300 300, 150 750, 650 680 C 900 630, 800 950, 1100 900"
+            d="M -100 620 C 300 520, 500 780, 900 590 C 1100 500, 1200 750, 1350 660"
             fill="none"
-            stroke="url(#auth-spline-2)"
+            stroke="url(#auth-grad-1)"
             strokeWidth="1.25"
-            strokeDasharray="8 8"
+            strokeDasharray="4 6"
             className="animate-dash-flow"
-            style={{ animationDirection: 'reverse', animationDuration: '38s' }}
+            style={{ animationDirection: 'reverse', animationDuration: '28s' }}
+          />
+
+          {/* Geometric Contour Rings & Echoes */}
+          <path
+            d="M 50 -100 C 450 180, 380 620, 820 820 C 1000 900, 1100 1100, 1250 1200"
+            fill="none"
+            stroke="rgba(255,255,255,0.08)"
+            strokeWidth="1.2"
           />
           <path
-            d="M 100 -50 C 400 200, 350 600, 750 750"
+            d="M 80 -80 C 480 200, 410 640, 850 840"
             fill="none"
-            stroke="rgba(255,255,255,0.06)"
+            stroke="rgba(255,255,255,0.05)"
             strokeWidth="1"
           />
+          <path
+            d="M 110 -60 C 510 220, 440 660, 880 860"
+            fill="none"
+            stroke="rgba(255,255,255,0.03)"
+            strokeWidth="1"
+          />
+
+          {/* Glowing Anchor Beacons along the paths */}
+          <circle cx="360" cy="380" r="3.5" fill="#10B981" opacity="0.9" className="animate-pulse" />
+          <circle cx="360" cy="380" r="10" fill="#10B981" opacity="0.2" className="animate-pulse" />
+
+          <circle cx="680" cy="720" r="3.5" fill="#06B6D4" opacity="0.9" className="animate-pulse" />
+          <circle cx="680" cy="720" r="10" fill="#06B6D4" opacity="0.2" className="animate-pulse" />
+
+          <circle cx="850" cy="260" r="3" fill="#F59E0B" opacity="0.9" className="animate-pulse" />
+          <circle cx="850" cy="260" r="9" fill="#F59E0B" opacity="0.2" className="animate-pulse" />
         </svg>
 
         {/* 1. Top Branding */}
         <div className="relative z-10">
           <Link to="/" className="inline-flex items-center gap-3.5 group">
-            <div className="size-11 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-md flex items-center justify-center text-white shadow-xl group-hover:scale-105 group-hover:bg-white/15 transition-all">
-              <svg width="22" height="22" viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="2">
+            <div className="size-12 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-md flex items-center justify-center text-white shadow-xl group-hover:scale-105 group-hover:bg-white/15 transition-all">
+              <svg width="24" height="24" viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="4" y="4" width="23" height="23" rx="8" />
                 <rect x="13" y="13" width="23" height="23" rx="8" />
                 <path d="M13 20h14M20 13v14" />
               </svg>
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xl font-bold tracking-tight text-white">roomsync</span>
-                <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-white/10 text-emerald-300 border border-white/10">
+              <div className="flex items-center gap-2.5">
+                <span className="text-2xl font-bold tracking-tight text-white">roomsync</span>
+                <span className="text-[11px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full bg-white/10 text-emerald-300 border border-white/10">
                   Shared OS
                 </span>
               </div>
-              <p className="text-xs text-[#8E8E88] font-normal tracking-tight">
+              <p className="text-xs text-[#8E8E88] font-normal tracking-tight mt-0.5">
                 Harmonious roommate coordination
               </p>
             </div>
           </Link>
         </div>
 
-        {/* 2. Middle: Roommate Visual Composition & Layered Cards */}
-        <div className="relative z-10 my-auto py-8 space-y-5">
-          {/* Main Headline */}
-          <div className="max-w-md space-y-2">
-            <h2 className="text-3xl xl:text-4xl font-normal tracking-[-0.04em] text-white leading-tight">
+        {/* 2. Middle: Large Bold Editorial Headline & Subtitle */}
+        <div className="relative z-10 my-auto py-12 space-y-6 max-w-xl">
+          {/* Main Elevated Headline */}
+          <div className="space-y-4">
+            <h2 className="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl 2xl:text-[66px] font-normal tracking-[-0.045em] text-white leading-[1.08]">
               Living together, <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#EAE8E1] to-[#A8A7A0]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#FAF9F5] to-[#A8A7A0]">
                 calmly synchronized.
               </span>
             </h2>
-            <p className="text-xs xl:text-sm text-[#A8A7A0] leading-relaxed">
+            <p className="text-base sm:text-lg xl:text-xl text-[#A8A7A0] leading-relaxed max-w-lg font-light tracking-[-0.01em]">
               Automated chore schedules, transparent expense splits, and smooth house harmony in one shared space.
             </p>
           </div>
 
-          {/* Floating Roommate UI Cards */}
-          <div className="relative pt-4 h-[300px] w-full max-w-lg">
-            {/* Card 1: Roommate Profile & Compatibility Badge (Top Right) */}
-            <div className="absolute top-0 right-0 w-[270px] rounded-2xl bg-[#1A1A19]/90 backdrop-blur-xl border border-white/10 p-4 shadow-[0_20px_40px_rgba(0,0,0,0.4)] animate-float-a">
-              <div className="flex items-center justify-between gap-3 mb-2.5">
-                <div className="flex items-center gap-2.5">
-                  <div className="size-8 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-xs font-bold text-black shadow-xs">
-                    ML
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-semibold text-white">Maya Lin</h4>
-                    <p className="text-[10px] text-[#8E8E88]">Master Bed • 98% Match</p>
-                  </div>
-                </div>
-                <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                  <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  In Sync
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                <span className="text-[9px] px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-stone-300">
-                  Early Riser
-                </span>
-                <span className="text-[9px] px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-stone-300">
-                  Quiet @ 11pm
-                </span>
-                <span className="text-[9px] px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-stone-300">
-                  Clean Kitchen
-                </span>
-              </div>
+          {/* Feature Badges */}
+          <div className="flex flex-wrap items-center gap-2.5 pt-2">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-[#EAE8E1] backdrop-blur-md">
+              <span className="size-1.5 rounded-full bg-emerald-400" />
+              Automated Rotations
             </div>
-
-            {/* Card 2: Live Chore Rotation Status (Center-Left) */}
-            <div className="absolute top-20 left-0 w-[280px] rounded-2xl bg-[#1A1A19]/95 backdrop-blur-xl border border-white/10 p-4 shadow-[0_25px_50px_rgba(0,0,0,0.45)] animate-float-b">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-2.5">
-                  <div className="size-8 rounded-xl bg-amber-500/15 border border-amber-500/25 flex items-center justify-center text-amber-400 shrink-0">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-semibold text-white">Kitchen Island & Trash</h4>
-                    <p className="text-[10px] text-amber-300 font-medium mt-0.5">Turn: Alex • Due Today 6 PM</p>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-2.5 pt-2.5 border-t border-white/10 flex items-center justify-between text-[10px] text-[#8E8E88]">
-                <span>Weekly Auto-Rotation</span>
-                <span className="text-emerald-400 font-medium">✓ Completed</span>
-              </div>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-[#EAE8E1] backdrop-blur-md">
+              <span className="size-1.5 rounded-full bg-cyan-400" />
+              Debt Minimization
             </div>
-
-            {/* Card 3: Debt Minimizer Expense Split (Bottom-Right) */}
-            <div className="absolute bottom-0 right-4 w-[290px] rounded-2xl bg-[#1A1A19]/90 backdrop-blur-xl border border-white/10 p-3.5 shadow-[0_20px_45px_rgba(0,0,0,0.4)] animate-float-c">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="size-7 rounded-lg bg-cyan-500/15 border border-cyan-500/25 flex items-center justify-center text-cyan-400">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-medium text-white">Fiber Internet & Power</h4>
-                    <p className="text-[10px] text-[#8E8E88]">$135.00 • Split 3 Ways</p>
-                  </div>
-                </div>
-                <span className="text-xs font-bold text-white">$45.00</span>
-              </div>
-              <div className="bg-white/5 rounded-lg px-2.5 py-1.5 flex items-center justify-between text-[10px]">
-                <span className="text-stone-400">Multi-party debt algorithm</span>
-                <span className="text-cyan-300 font-semibold">1 Transfer Total</span>
-              </div>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-[#EAE8E1] backdrop-blur-md">
+              <span className="size-1.5 rounded-full bg-amber-400" />
+              House Polls & Voting
             </div>
           </div>
         </div>
@@ -196,17 +209,17 @@ export default function AuthLayout({
               <img
                 src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=80&q=80"
                 alt="Roommate"
-                className="size-7 rounded-full object-cover border-2 border-[#121211]"
+                className="size-8 rounded-full object-cover border-2 border-[#121211]"
               />
               <img
                 src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&q=80"
                 alt="Roommate"
-                className="size-7 rounded-full object-cover border-2 border-[#121211]"
+                className="size-8 rounded-full object-cover border-2 border-[#121211]"
               />
               <img
                 src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=80&q=80"
                 alt="Roommate"
-                className="size-7 rounded-full object-cover border-2 border-[#121211]"
+                className="size-8 rounded-full object-cover border-2 border-[#121211]"
               />
             </div>
             <p className="text-xs text-[#A8A7A0]">
@@ -214,9 +227,9 @@ export default function AuthLayout({
             </p>
           </div>
 
-          <div className="flex items-center gap-1 text-amber-400 text-xs font-medium">
+          <div className="flex items-center gap-1.5 text-amber-400 text-xs font-medium">
             <span>★★★★★</span>
-            <span className="text-white ml-1 text-[11px]">4.9/5</span>
+            <span className="text-white ml-1 text-xs">4.9/5</span>
           </div>
         </div>
       </div>
