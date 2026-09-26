@@ -78,6 +78,33 @@
   }
 }
 
+@keyframes floatHarmonicA {
+  0%, 100% {
+    transform: translateY(0px) rotateZ(0deg);
+  }
+  50% {
+    transform: translateY(-6px) rotateZ(0.5deg);
+  }
+}
+
+@keyframes floatHarmonicB {
+  0%, 100% {
+    transform: translateY(0px) rotateZ(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotateZ(-0.75deg);
+  }
+}
+
+@keyframes floatHarmonicC {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
 @keyframes pulseGentle {
   0%, 100% {
     opacity: 1;
@@ -99,6 +126,18 @@
 
 .animate-float-slow {
   animation: floatSlow 6s ease-in-out infinite;
+}
+
+.animate-float-a {
+  animation: floatHarmonicA 7s ease-in-out infinite;
+}
+
+.animate-float-b {
+  animation: floatHarmonicB 8.5s ease-in-out 0.5s infinite;
+}
+
+.animate-float-c {
+  animation: floatHarmonicC 6.5s ease-in-out 1s infinite;
 }
 
 .animate-pulse-gentle {

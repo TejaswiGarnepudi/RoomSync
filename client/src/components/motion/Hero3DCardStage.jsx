@@ -4,26 +4,31 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
  * Hero3DCardStage
  * Interactive 3D floating Household Management cards (Chores, Expense Splits, Shopping, Polls).
  * Features:
- * - Staggered 3D entrance animation on page load
- * - Continuous subtle harmonic floating in 3D space
- * - Smooth mouse parallax and perspective tilt
- * - Scroll-responsive 3D dispersion as user scrolls down
- * - High performance, zero layout shift, mobile-responsive
+ * - Staggered 3D entrance animation on initial mount
+ * - Multi-layer depth parallax (foreground moves faster than background)
+ * - Continuous harmonic floating motion
+ * - Responsive pointer damping and perspective tilt
+ * - Scroll-driven 3D dispersion
+ * - 60fps hardware acceleration & mobile/reduced-motion awareness
  */
 export default function Hero3DCardStage({ className = '' }) {
   const containerRef = useRef(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0, targetX: 0, targetY: 0 });
   const [scrollY, setScrollY] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
   const animFrameRef = useRef(null);
 
-  // Trigger initial staggered entrance animation on mount
+  // Trigger staggered 3D entrance on mount
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 60);
+    if (window.matchMedia('(pointer: coarse)').matches) {
+      setIsTouchDevice(true);
+    }
     return () => clearTimeout(timer);
   }, []);
 
-  // Track scroll position for 3D scroll reaction
+  // Track scroll position for spatial dispersion
   useEffect(() => {
     const handleScroll = () => {
       setScrollY(window.scrollY);
@@ -32,19 +37,20 @@ export default function Hero3DCardStage({ className = '' }) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Smooth mouse damping loop
+  // Mouse move handler with normalized bounds
   const handleMouseMove = useCallback((e) => {
-    if (!containerRef.current) return;
+    if (isTouchDevice || !containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
     const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
     setMousePos(prev => ({ ...prev, targetX: x, targetY: y }));
-  }, []);
+  }, [isTouchDevice]);
 
   const handleMouseLeave = () => {
     setMousePos(prev => ({ ...prev, targetX: 0, targetY: 0 }));
   };
 
+  // Continuous physics damping loop for silky-smooth pointer response
   useEffect(() => {
     let active = true;
     const updatePhysics = () => {
@@ -71,14 +77,14 @@ export default function Hero3DCardStage({ className = '' }) {
     };
   }, []);
 
-  // Scroll reaction factors
+  // Scroll reaction factors (cards disperse gently as user scrolls past hero)
   const scrollFactor = Math.min(scrollY / 500, 1.2);
-  const scrollRotateX = scrollFactor * 14;
-  const scrollSpread = scrollFactor * 40;
+  const scrollRotateX = scrollFactor * 12;
+  const scrollSpread = scrollFactor * 35;
 
-  // Mouse tilt factors
-  const tiltX = -mousePos.y * 10 - scrollRotateX;
-  const tiltY = mousePos.x * 12;
+  // Pointer tilt factors
+  const tiltX = -mousePos.y * 8 - scrollRotateX;
+  const tiltY = mousePos.x * 10;
 
   return (
     <div
@@ -103,7 +109,7 @@ export default function Hero3DCardStage({ className = '' }) {
         {/* CARD 1: PRIMARY HOUSEHOLD CHORES & JOURNAL (Center Anchor, Z = 40) */}
         {/* ======================================================== */}
         <div
-          className="absolute z-20 w-[90%] sm:w-[360px] transition-all duration-700 ease-out"
+          className="absolute z-20 w-[90%] sm:w-[360px] transition-all duration-700 ease-out animate-float-a"
           style={{
             transformStyle: 'preserve-3d',
             transform: isLoaded
@@ -173,7 +179,7 @@ export default function Hero3DCardStage({ className = '' }) {
         {/* CARD 2: SMART EXPENSE SPLIT CARD (Upper Left Layer, Z = 85) */}
         {/* ======================================================== */}
         <div
-          className="absolute z-30 -top-8 sm:-top-10 -left-4 sm:-left-12 w-[72%] sm:w-[270px] transition-all duration-700 ease-out"
+          className="absolute z-30 -top-8 sm:-top-10 -left-4 sm:-left-12 w-[72%] sm:w-[270px] transition-all duration-700 ease-out animate-float-b"
           style={{
             transformStyle: 'preserve-3d',
             transform: isLoaded
@@ -216,7 +222,7 @@ export default function Hero3DCardStage({ className = '' }) {
         {/* CARD 3: ACTIVE HOUSEHOLD POLL & DECISION (Lower Right, Z = 65) */}
         {/* ======================================================== */}
         <div
-          className="absolute z-25 -bottom-8 sm:-bottom-10 -right-2 sm:-right-8 w-[76%] sm:w-[280px] transition-all duration-700 ease-out"
+          className="absolute z-25 -bottom-8 sm:-bottom-10 -right-2 sm:-right-8 w-[76%] sm:w-[280px] transition-all duration-700 ease-out animate-float-c"
           style={{
             transformStyle: 'preserve-3d',
             transform: isLoaded
@@ -256,7 +262,7 @@ export default function Hero3DCardStage({ className = '' }) {
         {/* CARD 4: TOP-RIGHT FLOATING STATUS PILL (Z = 110) */}
         {/* ======================================================== */}
         <div
-          className="absolute z-35 -top-12 sm:-top-14 right-2 sm:right-0 transition-all duration-700 ease-out"
+          className="absolute z-35 -top-12 sm:-top-14 right-2 sm:right-0 transition-all duration-700 ease-out animate-float-b"
           style={{
             transformStyle: 'preserve-3d',
             transform: isLoaded
@@ -276,7 +282,7 @@ export default function Hero3DCardStage({ className = '' }) {
         {/* CARD 5: BOTTOM-LEFT FLOATING PANTRY TAG (Z = 50) */}
         {/* ======================================================== */}
         <div
-          className="absolute z-15 -bottom-10 sm:-bottom-12 left-0 sm:-left-8 transition-all duration-700 ease-out"
+          className="absolute z-15 -bottom-10 sm:-bottom-12 left-0 sm:-left-8 transition-all duration-700 ease-out animate-float-a"
           style={{
             transformStyle: 'preserve-3d',
             transform: isLoaded

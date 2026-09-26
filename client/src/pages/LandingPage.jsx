@@ -5,6 +5,7 @@ import ScrollReveal from '../components/motion/ScrollReveal';
 import TiltCard from '../components/motion/TiltCard';
 import Hero3DCardStage from '../components/motion/Hero3DCardStage';
 import FloatingOrbs from '../components/motion/FloatingOrbs';
+import Magnet from '../components/motion/Magnet';
 
 export default function LandingPage() {
   const { isAuthenticated, user } = useContext(AuthContext);
@@ -130,12 +131,14 @@ export default function LandingPage() {
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3.5">
             {isAuthenticated ? (
-              <Link
-                to="/dashboard"
-                className="inline-flex items-center gap-2 rounded-full bg-[#E86F5A] hover:bg-[#D65D48] text-white px-5 py-2.5 text-xs font-semibold uppercase tracking-wider shadow-xs hover:shadow-md hover:-translate-y-0.5 btn-shimmer btn-interactive transition-all duration-200 active:scale-95"
-              >
-                Open Household &rarr;
-              </Link>
+              <Magnet magnetStrength={0.2}>
+                <Link
+                  to="/dashboard"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#E86F5A] hover:bg-[#D65D48] text-white px-5 py-2.5 text-xs font-semibold uppercase tracking-wider shadow-xs hover:shadow-md hover:-translate-y-0.5 btn-shimmer btn-interactive transition-all duration-200 active:scale-95"
+                >
+                  Open Household &rarr;
+                </Link>
+              </Magnet>
             ) : (
               <>
                 <Link
@@ -144,12 +147,14 @@ export default function LandingPage() {
                 >
                   Sign In
                 </Link>
-                <Link
-                  to="/register"
-                  className="inline-flex items-center gap-2 rounded-full bg-[#E86F5A] hover:bg-[#D65D48] text-white px-5 py-2.5 text-xs font-semibold uppercase tracking-wider shadow-xs hover:shadow-md hover:-translate-y-0.5 btn-shimmer btn-interactive transition-all duration-200 active:scale-95"
-                >
-                  Start Free &rarr;
-                </Link>
+                <Magnet magnetStrength={0.2}>
+                  <Link
+                    to="/register"
+                    className="inline-flex items-center gap-2 rounded-full bg-[#E86F5A] hover:bg-[#D65D48] text-white px-5 py-2.5 text-xs font-semibold uppercase tracking-wider shadow-xs hover:shadow-md hover:-translate-y-0.5 btn-shimmer btn-interactive transition-all duration-200 active:scale-95"
+                  >
+                    Start Free &rarr;
+                  </Link>
+                </Magnet>
               </>
             )}
           </div>
@@ -718,18 +723,22 @@ export default function LandingPage() {
                 Bring all everyday flatmate responsibilities into one calm shared space. Set up your home in under two minutes.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-4">
-                <Link
-                  to="/register"
-                  className="w-full sm:w-auto px-8 py-3.5 text-xs font-semibold uppercase tracking-wider rounded-full bg-[#E86F5A] hover:bg-[#D65D48] text-white shadow-md btn-shimmer btn-interactive transition-all active:scale-95"
-                >
-                  Create your household free &rarr;
-                </Link>
-                <Link
-                  to="/login"
-                  className="w-full sm:w-auto px-8 py-3.5 text-xs font-semibold uppercase tracking-wider rounded-full bg-[#FFF9F1] hover:bg-[#FAF5ED] text-[#234653] btn-interactive transition-all active:scale-95"
-                >
-                  Sign In
-                </Link>
+                <Magnet magnetStrength={0.18}>
+                  <Link
+                    to="/register"
+                    className="w-full sm:w-auto inline-block px-8 py-3.5 text-xs font-semibold uppercase tracking-wider rounded-full bg-[#E86F5A] hover:bg-[#D65D48] text-white shadow-md btn-shimmer btn-interactive transition-all active:scale-95"
+                  >
+                    Create your household free &rarr;
+                  </Link>
+                </Magnet>
+                <Magnet magnetStrength={0.18}>
+                  <Link
+                    to="/login"
+                    className="w-full sm:w-auto inline-block px-8 py-3.5 text-xs font-semibold uppercase tracking-wider rounded-full bg-[#FFF9F1] hover:bg-[#FAF5ED] text-[#234653] btn-interactive transition-all active:scale-95"
+                  >
+                    Sign In
+                  </Link>
+                </Magnet>
               </div>
             </div>
           </ScrollReveal>
