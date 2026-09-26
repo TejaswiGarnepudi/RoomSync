@@ -10,14 +10,14 @@ export default function Button({
   className = '',
   ...props
 }) {
-  const baseClasses = 'inline-flex justify-center items-center font-medium rounded-xl transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99]';
+  const baseClasses = 'inline-flex justify-center items-center font-medium rounded-xl btn-interactive transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed select-none';
   
   const variants = {
-    primary: 'bg-[#E86F5A] hover:bg-[#D65D48] text-white shadow-xs hover:shadow focus:ring-[#E86F5A]/40 font-semibold',
-    secondary: 'bg-[#FFF9F1] hover:bg-[#FBF1EB] text-[#234653] border border-[#E8DEC8] shadow-2xs focus:ring-[#3E737C]/30 font-medium',
-    accent: 'bg-[#234653] hover:bg-[#17272C] text-[#FFF9F1] shadow-xs focus:ring-[#234653]/40 font-semibold',
-    soft: 'bg-[#F2D4C8] hover:bg-[#EAC4B6] text-[#234653] border border-[#E8DEC8]/80 font-medium',
-    danger: 'bg-rose-600 hover:bg-rose-700 text-white shadow-xs focus:ring-rose-400',
+    primary: 'bg-[#E86F5A] hover:bg-[#D65D48] text-white shadow-xs hover:shadow-md hover:-translate-y-0.5 btn-shimmer focus:ring-[#E86F5A]/40 font-semibold',
+    secondary: 'bg-[#FFF9F1] hover:bg-[#FBF1EB] text-[#234653] border border-[#E8DEC8] hover:border-[#3E737C]/40 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 focus:ring-[#3E737C]/30 font-medium',
+    accent: 'bg-[#234653] hover:bg-[#17272C] text-[#FFF9F1] shadow-xs hover:shadow-md hover:-translate-y-0.5 btn-shimmer focus:ring-[#234653]/40 font-semibold',
+    soft: 'bg-[#F2D4C8] hover:bg-[#EAC4B6] text-[#234653] border border-[#E8DEC8]/80 hover:-translate-y-0.5 font-medium',
+    danger: 'bg-rose-600 hover:bg-rose-700 text-white shadow-xs hover:shadow-md hover:-translate-y-0.5 btn-shimmer focus:ring-rose-400',
     ghost: 'bg-transparent text-[#234653] hover:text-[#17272C] hover:bg-[#EFE7DC] focus:ring-[#3E737C]/20',
   };
 

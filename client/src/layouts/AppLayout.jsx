@@ -10,10 +10,20 @@ export default function AppLayout({ children }) {
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   
   // Dropdown states
   const [activeDropdown, setActiveDropdown] = useState(null); // 'household' | 'tasks' | 'finance' | 'calendar' | 'user'
   const navRef = useRef(null);
+
+  // Track scroll position for smooth navbar glass elevation
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 15);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -45,7 +55,7 @@ export default function AppLayout({ children }) {
   return (
     <div className="min-h-screen bg-[#F4EDE3] text-[#234653] flex flex-col font-sans selection:bg-[#F2D4C8] selection:text-[#234653]">
       {/* Stylish & Elegant Top Main Navigation Bar */}
-      <nav ref={navRef} className="bg-[#F4EDE3]/85 backdrop-blur-md border-b border-[#E8DEC8]/80 sticky top-0 z-40 transition-all duration-300">
+      <nav ref={navRef} className={`sticky top-0 z-40 transition-all duration-300 ${scrolled ? 'bg-[#F4EDE3]/95 backdrop-blur-md shadow-xs border-b border-[#E8DEC8]' : 'bg-[#F4EDE3]/85 backdrop-blur-md border-b border-[#E8DEC8]/80'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             {/* Left: Brand Logo with refined icon & typography */}

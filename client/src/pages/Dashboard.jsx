@@ -8,6 +8,8 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import GlobalSearchModal from '../components/GlobalSearchModal';
+import TiltCard from '../components/motion/TiltCard';
+import ScrollReveal from '../components/motion/ScrollReveal';
 
 const formatTime12h = (time24) => {
   if (!time24) return '';
@@ -779,66 +781,74 @@ export default function Dashboard() {
 
               <div className="grid grid-cols-2 gap-2.5">
                 {/* Chores Pulse */}
-                <Link
-                  to="/chores"
-                  className="p-3.5 bg-[#FAF5ED] rounded-2xl border border-[#E8DEC8] hover:border-[#3E737C]/60 hover:bg-[#FFF9F1] transition-all shadow-2xs group"
-                >
-                  <div className="flex items-center gap-1.5 text-[#3E737C] text-[11px] font-medium">
-                    <span className="w-2 h-2 rounded-full bg-[#234653]"></span>
-                    Chores
-                  </div>
-                  <span className="text-xl font-bold text-[#234653] font-serif-editorial block mt-1 group-hover:scale-105 transition-transform">
-                    {overviewCounts?.openChores || 0}
-                  </span>
-                  <span className="text-[10px] text-[#3E737C]">open tasks</span>
-                </Link>
+                <TiltCard maxTilt={4} spotlightColor="rgba(35, 70, 83, 0.08)" className="rounded-2xl shadow-2xs">
+                  <Link
+                    to="/chores"
+                    className="block p-3.5 bg-[#FAF5ED] rounded-2xl border border-[#E8DEC8] hover:border-[#3E737C]/60 hover:bg-[#FFF9F1] transition-all group"
+                  >
+                    <div className="flex items-center gap-1.5 text-[#3E737C] text-[11px] font-medium">
+                      <span className="w-2 h-2 rounded-full bg-[#234653]"></span>
+                      Chores
+                    </div>
+                    <span className="text-xl font-bold text-[#234653] font-serif-editorial block mt-1 group-hover:scale-105 transition-transform">
+                      {overviewCounts?.openChores || 0}
+                    </span>
+                    <span className="text-[10px] text-[#3E737C]">open tasks</span>
+                  </Link>
+                </TiltCard>
 
                 {/* Expenses Pulse */}
-                <Link
-                  to="/expenses"
-                  className="p-3.5 bg-[#FAF5ED] rounded-2xl border border-[#E8DEC8] hover:border-[#3E737C]/60 hover:bg-[#FFF9F1] transition-all shadow-2xs group"
-                >
-                  <div className="flex items-center gap-1.5 text-[#3E737C] text-[11px] font-medium">
-                    <span className="w-2 h-2 rounded-full bg-[#E86F5A]"></span>
-                    Expenses
-                  </div>
-                  <span className="text-xl font-bold text-[#234653] font-serif-editorial block mt-1 group-hover:scale-105 transition-transform">
-                    {overviewCounts?.pendingOwed > 0 ? '₹' + overviewCounts.pendingOwed.toFixed(0) : '₹0'}
-                  </span>
-                  <span className="text-[10px] text-[#3E737C]">
-                    {overviewCounts?.pendingOwed > 0 ? 'pending due' : 'all settled'}
-                  </span>
-                </Link>
+                <TiltCard maxTilt={4} spotlightColor="rgba(232, 111, 90, 0.08)" className="rounded-2xl shadow-2xs">
+                  <Link
+                    to="/expenses"
+                    className="block p-3.5 bg-[#FAF5ED] rounded-2xl border border-[#E8DEC8] hover:border-[#3E737C]/60 hover:bg-[#FFF9F1] transition-all group"
+                  >
+                    <div className="flex items-center gap-1.5 text-[#3E737C] text-[11px] font-medium">
+                      <span className="w-2 h-2 rounded-full bg-[#E86F5A]"></span>
+                      Expenses
+                    </div>
+                    <span className="text-xl font-bold text-[#234653] font-serif-editorial block mt-1 group-hover:scale-105 transition-transform">
+                      {overviewCounts?.pendingOwed > 0 ? '₹' + overviewCounts.pendingOwed.toFixed(0) : '₹0'}
+                    </span>
+                    <span className="text-[10px] text-[#3E737C]">
+                      {overviewCounts?.pendingOwed > 0 ? 'pending due' : 'all settled'}
+                    </span>
+                  </Link>
+                </TiltCard>
 
                 {/* Shopping Pulse */}
-                <Link
-                  to="/shopping"
-                  className="p-3.5 bg-[#FAF5ED] rounded-2xl border border-[#E8DEC8] hover:border-[#3E737C]/60 hover:bg-[#FFF9F1] transition-all shadow-2xs group"
-                >
-                  <div className="flex items-center gap-1.5 text-[#3E737C] text-[11px] font-medium">
-                    <span className="w-2 h-2 rounded-full bg-[#E7A83C]"></span>
-                    Shopping
-                  </div>
-                  <span className="text-xl font-bold text-[#234653] font-serif-editorial block mt-1 group-hover:scale-105 transition-transform">
-                    {overviewCounts?.upcomingShopping || 0}
-                  </span>
-                  <span className="text-[10px] text-[#3E737C]">lists active</span>
-                </Link>
+                <TiltCard maxTilt={4} spotlightColor="rgba(231, 168, 60, 0.08)" className="rounded-2xl shadow-2xs">
+                  <Link
+                    to="/shopping"
+                    className="block p-3.5 bg-[#FAF5ED] rounded-2xl border border-[#E8DEC8] hover:border-[#3E737C]/60 hover:bg-[#FFF9F1] transition-all group"
+                  >
+                    <div className="flex items-center gap-1.5 text-[#3E737C] text-[11px] font-medium">
+                      <span className="w-2 h-2 rounded-full bg-[#E7A83C]"></span>
+                      Shopping
+                    </div>
+                    <span className="text-xl font-bold text-[#234653] font-serif-editorial block mt-1 group-hover:scale-105 transition-transform">
+                      {overviewCounts?.upcomingShopping || 0}
+                    </span>
+                    <span className="text-[10px] text-[#3E737C]">lists active</span>
+                  </Link>
+                </TiltCard>
 
                 {/* Help / Decisions Pulse */}
-                <Link
-                  to="/decisions"
-                  className="p-3.5 bg-[#FAF5ED] rounded-2xl border border-[#E8DEC8] hover:border-[#3E737C]/60 hover:bg-[#FFF9F1] transition-all shadow-2xs group"
-                >
-                  <div className="flex items-center gap-1.5 text-[#3E737C] text-[11px] font-medium">
-                    <span className="w-2 h-2 rounded-full bg-[#3E737C]"></span>
-                    Decisions
-                  </div>
-                  <span className="text-xl font-bold text-[#234653] font-serif-editorial block mt-1 group-hover:scale-105 transition-transform">
-                    {overviewCounts?.activePolls || 0}
-                  </span>
-                  <span className="text-[10px] text-[#3E737C]">active votes</span>
-                </Link>
+                <TiltCard maxTilt={4} spotlightColor="rgba(62, 115, 124, 0.08)" className="rounded-2xl shadow-2xs">
+                  <Link
+                    to="/decisions"
+                    className="block p-3.5 bg-[#FAF5ED] rounded-2xl border border-[#E8DEC8] hover:border-[#3E737C]/60 hover:bg-[#FFF9F1] transition-all group"
+                  >
+                    <div className="flex items-center gap-1.5 text-[#3E737C] text-[11px] font-medium">
+                      <span className="w-2 h-2 rounded-full bg-[#3E737C]"></span>
+                      Decisions
+                    </div>
+                    <span className="text-xl font-bold text-[#234653] font-serif-editorial block mt-1 group-hover:scale-105 transition-transform">
+                      {overviewCounts?.activePolls || 0}
+                    </span>
+                    <span className="text-[10px] text-[#3E737C]">active votes</span>
+                  </Link>
+                </TiltCard>
               </div>
             </div>
 
