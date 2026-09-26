@@ -18,10 +18,11 @@ export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [quickEmail, setQuickEmail] = useState('');
   const [activeSection, setActiveSection] = useState('why');
+  const [showFaqModal, setShowFaqModal] = useState(false);
 
   // ScrollSpy to dynamically highlight active section in Navbar
   useEffect(() => {
-    const sectionIds = ['why', 'features', 'process', 'sandbox', 'faq'];
+    const sectionIds = ['why', 'features', 'process', 'sandbox'];
     const handleScroll = () => {
       const scrollPos = window.scrollY + 140;
       for (let i = sectionIds.length - 1; i >= 0; i--) {
@@ -130,7 +131,7 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FAF9F5] dark:bg-[#0E0E0D] text-[#1A1A1A] dark:text-[#FAF9F5] flex flex-col font-sans transition-colors duration-300 overflow-x-hidden antialiased">
+    <div className="min-h-screen bg-[#FAF9F5] dark:bg-[#0E0E0D] text-[#1A1A1A] dark:text-[#FAF9F5] flex flex-col font-sans transition-colors duration-300 overflow-x-clip antialiased">
       {/* Top Banner if logged in */}
       {isAuthenticated && (
         <div className="bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A] px-4 py-2 text-xs text-center font-medium flex items-center justify-center gap-2 animate-fade-in-up z-50">
@@ -165,7 +166,6 @@ export default function LandingPage() {
               { id: 'features', label: 'Features' },
               { id: 'process', label: 'The process' },
               { id: 'sandbox', label: 'Live Preview' },
-              { id: 'faq', label: 'FAQ' },
             ].map((item) => (
               <a
                 key={item.id}
@@ -180,6 +180,13 @@ export default function LandingPage() {
                 {item.label}
               </a>
             ))}
+            <button
+              type="button"
+              onClick={() => setShowFaqModal(true)}
+              className="relative py-1 text-[#71716E] dark:text-[#8E8E88] hover:text-[#1A1A1A] dark:hover:text-white transition-colors duration-200 cursor-pointer"
+            >
+              FAQ
+            </button>
           </nav>
 
           {/* Desktop Actions */}
@@ -268,7 +275,6 @@ export default function LandingPage() {
                 { id: 'features', label: '02 Features' },
                 { id: 'process', label: '03 The process' },
                 { id: 'sandbox', label: '04 Live Preview' },
-                { id: 'faq', label: '05 FAQ' },
               ].map((item) => (
                 <a
                   key={item.id}
@@ -281,6 +287,16 @@ export default function LandingPage() {
                   {item.label}
                 </a>
               ))}
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setShowFaqModal(true);
+                }}
+                className="py-2 text-left border-b border-[#E8E7E1] dark:border-[#2A2A28] text-[#71716E] dark:text-[#8E8E88] font-medium"
+              >
+                05 FAQ & Questions
+              </button>
             </nav>
             <div className="pt-3 border-t border-[#E8E7E1] dark:border-[#2A2A28] flex flex-col gap-2">
               <Link to="/register" className="w-full text-center py-3 rounded-full bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A] text-sm font-medium">
@@ -601,43 +617,7 @@ export default function LandingPage() {
       </section>
 
       {/* ======================================================== */}
-      {/* 8. FAQ ACCORDION */}
-      {/* ======================================================== */}
-      <section id="faq" className="py-24 border-b border-[#E8E7E1] dark:border-[#2A2A28] bg-[#FAF9F5] dark:bg-[#0E0E0D] transition-colors duration-300">
-        <div className="max-w-4xl mx-auto px-6 sm:px-10">
-          <ScrollReveal direction="up" className="text-center max-w-xl mx-auto mb-12">
-            <span className="text-xs font-semibold uppercase tracking-widest text-[#71716E] dark:text-[#8E8E88]">Questions & Answers</span>
-            <h2 className="text-3xl sm:text-4xl font-normal tracking-[-0.035em] text-[#1A1A1A] dark:text-white mt-2">
-              Frequently asked questions.
-            </h2>
-          </ScrollReveal>
-
-          <div className="space-y-3.5">
-            {faqs.map((faq, idx) => (
-              <div key={idx} className="bg-white dark:bg-[#141413] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-2xl overflow-hidden transition-colors">
-                <button
-                  type="button"
-                  onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                  className="w-full text-left p-5 sm:p-6 flex items-center justify-between gap-4 text-base font-medium text-[#1A1A1A] dark:text-white focus:outline-none cursor-pointer"
-                >
-                  <span>{faq.q}</span>
-                  <span className={`text-[#1A1A1A] dark:text-white text-xl transition-transform duration-200 ${openFaq === idx ? 'rotate-45' : ''}`}>
-                    +
-                  </span>
-                </button>
-                {openFaq === idx && (
-                  <div className="px-5 pb-6 text-sm text-[#71716E] dark:text-[#A8A7A0] leading-relaxed animate-fade-in-up border-t border-[#E8E7E1]/50 dark:border-[#2A2A28]/50 pt-3">
-                    {faq.a}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ======================================================== */}
-      {/* 9. ELEVATED FINAL CTA (SPARKDESIGN FLOATING CANVAS) */}
+      {/* 8. ELEVATED FINAL CTA (SPARKDESIGN FLOATING CANVAS) */}
       {/* ======================================================== */}
       <section className="relative overflow-hidden py-32 sm:py-40 bg-[#141413] text-white border-b border-[#2A2A28]">
         {/* Subtle Background Radial Glow */}
@@ -744,45 +724,232 @@ export default function LandingPage() {
       </section>
 
       {/* ======================================================== */}
-      {/* 10. MINIMALIST EDITORIAL FOOTER */}
+      {/* 9. STRUCTURED 4-COLUMN EDITORIAL FOOTER */}
       {/* ======================================================== */}
-      <footer className="border-t border-[#2A2A28] bg-[#0E0E0D] py-12 text-xs text-[#8E8E88]">
-        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-14 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <svg width="24" height="24" viewBox="0 0 40 40" fill="none" className="text-white">
-              <rect x="4" y="4" width="23" height="23" rx="8" stroke="currentColor" strokeWidth="1.8" />
-              <rect x="13" y="13" width="23" height="23" rx="8" stroke="currentColor" strokeWidth="1.8" />
-              <path d="M13 20h14M20 13v14" stroke="currentColor" strokeWidth="1.8" />
-            </svg>
-            <div>
-              <span className="font-medium text-white text-sm tracking-[-0.8px]">roomsync</span>
-              <p className="text-[#8E8E88] mt-0.5">Household journal and shared living operating system.</p>
+      <footer className="border-t border-[#E8E7E1] dark:border-[#2A2A28] bg-[#FAF9F5] dark:bg-[#0E0E0D] pt-16 sm:pt-20 pb-12 transition-colors duration-300">
+        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-14">
+          {/* 4 Column Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 pb-14">
+            {/* Col 1: Brand & Tagline */}
+            <div className="lg:col-span-4 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-xl bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A] flex items-center justify-center shadow-md">
+                  <svg width="22" height="22" viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="4" y="4" width="23" height="23" rx="8" />
+                    <rect x="13" y="13" width="23" height="23" rx="8" />
+                    <path d="M13 20h14M20 13v14" />
+                  </svg>
+                </div>
+                <span className="text-2xl font-bold tracking-tight text-[#1A1A1A] dark:text-white">
+                  roomsync
+                </span>
+              </div>
+              <p className="text-sm text-[#71716E] dark:text-[#8E8E88] leading-relaxed max-w-sm">
+                Pixel-precise household coordination, automated chore rotations, and debt minimization designed for high-performance shared homes.
+              </p>
+            </div>
+
+            {/* Col 2: PRODUCT */}
+            <div className="lg:col-span-3 space-y-4">
+              <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-[#1A1A1A] dark:text-white">
+                PRODUCT
+              </h4>
+              <ul className="space-y-2.5 text-sm text-[#71716E] dark:text-[#8E8E88]">
+                <li>
+                  <Link to="/dashboard" className="hover:text-[#1A1A1A] dark:hover:text-white transition-colors">
+                    Live Platform
+                  </Link>
+                </li>
+                <li>
+                  <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="hover:text-[#1A1A1A] dark:hover:text-white transition-colors">
+                    Chore Rotations & Schedule
+                  </a>
+                </li>
+                <li>
+                  <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="hover:text-[#1A1A1A] dark:hover:text-white transition-colors">
+                    Expense Split & Debts
+                  </a>
+                </li>
+                <li>
+                  <a href="#sandbox" onClick={(e) => scrollToSection(e, 'sandbox')} className="hover:text-[#1A1A1A] dark:hover:text-white transition-colors">
+                    Interactive Live Preview
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Col 3: RESOURCES */}
+            <div className="lg:col-span-3 space-y-4">
+              <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-[#1A1A1A] dark:text-white">
+                RESOURCES
+              </h4>
+              <ul className="space-y-2.5 text-sm text-[#71716E] dark:text-[#8E8E88]">
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => setShowFaqModal(true)}
+                    className="text-left hover:text-[#1A1A1A] dark:hover:text-white transition-colors cursor-pointer"
+                  >
+                    Help Center & Support
+                  </button>
+                </li>
+                <li>
+                  <a href="#why" onClick={(e) => scrollToSection(e, 'why')} className="hover:text-[#1A1A1A] dark:hover:text-white transition-colors">
+                    About RoomSync
+                  </a>
+                </li>
+                <li>
+                  <a href="#process" onClick={(e) => scrollToSection(e, 'process')} className="hover:text-[#1A1A1A] dark:hover:text-white transition-colors">
+                    How It Works
+                  </a>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => setShowFaqModal(true)}
+                    className="text-left hover:text-[#1A1A1A] dark:hover:text-white transition-colors cursor-pointer"
+                  >
+                    Privacy & Security
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            {/* Col 4: ACCOUNT */}
+            <div className="lg:col-span-2 space-y-4">
+              <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-[#1A1A1A] dark:text-white">
+                ACCOUNT
+              </h4>
+              <ul className="space-y-2.5 text-sm text-[#71716E] dark:text-[#8E8E88]">
+                <li>
+                  <Link to="/login" className="hover:text-[#1A1A1A] dark:hover:text-white transition-colors">
+                    Sign In
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/register" className="hover:text-[#1A1A1A] dark:hover:text-white transition-colors">
+                    Create Household
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/join" className="hover:text-[#1A1A1A] dark:hover:text-white transition-colors">
+                    Join Household
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/login" className="hover:text-[#1A1A1A] dark:hover:text-white transition-colors">
+                    Reset Password
+                  </Link>
+                </li>
+              </ul>
             </div>
           </div>
 
-          <div className="flex items-center gap-6">
-            <a href="#why" onClick={(e) => scrollToSection(e, 'why')} className="hover:text-white transition-colors">Why RoomSync</a>
-            <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="hover:text-white transition-colors">Features</a>
-            <a href="#process" onClick={(e) => scrollToSection(e, 'process')} className="hover:text-white transition-colors">The process</a>
-            <a href="#faq" onClick={(e) => scrollToSection(e, 'faq')} className="hover:text-white transition-colors">FAQ</a>
-            <Link to="/login" className="hover:text-white transition-colors">Sign in</Link>
-            <Link to="/register" className="hover:text-white transition-colors">Register</Link>
-          </div>
+          {/* Bottom Bar with Divider */}
+          <div className="pt-8 border-t border-[#E8E7E1] dark:border-[#2A2A28] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#71716E] dark:text-[#8E8E88]">
+            <p>&copy; {new Date().getFullYear()} RoomSync Inc. All rights reserved.</p>
 
-          <div className="flex items-center gap-4 text-[#8E8E88]">
-            <span>&copy; {new Date().getFullYear()} roomsync. Good things, together.</span>
-            <button
-              type="button"
-              onClick={toggleTheme}
-              aria-label="Toggle theme"
-              title={`Switch to ${isDark ? 'Light' : 'Dark'} theme`}
-              className="size-8 rounded-lg bg-[#1E1E1C] border border-[#2E2E2A] flex items-center justify-center text-[#A8A7A0] hover:text-white transition-all hover:scale-105 cursor-pointer select-none"
-            >
-              {isDark ? '☼' : '☾'}
-            </button>
+            <div className="flex items-center gap-6">
+              <button type="button" onClick={() => setShowFaqModal(true)} className="hover:text-[#1A1A1A] dark:hover:text-white transition-colors cursor-pointer">
+                Privacy Policy
+              </button>
+              <button type="button" onClick={() => setShowFaqModal(true)} className="hover:text-[#1A1A1A] dark:hover:text-white transition-colors cursor-pointer">
+                Terms of Service
+              </button>
+              <button type="button" onClick={() => setShowFaqModal(true)} className="hover:text-[#1A1A1A] dark:hover:text-white transition-colors cursor-pointer">
+                Security Whitepaper
+              </button>
+              <button
+                type="button"
+                onClick={toggleTheme}
+                aria-label="Toggle theme"
+                title={`Switch to ${isDark ? 'Light' : 'Dark'} theme`}
+                className="size-8 rounded-lg bg-[#EAE8E1] dark:bg-[#1E1E1C] border border-[#E8E7E1] dark:border-[#2E2E2A] flex items-center justify-center text-[#1A1A1A] dark:text-[#FAF9F5] hover:scale-105 transition-transform cursor-pointer shadow-2xs"
+              >
+                {isDark ? '☼' : '☾'}
+              </button>
+            </div>
           </div>
         </div>
       </footer>
+
+      {/* ======================================================== */}
+      {/* 10. FAQ & HELP CENTER MODAL DIALOG */}
+      {/* ======================================================== */}
+      {showFaqModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-md animate-fade-in"
+          onClick={() => setShowFaqModal(false)}
+        >
+          <div
+            className="relative w-full max-w-2xl max-h-[85vh] overflow-y-auto bg-[#FAF9F5] dark:bg-[#141413] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 text-[#1A1A1A] dark:text-white animate-scale-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-start justify-between gap-4 border-b border-[#E8E7E1] dark:border-[#2A2A28] pb-5">
+              <div>
+                <span className="text-xs font-semibold uppercase tracking-widest text-[#71716E] dark:text-[#8E8E88]">
+                  Help Center & Support
+                </span>
+                <h3 className="text-2xl font-medium tracking-tight text-[#1A1A1A] dark:text-white mt-1">
+                  Frequently Asked Questions
+                </h3>
+                <p className="text-xs text-[#71716E] dark:text-[#8E8E88] mt-1">
+                  Everything you need to know about setting up and running your household space.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowFaqModal(false)}
+                className="size-9 rounded-full bg-[#EAE8E1] dark:bg-[#1E1E1C] border border-[#E8E7E1] dark:border-[#2E2E2A] flex items-center justify-center text-[#71716E] dark:text-[#8E8E88] hover:text-[#1A1A1A] dark:hover:text-white transition-colors cursor-pointer"
+                aria-label="Close modal"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Questions Accordion */}
+            <div className="space-y-3">
+              {faqs.map((faq, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white dark:bg-[#1E1E1C] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-2xl overflow-hidden transition-colors"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                    className="w-full text-left p-4 sm:p-5 flex items-center justify-between gap-4 text-sm font-medium text-[#1A1A1A] dark:text-white focus:outline-none cursor-pointer"
+                  >
+                    <span>{faq.q}</span>
+                    <span className={`text-[#1A1A1A] dark:text-white text-lg transition-transform duration-200 ${openFaq === idx ? 'rotate-45' : ''}`}>
+                      +
+                    </span>
+                  </button>
+                  {openFaq === idx && (
+                    <div className="px-4 sm:px-5 pb-5 text-xs sm:text-sm text-[#71716E] dark:text-[#A8A7A0] leading-relaxed border-t border-[#E8E7E1]/50 dark:border-[#2A2A28]/50 pt-3">
+                      {faq.a}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Modal Footer CTA */}
+            <div className="pt-4 border-t border-[#E8E7E1] dark:border-[#2A2A28] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#71716E] dark:text-[#8E8E88]">
+              <span>Have another question? Ready to get started?</span>
+              <Link
+                to="/register"
+                onClick={() => setShowFaqModal(false)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A] font-medium text-xs hover:opacity-90 transition-opacity"
+              >
+                Create Household Space &rarr;
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
