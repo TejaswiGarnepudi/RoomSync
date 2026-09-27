@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import AuthLayout from '../layouts/AuthLayout';
@@ -17,10 +17,110 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Compute password strength and criteria
+  const passwordCriteria = useMemo(() => {
+    const pwd = formData.password;
+    const name = formData.name.toLowerCase().trim();
+    const email = formData.email.toLowerCase().trim();
+    const emailPrefix = email ? email.split('@')[0] : '';
+
+    const hasMinLength = pwd.length >= 8;
+    const hasUpper = /[A-Z]/.test(pwd);
+    const hasLower = /[a-z]/.test(pwd);
+    const hasNumber = /[0-9]/.test(pwd);
+    const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(pwd);
+
+    // Check if password contains name (parts >= 3 chars)
+    let containsName = false;
+    if (name) {
+      const parts = name.split(/[\s_-]+/).filter(p => p.length >= 3);
+      for (const part of parts) {
+        if (pwd.toLowerCase().includes(part)) {
+          containsName = true;
+          break;
+        }
+      }
+    }
+
+    // Check if password contains email prefix (if >= 3 chars)
+    let containsEmail = false;
+    if (emailPrefix && emailPrefix.length >= 3 && pwd.toLowerCase().includes(emailPrefix)) {
+      containsEmail = true;
+    }
+
+    const doesNotContainPersonal = !containsName && !containsEmail;
+
+    let score = 0;
+    if (hasMinLength) score += 1;
+    if (hasUpper && hasLower) score += 1;
+    if (hasNumber && hasSymbol) score += 1;
+    if (doesNotContainPersonal && pwd.length >= 10) score += 1;
+
+    let label = 'Too Weak';
+    let color = 'bg-rose-500';
+    let textColor = 'text-rose-600 dark:text-rose-400';
+
+    if (score === 1) {
+      label = 'Weak';
+      color = 'bg-rose-500';
+      textColor = 'text-rose-600 dark:text-rose-400';
+    } else if (score === 2) {
+      label = 'Fair';
+      color = 'bg-amber-500';
+      textColor = 'text-amber-600 dark:text-amber-400';
+    } else if (score === 3) {
+      label = 'Good';
+      color = 'bg-cyan-500';
+      textColor = 'text-cyan-600 dark:text-cyan-400';
+    } else if (score === 4) {
+      label = 'Strong';
+      color = 'bg-emerald-500';
+      textColor = 'text-emerald-600 dark:text-emerald-400';
+    }
+
+    const isValid = hasMinLength && (hasUpper && hasLower) && (hasNumber || hasSymbol) && doesNotContainPersonal;
+
+    return {
+      hasMinLength,
+      hasUpper,
+      hasLower,
+      hasNumber,
+      hasSymbol,
+      doesNotContainPersonal,
+      containsName,
+      containsEmail,
+      score,
+      label,
+      color,
+      textColor,
+      isValid
+    };
+  }, [formData.password, formData.name, formData.email]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
       setError('Please fill in all fields');
+      return;
+    }
+
+    if (!passwordCriteria.hasMinLength) {
+      setError('Password must be at least 8 characters long');
+      return;
+    }
+
+    if (passwordCriteria.containsName) {
+      setError('For security, your password cannot contain your name');
+      return;
+    }
+
+    if (passwordCriteria.containsEmail) {
+      setError('For security, your password cannot contain your email username');
+      return;
+    }
+
+    if (!passwordCriteria.isValid) {
+      setError('Please choose a stronger password matching all security criteria');
       return;
     }
     
@@ -33,7 +133,7 @@ export default function Register() {
     setLoading(true);
     
     try {
-      await register(formData.name, formData.email, formData.password);
+      await register(formData.name.trim(), formData.email.trim(), formData.password);
       navigate('/dashboard', { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create account');
@@ -102,12 +202,19 @@ export default function Register() {
 
         {/* Password Field */}
         <div>
-          <label
-            htmlFor="password"
-            className="block text-xs font-semibold uppercase tracking-wider text-[#71716E] dark:text-[#8E8E88] mb-1"
-          >
-            Password
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label
+              htmlFor="password"
+              className="block text-xs font-semibold uppercase tracking-wider text-[#71716E] dark:text-[#8E8E88]"
+            >
+              Password
+            </label>
+            {formData.password && (
+              <span className={`text-[11px] font-semibold ${passwordCriteria.textColor}`}>
+                {passwordCriteria.label}
+              </span>
+            )}
+          </div>
           <div className="relative">
             <input
               id="password"
@@ -139,6 +246,42 @@ export default function Register() {
               )}
             </button>
           </div>
+
+          {/* Interactive Password Strength Progress Meter */}
+          {formData.password && (
+            <div className="mt-2 space-y-2 animate-fade-in-up">
+              {/* Strength Bar Segments */}
+              <div className="grid grid-cols-4 gap-1.5 h-1.5 w-full">
+                <div className={`rounded-full transition-all duration-300 ${passwordCriteria.score >= 1 ? passwordCriteria.color : 'bg-[#EAE8E1] dark:bg-[#252522]'}`} />
+                <div className={`rounded-full transition-all duration-300 ${passwordCriteria.score >= 2 ? passwordCriteria.color : 'bg-[#EAE8E1] dark:bg-[#252522]'}`} />
+                <div className={`rounded-full transition-all duration-300 ${passwordCriteria.score >= 3 ? passwordCriteria.color : 'bg-[#EAE8E1] dark:bg-[#252522]'}`} />
+                <div className={`rounded-full transition-all duration-300 ${passwordCriteria.score >= 4 ? passwordCriteria.color : 'bg-[#EAE8E1] dark:bg-[#252522]'}`} />
+              </div>
+
+              {/* Password Requirement Checklist */}
+              <div className="p-3 bg-[#FAF9F5] dark:bg-[#181816] rounded-xl border border-[#E8E7E1] dark:border-[#2A2A28] grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px]">
+                <div className={`flex items-center gap-1.5 ${passwordCriteria.hasMinLength ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-[#71716E] dark:text-[#8E8E88]'}`}>
+                  <span>{passwordCriteria.hasMinLength ? '✓' : '○'}</span>
+                  <span>8+ characters</span>
+                </div>
+
+                <div className={`flex items-center gap-1.5 ${passwordCriteria.hasUpper && passwordCriteria.hasLower ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-[#71716E] dark:text-[#8E8E88]'}`}>
+                  <span>{passwordCriteria.hasUpper && passwordCriteria.hasLower ? '✓' : '○'}</span>
+                  <span>Uppercase & lowercase</span>
+                </div>
+
+                <div className={`flex items-center gap-1.5 ${passwordCriteria.hasNumber || passwordCriteria.hasSymbol ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-[#71716E] dark:text-[#8E8E88]'}`}>
+                  <span>{passwordCriteria.hasNumber || passwordCriteria.hasSymbol ? '✓' : '○'}</span>
+                  <span>Number or symbol</span>
+                </div>
+
+                <div className={`flex items-center gap-1.5 ${passwordCriteria.doesNotContainPersonal ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-rose-600 dark:text-rose-400 font-medium'}`}>
+                  <span>{passwordCriteria.doesNotContainPersonal ? '✓' : '✕'}</span>
+                  <span>No name or email</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Confirm Password Field */}
@@ -164,8 +307,8 @@ export default function Register() {
         <div className="pt-2">
           <button
             type="submit"
-            disabled={loading}
-            className="w-full h-12 rounded-xl bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A] text-sm font-semibold flex items-center justify-center gap-2 hover:bg-black dark:hover:bg-[#FAF9F5] active:scale-[0.99] transition-all shadow-md disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+            disabled={loading || (formData.password && !passwordCriteria.isValid)}
+            className="w-full h-12 rounded-xl bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A] text-sm font-semibold flex items-center justify-center gap-2 hover:bg-black dark:hover:bg-[#FAF9F5] active:scale-[0.99] transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {loading ? (
               <div className="flex items-center gap-2">

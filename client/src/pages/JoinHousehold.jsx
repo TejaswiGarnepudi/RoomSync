@@ -19,45 +19,48 @@ export default function JoinHousehold() {
       await joinHousehold({ inviteCode });
       navigate('/household');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to join household. Invalid code?');
+      setError(err.response?.data?.message || 'Failed to join household. Please check the code.');
       setLoading(false);
     }
   };
 
   return (
     <AppLayout>
-      <div className="max-w-md mx-auto mt-12">
-        <Card title="Join Household">
-          <div className="text-center py-4">
-            <div className="w-16 h-16 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
-            </div>
-            
-            <h2 className="text-xl font-medium text-stone-900 mb-2">
-              You've been invited!
+      <div className="max-w-md mx-auto mt-12 animate-fade-in-up">
+        <div className="bg-white dark:bg-[#141413] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-3xl p-8 sm:p-10 text-center shadow-sm space-y-6">
+          <div className="size-16 rounded-3xl bg-[#EAE8E1] dark:bg-[#1E1E1C] text-[#1A1A1A] dark:text-white flex items-center justify-center mx-auto text-2xl">
+            🏠
+          </div>
+          
+          <div className="space-y-2">
+            <h2 className="text-2xl font-normal tracking-tight text-[#1A1A1A] dark:text-white">
+              You're Invited!
             </h2>
-            <p className="text-stone-600 mb-6">
-              You are about to join a household with invite code: <strong className="font-mono">{inviteCode}</strong>
+            <p className="text-xs text-[#71716E] dark:text-[#8E8E88] leading-relaxed">
+              You are about to join this shared household space with code:
             </p>
-            
-            {error && (
-              <div className="mb-6 p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-100 text-left">
-                {error}
-              </div>
-            )}
-
-            <div className="flex gap-3">
-              <Button variant="secondary" fullWidth onClick={() => navigate('/dashboard')}>
-                Cancel
-              </Button>
-              <Button fullWidth onClick={handleJoin} isLoading={loading}>
-                Join Now
-              </Button>
+            <div className="p-3 bg-[#FAF9F5] dark:bg-[#181816] rounded-xl border border-[#E8E7E1] dark:border-[#2A2A28]">
+              <span className="font-mono text-xl font-medium tracking-widest text-[#1A1A1A] dark:text-white">
+                {inviteCode}
+              </span>
             </div>
           </div>
-        </Card>
+          
+          {error && (
+            <div className="p-3 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs rounded-xl border border-rose-200 dark:border-rose-900/50 text-left">
+              {error}
+            </div>
+          )}
+
+          <div className="flex gap-3 pt-2">
+            <Button variant="outline" fullWidth onClick={() => navigate('/dashboard')}>
+              Cancel
+            </Button>
+            <Button fullWidth onClick={handleJoin} isLoading={loading}>
+              Join Space &rarr;
+            </Button>
+          </div>
+        </div>
       </div>
     </AppLayout>
   );

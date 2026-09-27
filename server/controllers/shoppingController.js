@@ -28,12 +28,15 @@ exports.createShoppingList = async (req, res, next) => {
       description = '',
       shoppingDate,
       shoppingTime = '17:00',
-      assignedTo = null
+      assignedTo: rawAssignedTo
     } = req.body;
 
-    if (!name || !shoppingDate) {
+    const assignedTo = rawAssignedTo && typeof rawAssignedTo === 'string' && rawAssignedTo.trim() !== '' ? rawAssignedTo.trim() : null;
+    const finalShoppingDate = shoppingDate || new Date().toISOString().split('T')[0];
+
+    if (!name || !name.trim()) {
       res.status(400);
-      throw new Error('Please provide shopping list name and date');
+      throw new Error('Please provide shopping list name');
     }
 
     if (assignedTo) {
@@ -46,11 +49,11 @@ exports.createShoppingList = async (req, res, next) => {
 
     const list = await ShoppingList.create({
       householdId: household._id,
-      name,
+      name: name.trim(),
       description,
-      shoppingDate,
+      shoppingDate: finalShoppingDate,
       shoppingTime,
-      assignedTo,
+      assignedTo: assignedTo || null,
       status: 'planned',
       createdBy: req.user._id
     });

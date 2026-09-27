@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import AuthLayout from '../layouts/AuthLayout';
 
@@ -85,6 +85,12 @@ export default function Login() {
             >
               Password
             </label>
+            <Link
+              to="/forgot-password"
+              className="text-xs text-[#71716E] dark:text-[#8E8E88] hover:text-[#1A1A1A] dark:hover:text-white hover:underline transition-colors"
+            >
+              Forgot password?
+            </Link>
           </div>
           <div className="relative">
             <input

@@ -1,384 +1,449 @@
 import React, { useContext, useState, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import NotificationDropdown from '../components/NotificationDropdown';
 import GlobalSearchModal from '../components/GlobalSearchModal';
 
 export default function AppLayout({ children }) {
   const { user, logout } = useContext(AuthContext);
+  const { isDark, toggleTheme } = useTheme();
   const location = useLocation();
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  
-  // Dropdown states
-  const [activeDropdown, setActiveDropdown] = useState(null); // 'household' | 'tasks' | 'finance' | 'calendar' | 'user'
-  const navRef = useRef(null);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
 
-  // Track scroll position for smooth navbar glass elevation
+  // Keyboard shortcut for search (⌘K or Ctrl+K)
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 15);
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsSearchOpen((prev) => !prev);
+      }
     };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Close dropdowns on outside click
+  // Close user menu on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (navRef.current && !navRef.current.contains(event.target)) {
-        setActiveDropdown(null);
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setUserMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Close dropdowns and drawer on route change
+  // Close menus on route change
   useEffect(() => {
-    setActiveDropdown(null);
+    setUserMenuOpen(false);
     setMobileDrawerOpen(false);
   }, [location.pathname]);
 
-  const toggleDropdown = (name) => {
-    setActiveDropdown(prev => prev === name ? null : name);
+  const navItems = [
+    {
+      to: '/dashboard',
+      label: 'Dashboard',
+      active: location.pathname === '/dashboard',
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="7" height="9" rx="2" />
+          <rect x="14" y="3" width="7" height="5" rx="2" />
+          <rect x="14" y="12" width="7" height="9" rx="2" />
+          <rect x="3" y="16" width="7" height="5" rx="2" />
+        </svg>
+      )
+    },
+    {
+      to: '/chores',
+      label: 'Chores',
+      active: location.pathname.startsWith('/chores'),
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z" />
+        </svg>
+      )
+    },
+    {
+      to: '/shopping',
+      label: 'Groceries',
+      active: location.pathname.startsWith('/shopping'),
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <path d="M16 10a4 4 0 0 1-8 0" />
+        </svg>
+      )
+    },
+    {
+      to: '/expenses',
+      label: 'Expenses',
+      active: location.pathname.startsWith('/expenses'),
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <rect width="20" height="14" x="2" y="5" rx="2" />
+          <line x1="2" y1="10" x2="22" y2="10" />
+        </svg>
+      )
+    },
+    {
+      to: '/household-calendar',
+      label: 'Calendar',
+      active: location.pathname.includes('calendar'),
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <rect width="18" height="18" x="3" y="4" rx="2" />
+          <line x1="16" y1="2" x2="16" y2="6" />
+          <line x1="8" y1="2" x2="8" y2="6" />
+          <line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
+      )
+    },
+    {
+      to: '/help',
+      label: 'Help & Favors',
+      active: location.pathname.startsWith('/help'),
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+        </svg>
+      )
+    },
+    {
+      to: '/decisions',
+      label: 'Decisions',
+      active: location.pathname.startsWith('/decisions'),
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="m3 16 4-4 4 4" />
+          <path d="m13 8 4-4 4 4" />
+          <path d="M7 12V3" />
+          <path d="M17 4v17" />
+        </svg>
+      )
+    },
+    {
+      to: '/household',
+      label: 'Roommates',
+      active: location.pathname === '/household',
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      )
+    },
+  ];
+
+  const secondaryItems = [
+    {
+      to: '/contribution',
+      label: 'Workload Insights',
+      active: location.pathname === '/contribution',
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 3v18h18" />
+          <path d="m19 9-5 5-4-4-3 3" />
+        </svg>
+      )
+    },
+    {
+      to: '/calendar',
+      label: 'My Availability',
+      active: location.pathname === '/calendar',
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+      )
+    },
+    {
+      to: '/notifications',
+      label: 'Notifications',
+      active: location.pathname === '/notifications',
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+          <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+        </svg>
+      )
+    },
+    {
+      to: '/settings',
+      label: 'Account Settings',
+      active: location.pathname === '/settings',
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+        </svg>
+      )
+    },
+  ];
+
+  // Derive current page title for desktop top bar
+  const getCurrentPageTitle = () => {
+    const all = [...navItems, ...secondaryItems];
+    const match = all.find(item => item.active);
+    return match ? match.label : 'Household';
   };
 
-  const isHouseholdActive = ['/household', '/join'].some(p => location.pathname.startsWith(p));
-  const isTasksActive = ['/chores', '/shopping', '/help', '/decisions'].some(p => location.pathname.startsWith(p));
-  const isFinanceActive = ['/expenses', '/contribution'].some(p => location.pathname.startsWith(p));
-  const isCalendarActive = ['/calendar', '/household-calendar'].some(p => location.pathname.startsWith(p));
-  const isDashboardActive = location.pathname === '/dashboard';
-
   return (
-    <div className="min-h-screen bg-[#F4EDE3] text-[#234653] flex flex-col font-sans selection:bg-[#F2D4C8] selection:text-[#234653]">
-      {/* Stylish & Elegant Top Main Navigation Bar */}
-      <nav ref={navRef} className={`sticky top-0 z-40 transition-all duration-300 ${scrolled ? 'bg-[#F4EDE3]/95 backdrop-blur-md shadow-xs border-b border-[#E8DEC8]' : 'bg-[#F4EDE3]/85 backdrop-blur-md border-b border-[#E8DEC8]/80'}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            {/* Left: Brand Logo with refined icon & typography */}
-            <div className="flex items-center gap-7">
-              <Link to="/dashboard" className="flex items-center gap-2.5 group">
-                <div className="w-9 h-9 rounded-2xl bg-[#234653] text-[#FFF9F1] flex items-center justify-center font-serif text-base font-bold shadow-xs group-hover:bg-[#17272C] group-hover:scale-105 group-active:scale-95 transition-all duration-200">
-                  ✦
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-lg font-bold text-[#234653] font-serif-editorial tracking-tight leading-none group-hover:text-[#17272C] transition-colors">
-                    RoomSync
-                  </span>
-                  <span className="text-[9px] uppercase font-bold text-[#3E737C] tracking-widest mt-0.5 opacity-70">
-                    Household OS
-                  </span>
-                </div>
+    <div className="min-h-screen bg-[#FAF9F5] dark:bg-[#0E0E0D] text-[#1A1A1A] dark:text-[#FAF9F5] flex font-sans transition-colors duration-300 antialiased selection:bg-[#1A1A1A] selection:text-white dark:selection:bg-white dark:selection:text-[#1A1A1A]">
+      
+      {/* ========================================================================= */}
+      {/* DESKTOP SIDE TOOLBAR / SIDEBAR (Fixed Left w-64 / w-72) */}
+      {/* ========================================================================= */}
+      <aside className="fixed inset-y-0 left-0 w-64 xl:w-72 bg-[#FAF9F5] dark:bg-[#0E0E0D] border-r border-[#E8E7E1] dark:border-[#2A2A28] z-30 hidden lg:flex flex-col justify-between py-6 px-4 xl:px-5 transition-colors duration-300 select-none">
+        
+        {/* Top: Brand Logo */}
+        <div className="space-y-6">
+          <Link
+            to="/dashboard"
+            className="flex items-center gap-3 px-2 py-1 group transition-transform duration-200"
+          >
+            <svg width="30" height="30" viewBox="0 0 40 40" fill="none" className="text-[#1A1A1A] dark:text-white transition-transform group-hover:scale-105">
+              <rect x="4" y="4" width="23" height="23" rx="8" stroke="currentColor" strokeWidth="1.8" />
+              <rect x="13" y="13" width="23" height="23" rx="8" stroke="currentColor" strokeWidth="1.8" />
+              <path d="M13 20h14M20 13v14" stroke="currentColor" strokeWidth="1.8" />
+            </svg>
+            <span className="text-xl font-medium tracking-[-1px] text-[#1A1A1A] dark:text-white">
+              roomsync
+            </span>
+          </Link>
+        </div>
+
+        {/* Middle: Navigation Links */}
+        <div className="flex-1 py-4 overflow-y-auto space-y-6 no-scrollbar">
+          {/* Main Menu Links */}
+          <div className="space-y-1">
+            <p className="px-3 text-[10px] font-semibold text-[#8E8E88] dark:text-[#6C6C68] uppercase tracking-wider mb-2">
+              Menu
+            </p>
+            {navItems.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium tracking-[-0.015em] transition-all duration-200 group ${
+                  item.active
+                    ? 'bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A] font-semibold shadow-xs'
+                    : 'text-[#71716E] dark:text-[#A8A7A0] hover:text-[#1A1A1A] dark:hover:text-white hover:bg-[#EAE8E1]/60 dark:hover:bg-[#1C1C1A]'
+                }`}
+              >
+                <span className={`shrink-0 transition-transform group-hover:scale-110 ${item.active ? 'text-white dark:text-[#1A1A1A]' : 'text-[#8E8E88] dark:text-[#888880]'}`}>
+                  {item.icon}
+                </span>
+                <span>{item.label}</span>
+              </Link>
+            ))}
+          </div>
+
+          {/* Insights & Preferences */}
+          <div className="space-y-1 pt-2 border-t border-[#E8E7E1] dark:border-[#2A2A28]/60">
+            <p className="px-3 text-[10px] font-semibold text-[#8E8E88] dark:text-[#6C6C68] uppercase tracking-wider mb-2">
+              Insights & Tools
+            </p>
+            {secondaryItems.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium tracking-[-0.015em] transition-all duration-200 group ${
+                  item.active
+                    ? 'bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A] font-semibold shadow-xs'
+                    : 'text-[#71716E] dark:text-[#A8A7A0] hover:text-[#1A1A1A] dark:hover:text-white hover:bg-[#EAE8E1]/60 dark:hover:bg-[#1C1C1A]'
+                }`}
+              >
+                <span className={`shrink-0 transition-transform group-hover:scale-110 ${item.active ? 'text-white dark:text-[#1A1A1A]' : 'text-[#8E8E88] dark:text-[#888880]'}`}>
+                  {item.icon}
+                </span>
+                <span>{item.label}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom Sidebar Footer */}
+        <div className="pt-4 border-t border-[#E8E7E1] dark:border-[#2A2A28] px-2 text-[11px] text-[#8E8E88] dark:text-[#6C6C68] flex items-center justify-between">
+          <span>RoomSync &copy; {new Date().getFullYear()}</span>
+          <span className="size-1.5 rounded-full bg-emerald-500 inline-block" title="System Online"></span>
+        </div>
+      </aside>
+
+      {/* ========================================================================= */}
+      {/* MAIN WORKSPACE (with Top Bar on Desktop + Header on Mobile) */}
+      {/* ========================================================================= */}
+      <div className="flex-1 lg:pl-64 xl:pl-72 flex flex-col min-h-screen transition-all duration-300">
+        
+        {/* ========================================================================= */}
+        {/* TOP BAR HEADER (Search, Theme Toggle, Notifications, Profile at TOP RIGHT) */}
+        {/* ========================================================================= */}
+        <header className="sticky top-0 z-30 bg-[#FAF9F5]/90 dark:bg-[#0E0E0D]/90 backdrop-blur-[24px] border-b border-[#E8E7E1] dark:border-[#2A2A28] transition-colors duration-300">
+          <div className="w-full px-4 sm:px-8 lg:px-10 h-18 flex items-center justify-between">
+            
+            {/* Left: Mobile Brand / Desktop Current Section Title */}
+            <div className="flex items-center gap-3">
+              {/* Mobile Brand Link (< lg) */}
+              <Link to="/dashboard" className="flex lg:hidden items-center gap-2 group">
+                <svg width="26" height="26" viewBox="0 0 40 40" fill="none" className="text-[#1A1A1A] dark:text-white">
+                  <rect x="4" y="4" width="23" height="23" rx="8" stroke="currentColor" strokeWidth="1.8" />
+                  <rect x="13" y="13" width="23" height="23" rx="8" stroke="currentColor" strokeWidth="1.8" />
+                  <path d="M13 20h14M20 13v14" stroke="currentColor" strokeWidth="1.8" />
+                </svg>
+                <span className="text-lg font-medium tracking-[-0.8px] text-[#1A1A1A] dark:text-white">
+                  roomsync
+                </span>
               </Link>
 
-              {/* Center/Main Navigation Pill Container */}
-              <div className="hidden lg:flex items-center p-1 bg-[#FAF5ED]/80 rounded-2xl border border-[#E8DEC8]/70 shadow-2xs space-x-1">
-                {/* Dashboard Link */}
-                <Link
-                  to="/dashboard"
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${
-                    isDashboardActive
-                      ? 'bg-[#FFF9F1] text-[#234653] shadow-2xs border border-[#E8DEC8]'
-                      : 'text-[#3E737C] hover:text-[#234653] hover:bg-[#FFF9F1]/60'
-                  }`}
-                >
-                  Dashboard
-                </Link>
-
-                {/* Household Dropdown */}
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => toggleDropdown('household')}
-                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${
-                      isHouseholdActive || activeDropdown === 'household'
-                        ? 'bg-[#FFF9F1] text-[#234653] shadow-2xs border border-[#E8DEC8]'
-                        : 'text-[#3E737C] hover:text-[#234653] hover:bg-[#FFF9F1]/60'
-                    }`}
-                  >
-                    <span>Household</span>
-                    <svg className={`w-3 h-3 text-[#3E737C] transition-transform duration-200 ${activeDropdown === 'household' ? 'rotate-180 text-[#234653]' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-
-                  {activeDropdown === 'household' && (
-                    <div className="absolute left-0 mt-2.5 w-56 bg-[#FFF9F1]/95 backdrop-blur-md border border-[#E8DEC8] rounded-2xl shadow-xl py-2 z-50 animate-dropdown">
-                      <Link
-                        to="/household"
-                        className="group flex items-center gap-2.5 px-4 py-2.5 text-xs text-[#234653] hover:bg-[#FAF5ED] font-medium transition-colors"
-                      >
-                        <span className="p-1 rounded-lg bg-[#FAF5ED] group-hover:bg-[#F2D4C8] text-sm transition-colors">🏠</span>
-                        <div>
-                          <span className="font-semibold block">My Household</span>
-                          <span className="text-[10px] text-[#3E737C]">Overview & address</span>
-                        </div>
-                      </Link>
-                      <Link
-                        to="/household"
-                        className="group flex items-center gap-2.5 px-4 py-2.5 text-xs text-[#234653] hover:bg-[#FAF5ED] font-medium transition-colors"
-                      >
-                        <span className="p-1 rounded-lg bg-[#FAF5ED] group-hover:bg-[#F2D4C8] text-sm transition-colors">👥</span>
-                        <div>
-                          <span className="font-semibold block">Members & Invites</span>
-                          <span className="text-[10px] text-[#3E737C]">Manage roommates</span>
-                        </div>
-                      </Link>
-                      <div className="border-t border-[#E8DEC8]/60 my-1"></div>
-                      <Link
-                        to="/household"
-                        className="group flex items-center gap-2.5 px-4 py-2.5 text-xs text-[#234653] hover:bg-[#FAF5ED] font-medium transition-colors"
-                      >
-                        <span className="p-1 rounded-lg bg-[#FAF5ED] group-hover:bg-[#F2D4C8] text-sm transition-colors">⚙️</span>
-                        <div>
-                          <span className="font-semibold block">Settings</span>
-                          <span className="text-[10px] text-[#3E737C]">Household preferences</span>
-                        </div>
-                      </Link>
-                    </div>
-                  )}
-                </div>
-
-                {/* Tasks Dropdown */}
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => toggleDropdown('tasks')}
-                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${
-                      isTasksActive || activeDropdown === 'tasks'
-                        ? 'bg-[#FFF9F1] text-[#234653] shadow-2xs border border-[#E8DEC8]'
-                        : 'text-[#3E737C] hover:text-[#234653] hover:bg-[#FFF9F1]/60'
-                    }`}
-                  >
-                    <span>Tasks</span>
-                    <svg className={`w-3 h-3 text-[#3E737C] transition-transform duration-200 ${activeDropdown === 'tasks' ? 'rotate-180 text-[#234653]' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-
-                  {activeDropdown === 'tasks' && (
-                    <div className="absolute left-0 mt-2.5 w-56 bg-[#FFF9F1]/95 backdrop-blur-md border border-[#E8DEC8] rounded-2xl shadow-xl py-2 z-50 animate-dropdown">
-                      <Link
-                        to="/chores"
-                        className="group flex items-center gap-2.5 px-4 py-2.5 text-xs text-[#234653] hover:bg-[#FAF5ED] font-medium transition-colors"
-                      >
-                        <span className="p-1 rounded-lg bg-[#FAF5ED] group-hover:bg-[#DCE8E8] text-sm transition-colors">🧹</span>
-                        <div>
-                          <span className="font-semibold block">Chores Board</span>
-                          <span className="text-[10px] text-[#3E737C]">Fair rotations & tracking</span>
-                        </div>
-                      </Link>
-                      <Link
-                        to="/shopping"
-                        className="group flex items-center gap-2.5 px-4 py-2.5 text-xs text-[#234653] hover:bg-[#FAF5ED] font-medium transition-colors"
-                      >
-                        <span className="p-1 rounded-lg bg-[#FAF5ED] group-hover:bg-[#DCE8E8] text-sm transition-colors">🛍️</span>
-                        <div>
-                          <span className="font-semibold block">Shopping Lists</span>
-                          <span className="text-[10px] text-[#3E737C]">Shared groceries & items</span>
-                        </div>
-                      </Link>
-                      <Link
-                        to="/help"
-                        className="group flex items-center gap-2.5 px-4 py-2.5 text-xs text-[#234653] hover:bg-[#FAF5ED] font-medium transition-colors"
-                      >
-                        <span className="p-1 rounded-lg bg-[#FAF5ED] group-hover:bg-[#DCE8E8] text-sm transition-colors">🤝</span>
-                        <div>
-                          <span className="font-semibold block">Help & Favors</span>
-                          <span className="text-[10px] text-[#3E737C]">Roommate assistance</span>
-                        </div>
-                      </Link>
-                      <Link
-                        to="/decisions"
-                        className="group flex items-center gap-2.5 px-4 py-2.5 text-xs text-[#234653] hover:bg-[#FAF5ED] font-medium transition-colors"
-                      >
-                        <span className="p-1 rounded-lg bg-[#FAF5ED] group-hover:bg-[#DCE8E8] text-sm transition-colors">🗳️</span>
-                        <div>
-                          <span className="font-semibold block">Decisions & Polls</span>
-                          <span className="text-[10px] text-[#3E737C]">Vote & resolve topics</span>
-                        </div>
-                      </Link>
-                    </div>
-                  )}
-                </div>
-
-                {/* Finance Dropdown */}
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => toggleDropdown('finance')}
-                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${
-                      isFinanceActive || activeDropdown === 'finance'
-                        ? 'bg-[#FFF9F1] text-[#234653] shadow-2xs border border-[#E8DEC8]'
-                        : 'text-[#3E737C] hover:text-[#234653] hover:bg-[#FFF9F1]/60'
-                    }`}
-                  >
-                    <span>Finance</span>
-                    <svg className={`w-3 h-3 text-[#3E737C] transition-transform duration-200 ${activeDropdown === 'finance' ? 'rotate-180 text-[#234653]' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-
-                  {activeDropdown === 'finance' && (
-                    <div className="absolute left-0 mt-2.5 w-56 bg-[#FFF9F1]/95 backdrop-blur-md border border-[#E8DEC8] rounded-2xl shadow-xl py-2 z-50 animate-dropdown">
-                      <Link
-                        to="/expenses"
-                        className="group flex items-center gap-2.5 px-4 py-2.5 text-xs text-[#234653] hover:bg-[#FAF5ED] font-medium transition-colors"
-                      >
-                        <span className="p-1 rounded-lg bg-[#FAF5ED] group-hover:bg-[#F2D4C8] text-sm transition-colors">💰</span>
-                        <div>
-                          <span className="font-semibold block">Expenses & Splits</span>
-                          <span className="text-[10px] text-[#3E737C]">Balances & settlements</span>
-                        </div>
-                      </Link>
-                      <Link
-                        to="/contribution"
-                        className="group flex items-center gap-2.5 px-4 py-2.5 text-xs text-[#234653] hover:bg-[#FAF5ED] font-medium transition-colors"
-                      >
-                        <span className="p-1 rounded-lg bg-[#FAF5ED] group-hover:bg-[#F2D4C8] text-sm transition-colors">📊</span>
-                        <div>
-                          <span className="font-semibold block">Workload Insights</span>
-                          <span className="text-[10px] text-[#3E737C]">Fair shared contributions</span>
-                        </div>
-                      </Link>
-                    </div>
-                  )}
-                </div>
-
-                {/* Calendar Dropdown */}
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => toggleDropdown('calendar')}
-                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${
-                      isCalendarActive || activeDropdown === 'calendar'
-                        ? 'bg-[#FFF9F1] text-[#234653] shadow-2xs border border-[#E8DEC8]'
-                        : 'text-[#3E737C] hover:text-[#234653] hover:bg-[#FFF9F1]/60'
-                    }`}
-                  >
-                    <span>Calendar</span>
-                    <svg className={`w-3 h-3 text-[#3E737C] transition-transform duration-200 ${activeDropdown === 'calendar' ? 'rotate-180 text-[#234653]' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-
-                  {activeDropdown === 'calendar' && (
-                    <div className="absolute left-0 mt-2.5 w-56 bg-[#FFF9F1]/95 backdrop-blur-md border border-[#E8DEC8] rounded-2xl shadow-xl py-2 z-50 animate-dropdown">
-                      <Link
-                        to="/household-calendar"
-                        className="group flex items-center gap-2.5 px-4 py-2.5 text-xs text-[#234653] hover:bg-[#FAF5ED] font-medium transition-colors"
-                      >
-                        <span className="p-1 rounded-lg bg-[#FAF5ED] group-hover:bg-[#DCE8E8] text-sm transition-colors">📅</span>
-                        <div>
-                          <span className="font-semibold block">Household Calendar</span>
-                          <span className="text-[10px] text-[#3E737C]">All chores & events</span>
-                        </div>
-                      </Link>
-                      <Link
-                        to="/calendar"
-                        className="group flex items-center gap-2.5 px-4 py-2.5 text-xs text-[#234653] hover:bg-[#FAF5ED] font-medium transition-colors"
-                      >
-                        <span className="p-1 rounded-lg bg-[#FAF5ED] group-hover:bg-[#DCE8E8] text-sm transition-colors">🗓️</span>
-                        <div>
-                          <span className="font-semibold block">My Schedule</span>
-                          <span className="text-[10px] text-[#3E737C]">Personal availability</span>
-                        </div>
-                      </Link>
-                    </div>
-                  )}
-                </div>
+              {/* Desktop Current Page Title indicator */}
+              <div className="hidden lg:flex items-center gap-2 text-xs text-[#71716E] dark:text-[#8E8E88]">
+                <span>Household</span>
+                <span>/</span>
+                <span className="font-semibold text-[#1A1A1A] dark:text-white">{getCurrentPageTitle()}</span>
               </div>
             </div>
 
-            {/* Right: Search, Notifications, User Menu, Mobile Toggle */}
+            {/* TOP RIGHT CONTROLS: Search | Theme | Notifications | Profile */}
             <div className="flex items-center gap-2.5 sm:gap-3">
-              {/* Stylish Search Trigger Button */}
+              
+              {/* 1. Quick Search Button (⌘K) */}
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(true)}
-                title="Search household (Ctrl+K)"
-                className="p-2 sm:px-3 sm:py-2 text-[#3E737C] hover:text-[#234653] bg-[#FAF5ED]/80 hover:bg-[#FFF9F1] border border-[#E8DEC8]/80 hover:border-[#3E737C]/40 rounded-2xl transition-all duration-200 flex items-center gap-2 shadow-2xs hover:shadow-xs group active:scale-95"
+                title="Search household (⌘K or Ctrl+K)"
+                className="inline-flex items-center gap-2 h-9 px-3.5 rounded-full border border-[#E8E7E1] dark:border-[#2E2E2A] bg-[#EAE8E1] dark:bg-[#1E1E1C] text-[#71716E] dark:text-[#A8A7A0] hover:text-[#1A1A1A] dark:hover:text-white transition-all text-xs font-medium cursor-pointer shadow-2xs"
               >
-                <svg className="w-4 h-4 text-[#3E737C] group-hover:text-[#234653] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
                 </svg>
-                <span className="hidden sm:inline-block text-xs font-medium text-[#3E737C] group-hover:text-[#234653]">Search</span>
-                <kbd className="hidden md:inline-block px-1.5 py-0.5 text-[9px] font-mono bg-[#FFF9F1] text-[#3E737C] rounded-md border border-[#E8DEC8] shadow-2xs">
+                <span className="hidden sm:inline">Search</span>
+                <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono bg-white dark:bg-[#141413] text-[#71716E] dark:text-[#8E8E88] rounded-md border border-[#E8E7E1] dark:border-[#2E2E2A]">
                   ⌘K
                 </kbd>
               </button>
 
-              {/* Notification Dropdown */}
-              <NotificationDropdown />
+              {/* 2. Theme Toggle (Dark / Light) */}
+              <button
+                type="button"
+                onClick={toggleTheme}
+                aria-label="Toggle theme"
+                title={`Switch to ${isDark ? 'Light' : 'Dark'} theme`}
+                className="size-9 rounded-full border border-[#E8E7E1] dark:border-[#2E2E2A] bg-[#EAE8E1] dark:bg-[#1E1E1C] text-[#1A1A1A] dark:text-[#FAF9F5] flex items-center justify-center transition-all hover:scale-105 cursor-pointer shadow-2xs"
+              >
+                <span className="text-sm font-bold select-none">{isDark ? '☼' : '☾'}</span>
+              </button>
 
-              {/* User Avatar + Dropdown */}
-              <div className="relative">
+              {/* 3. Notification Dropdown */}
+              <NotificationDropdown align="right" direction="down" />
+
+              {/* 4. User Profile Dropdown Pill */}
+              <div className="relative" ref={userMenuRef}>
                 <button
                   type="button"
-                  onClick={() => toggleDropdown('user')}
-                  className="flex items-center gap-2 p-1.5 pr-2.5 rounded-2xl bg-[#FAF5ED]/80 hover:bg-[#FFF9F1] transition-all duration-200 border border-[#E8DEC8]/80 hover:border-[#3E737C]/40 shadow-2xs active:scale-95"
+                  onClick={() => setUserMenuOpen((prev) => !prev)}
+                  className="flex items-center gap-2.5 h-9 pl-1 pr-3 rounded-full bg-[#EAE8E1] dark:bg-[#1E1E1C] border border-[#E8E7E1] dark:border-[#2E2E2A] hover:bg-[#E2E1DA] dark:hover:bg-[#252522] transition-all cursor-pointer shadow-2xs"
                   aria-label="User account menu"
                 >
-                  <div className="relative">
-                    <div className="w-8 h-8 rounded-xl bg-[#234653] text-[#FFF9F1] font-semibold flex items-center justify-center text-xs shadow-2xs font-serif">
-                      {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                    </div>
-                    {/* Synchronized dot */}
-                    <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-[#E86F5A] border-2 border-[#FFF9F1] rounded-full"></span>
+                  <div className="size-7 rounded-full bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A] font-semibold flex items-center justify-center text-[10px] shrink-0 overflow-hidden">
+                    {user?.profilePhoto ? (
+                      <img
+                        src={user.profilePhoto}
+                        alt={user?.name || 'Profile'}
+                        className="size-full object-cover"
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
+                    ) : (
+                      <span>{user?.name ? user.name.charAt(0).toUpperCase() : 'U'}</span>
+                    )}
                   </div>
-
-                  <span className="hidden sm:inline-block text-xs font-semibold text-[#234653] max-w-[100px] truncate text-left">
-                    {user?.name || 'Account'}
+                  <span className="text-xs font-medium text-[#1A1A1A] dark:text-white max-w-[90px] sm:max-w-[120px] truncate text-left">
+                    {user?.name?.split(' ')[0] || 'Account'}
                   </span>
-                  <svg className={`w-3 h-3 text-[#3E737C] transition-transform duration-200 ${activeDropdown === 'user' ? 'rotate-180 text-[#234653]' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`text-[#71716E] dark:text-[#8E8E88] transition-transform ${userMenuOpen ? 'rotate-180' : ''}`}>
+                    <path d="m6 9 6 6 6-6" />
                   </svg>
                 </button>
 
-                {activeDropdown === 'user' && (
-                  <div className="absolute right-0 mt-2.5 w-64 bg-[#FFF9F1]/95 backdrop-blur-md border border-[#E8DEC8] rounded-2xl shadow-xl py-2 z-50 animate-dropdown">
-                    <div className="px-4 py-3 border-b border-[#E8DEC8]/60 bg-[#FAF5ED]/60 flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-[#234653] text-[#FFF9F1] font-bold flex items-center justify-center text-sm font-serif shadow-2xs">
-                        {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                {/* Profile Popup Menu (Downward) */}
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2.5 w-64 bg-white dark:bg-[#141413] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-2xl shadow-xl py-2 z-50 animate-dropdown text-xs">
+                    <div className="px-4 py-3 border-b border-[#E8E7E1] dark:border-[#2A2A28] bg-[#FAF9F5] dark:bg-[#181816] flex items-center gap-3">
+                      <div className="size-9 rounded-full bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A] font-semibold flex items-center justify-center text-xs shrink-0 overflow-hidden">
+                        {user?.profilePhoto ? (
+                          <img
+                            src={user.profilePhoto}
+                            alt={user?.name || 'Profile'}
+                            className="size-full object-cover"
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                          />
+                        ) : (
+                          <span>{user?.name ? user.name.charAt(0).toUpperCase() : 'U'}</span>
+                        )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-bold text-[#234653] font-serif-editorial truncate">{user?.name}</p>
-                        <p className="text-[10px] text-[#3E737C] truncate mt-0.5">{user?.email}</p>
+                        <p className="font-semibold text-[#1A1A1A] dark:text-white truncate">{user?.name}</p>
+                        <p className="text-[11px] text-[#71716E] dark:text-[#8E8E88] truncate mt-0.5">{user?.email}</p>
                       </div>
                     </div>
 
                     <div className="py-1">
                       <Link
-                        to="/household"
-                        className="flex items-center gap-2.5 px-4 py-2 text-xs text-[#234653] hover:bg-[#FAF5ED] font-medium transition-colors"
+                        to="/settings"
+                        onClick={() => setUserMenuOpen(false)}
+                        className={`flex items-center gap-2.5 px-4 py-2.5 font-medium transition-colors ${
+                          location.pathname === '/settings'
+                            ? 'bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A]'
+                            : 'text-[#1A1A1A] dark:text-white hover:bg-[#FAF9F5] dark:hover:bg-[#181816]'
+                        }`}
                       >
-                        <span className="text-sm">🏠</span> Household Profile
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                          <circle cx="12" cy="12" r="3" />
+                          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                        </svg>
+                        <span>⚙️ Account Settings</span>
+                      </Link>
+
+                      <Link
+                        to="/household"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2 text-[#71716E] dark:text-[#A8A7A0] hover:text-[#1A1A1A] dark:hover:text-white hover:bg-[#FAF9F5] dark:hover:bg-[#181816] transition-colors"
+                      >
+                        <span>🏠</span> My Household
                       </Link>
                       <Link
                         to="/calendar"
-                        className="flex items-center gap-2.5 px-4 py-2 text-xs text-[#234653] hover:bg-[#FAF5ED] font-medium transition-colors"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2 text-[#71716E] dark:text-[#A8A7A0] hover:text-[#1A1A1A] dark:hover:text-white hover:bg-[#FAF9F5] dark:hover:bg-[#181816] transition-colors"
                       >
-                        <span className="text-sm">🗓️</span> My Availability
+                        <span>🗓️</span> My Availability
                       </Link>
                       <Link
-                        to="/household"
-                        className="flex items-center gap-2.5 px-4 py-2 text-xs text-[#234653] hover:bg-[#FAF5ED] font-medium transition-colors"
+                        to="/contribution"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2 text-[#71716E] dark:text-[#A8A7A0] hover:text-[#1A1A1A] dark:hover:text-white hover:bg-[#FAF9F5] dark:hover:bg-[#181816] transition-colors"
                       >
-                        <span className="text-sm">⚙️</span> Household Settings
+                        <span>📊</span> Workload Insights
                       </Link>
                     </div>
 
-                    <div className="border-t border-[#E8DEC8]/60 pt-1">
+                    <div className="border-t border-[#E8E7E1] dark:border-[#2A2A28] pt-1">
                       <button
                         type="button"
-                        onClick={logout}
-                        className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-[#E86F5A] hover:bg-[#FBF1EB] font-semibold transition-colors text-left"
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          logout();
+                        }}
+                        className="w-full flex items-center gap-2.5 px-4 py-2 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 font-medium transition-colors text-left cursor-pointer"
                       >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" />
                         </svg>
                         Sign Out
                       </button>
@@ -387,203 +452,142 @@ export default function AppLayout({ children }) {
                 )}
               </div>
 
-              {/* Mobile Drawer Hamburger Button */}
-              <div className="flex lg:hidden">
+
+              {/* Mobile Drawer Hamburger Button (< lg) */}
+              <button
+                type="button"
+                onClick={() => setMobileDrawerOpen(!mobileDrawerOpen)}
+                className="lg:hidden size-9 rounded-full border border-[#E8E7E1] dark:border-[#2E2E2A] bg-[#EAE8E1] dark:bg-[#1E1E1C] text-[#1A1A1A] dark:text-white flex items-center justify-center cursor-pointer ml-1"
+                aria-label="Toggle navigation menu"
+              >
+                {mobileDrawerOpen ? (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                    <path d="M18 6 6 18M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                    <path d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                )}
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Mobile Drawer Overlay */}
+        {mobileDrawerOpen && (
+          <div className="lg:hidden fixed inset-0 z-50 flex">
+            <div
+              className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
+              onClick={() => setMobileDrawerOpen(false)}
+            />
+            
+            <div className="relative w-72 max-w-[80vw] bg-[#FAF9F5] dark:bg-[#0E0E0D] h-full flex flex-col justify-between p-6 z-10 border-r border-[#E8E7E1] dark:border-[#2A2A28] animate-fade-in-up">
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <Link to="/dashboard" onClick={() => setMobileDrawerOpen(false)} className="flex items-center gap-2.5">
+                    <svg width="26" height="26" viewBox="0 0 40 40" fill="none" className="text-[#1A1A1A] dark:text-white">
+                      <rect x="4" y="4" width="23" height="23" rx="8" stroke="currentColor" strokeWidth="1.8" />
+                      <rect x="13" y="13" width="23" height="23" rx="8" stroke="currentColor" strokeWidth="1.8" />
+                      <path d="M13 20h14M20 13v14" stroke="currentColor" strokeWidth="1.8" />
+                    </svg>
+                    <span className="text-lg font-medium tracking-[-0.8px] text-[#1A1A1A] dark:text-white">
+                      roomsync
+                    </span>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setMobileDrawerOpen(false)}
+                    className="size-7 rounded-full bg-[#EAE8E1] dark:bg-[#1E1E1C] flex items-center justify-center text-xs cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Mobile Navigation List */}
+                <nav className="space-y-1 overflow-y-auto max-h-[60vh] no-scrollbar">
+                  {navItems.map((item) => (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      onClick={() => setMobileDrawerOpen(false)}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-colors ${
+                        item.active
+                          ? 'bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A] font-semibold'
+                          : 'text-[#71716E] dark:text-[#8E8E88] hover:bg-[#EAE8E1] dark:hover:bg-[#1E1E1C]'
+                      }`}
+                    >
+                      <span>{item.icon}</span>
+                      <span>{item.label}</span>
+                    </Link>
+                  ))}
+                  
+                  <div className="pt-2 border-t border-[#E8E7E1] dark:border-[#2A2A28]">
+                    {secondaryItems.map((item) => (
+                      <Link
+                        key={item.to}
+                        to={item.to}
+                        onClick={() => setMobileDrawerOpen(false)}
+                        className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-colors ${
+                          item.active
+                            ? 'bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A] font-semibold'
+                            : 'text-[#71716E] dark:text-[#8E8E88] hover:bg-[#EAE8E1] dark:hover:bg-[#1E1E1C]'
+                        }`}
+                      >
+                        <span>{item.icon}</span>
+                        <span>{item.label}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </nav>
+              </div>
+
+              {/* Mobile Drawer Footer with User Sign Out */}
+              <div className="pt-4 border-t border-[#E8E7E1] dark:border-[#2A2A28] flex items-center justify-between">
+                <Link
+                  to="/settings"
+                  onClick={() => setMobileDrawerOpen(false)}
+                  className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
+                >
+                  <div className="size-7 rounded-full bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A] font-semibold flex items-center justify-center text-xs overflow-hidden shrink-0">
+                    {user?.profilePhoto ? (
+                      <img
+                        src={user.profilePhoto}
+                        alt={user?.name || 'Profile'}
+                        className="size-full object-cover"
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
+                    ) : (
+                      <span>{user?.name ? user.name.charAt(0).toUpperCase() : 'U'}</span>
+                    )}
+                  </div>
+                  <span className="text-xs font-medium text-[#1A1A1A] dark:text-white truncate max-w-[120px]">
+                    {user?.name}
+                  </span>
+                </Link>
+
                 <button
                   type="button"
-                  onClick={() => setMobileDrawerOpen(true)}
-                  className="p-2 rounded-2xl text-[#3E737C] hover:text-[#234653] bg-[#FAF5ED]/80 hover:bg-[#FFF9F1] border border-[#E8DEC8]/80 transition-all active:scale-95"
-                  aria-label="Open mobile navigation menu"
+                  onClick={() => {
+                    setMobileDrawerOpen(false);
+                    logout();
+                  }}
+                  className="text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
                 >
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
+                  Sign Out
                 </button>
               </div>
             </div>
           </div>
-        </div>
-      </nav>
+        )}
 
-      {/* Mobile Drawer (Slide-over) */}
-      {mobileDrawerOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden flex">
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-[#17272C]/40 backdrop-blur-xs transition-opacity"
-            onClick={() => setMobileDrawerOpen(false)}
-          ></div>
+        {/* Page Content Container */}
+        <main className="max-w-7xl mx-auto py-8 sm:py-10 px-4 sm:px-8 lg:px-10 flex-1 w-full animate-fade-in-up">
+          {children || <Outlet />}
+        </main>
+      </div>
 
-          {/* Drawer Content */}
-          <div className="relative ml-auto w-4/5 max-w-sm bg-[#FFF9F1] border-l border-[#E8DEC8] h-full shadow-2xl flex flex-col z-10 overflow-y-auto animate-fade-in-up">
-            {/* Drawer Header */}
-            <div className="p-5 bg-[#FAF5ED] border-b border-[#E8DEC8] flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-[#234653] text-[#FFF9F1] flex items-center justify-center font-serif text-sm font-bold">
-                  ✦
-                </div>
-                <span className="font-bold text-[#234653] text-base font-serif-editorial">RoomSync</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setMobileDrawerOpen(false)}
-                className="p-1.5 rounded-xl text-[#3E737C] hover:text-[#234653] hover:bg-[#F4EDE3]"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Drawer Body */}
-            <div className="p-5 space-y-6 flex-1 bg-[#FFF9F1]">
-              <div>
-                <Link
-                  to="/dashboard"
-                  onClick={() => setMobileDrawerOpen(false)}
-                  className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all ${
-                    isDashboardActive ? 'bg-[#FBF1EB] text-[#234653] border border-[#F2D4C8] shadow-2xs' : 'text-[#3E737C] hover:bg-[#FAF5ED]'
-                  }`}
-                >
-                  <span>📊</span> Dashboard
-                </Link>
-              </div>
-
-              {/* Household Group */}
-              <div className="space-y-1">
-                <span className="text-[10px] uppercase font-bold text-[#3E737C] tracking-wider px-3">
-                  Household
-                </span>
-                <Link
-                  to="/household"
-                  onClick={() => setMobileDrawerOpen(false)}
-                  className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium text-[#234653] hover:bg-[#FAF5ED] transition-colors"
-                >
-                  <span>🏠</span> My Household
-                </Link>
-                <Link
-                  to="/household"
-                  onClick={() => setMobileDrawerOpen(false)}
-                  className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium text-[#234653] hover:bg-[#FAF5ED] transition-colors"
-                >
-                  <span>👥</span> Members & Invites
-                </Link>
-              </div>
-
-              {/* Tasks Group */}
-              <div className="space-y-1">
-                <span className="text-[10px] uppercase font-bold text-[#3E737C] tracking-wider px-3">
-                  Tasks & Rhythm
-                </span>
-                <Link
-                  to="/chores"
-                  onClick={() => setMobileDrawerOpen(false)}
-                  className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium text-[#234653] hover:bg-[#FAF5ED] transition-colors"
-                >
-                  <span>🧹</span> Chores Board
-                </Link>
-                <Link
-                  to="/shopping"
-                  onClick={() => setMobileDrawerOpen(false)}
-                  className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium text-[#234653] hover:bg-[#FAF5ED] transition-colors"
-                >
-                  <span>🛍️</span> Shopping Lists
-                </Link>
-                <Link
-                  to="/help"
-                  onClick={() => setMobileDrawerOpen(false)}
-                  className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium text-[#234653] hover:bg-[#FAF5ED] transition-colors"
-                >
-                  <span>🤝</span> Help & Favors
-                </Link>
-                <Link
-                  to="/decisions"
-                  onClick={() => setMobileDrawerOpen(false)}
-                  className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium text-[#234653] hover:bg-[#FAF5ED] transition-colors"
-                >
-                  <span>🗳️</span> Decisions & Polls
-                </Link>
-              </div>
-
-              {/* Finance Group */}
-              <div className="space-y-1">
-                <span className="text-[10px] uppercase font-bold text-[#3E737C] tracking-wider px-3">
-                  Finance
-                </span>
-                <Link
-                  to="/expenses"
-                  onClick={() => setMobileDrawerOpen(false)}
-                  className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium text-[#234653] hover:bg-[#FAF5ED] transition-colors"
-                >
-                  <span>💰</span> Expenses & Splits
-                </Link>
-                <Link
-                  to="/contribution"
-                  onClick={() => setMobileDrawerOpen(false)}
-                  className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium text-[#234653] hover:bg-[#FAF5ED] transition-colors"
-                >
-                  <span>📊</span> Workload Contributions
-                </Link>
-              </div>
-
-              {/* Calendar Group */}
-              <div className="space-y-1">
-                <span className="text-[10px] uppercase font-bold text-[#3E737C] tracking-wider px-3">
-                  Calendar
-                </span>
-                <Link
-                  to="/household-calendar"
-                  onClick={() => setMobileDrawerOpen(false)}
-                  className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium text-[#234653] hover:bg-[#FAF5ED] transition-colors"
-                >
-                  <span>📅</span> Household Calendar
-                </Link>
-                <Link
-                  to="/calendar"
-                  onClick={() => setMobileDrawerOpen(false)}
-                  className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium text-[#234653] hover:bg-[#FAF5ED] transition-colors"
-                >
-                  <span>🗓️</span> My Schedule
-                </Link>
-              </div>
-            </div>
-
-            {/* Drawer Footer with User Info and Sign Out */}
-            <div className="p-5 border-t border-[#E8DEC8] bg-[#FAF5ED]">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-9 h-9 rounded-xl bg-[#234653] text-[#FFF9F1] font-semibold flex items-center justify-center text-xs font-serif">
-                  {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold text-[#234653] truncate font-serif-editorial">{user?.name}</p>
-                  <p className="text-[10px] text-[#3E737C] truncate">{user?.email}</p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileDrawerOpen(false);
-                  logout();
-                }}
-                className="w-full py-2.5 px-3 text-xs font-semibold uppercase tracking-wider text-[#E86F5A] hover:bg-[#FBF1EB] rounded-xl flex items-center justify-center gap-2 transition-colors border border-[#F2D4C8] shadow-2xs active:scale-95"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                Sign Out
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Main Page Layout Container with smooth entrance */}
-      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 flex-1 w-full animate-fade-in-up">
-        {children || <Outlet />}
-      </main>
-
-      {/* Global Search Dialog */}
+      {/* Global Search Dialog Modal */}
       <GlobalSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </div>
   );

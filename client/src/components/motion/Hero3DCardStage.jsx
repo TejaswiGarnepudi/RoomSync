@@ -200,7 +200,7 @@ export default function Hero3DCardStage({ className = '' }) {
         {/* FLOATING OVERLAY CARD 1: ROOMMATE CHAT & TASK (Mid-Left) */}
         {/* ======================================================== */}
         <div
-          className="absolute top-[48%] -left-6 sm:-left-10 z-30 w-[270px] sm:w-[290px] rounded-2xl border border-[#E2E1DA] bg-white p-4 text-[#1A1A1A] shadow-[0_12px_32px_rgba(0,0,0,0.12)] transition-all duration-500 ease-out"
+          className="absolute top-[48%] -left-6 sm:-left-10 z-30 w-[270px] sm:w-[290px] rounded-2xl border border-[#E8E7E1] dark:border-[#2A2A28] bg-white dark:bg-[#141413] p-4 text-[#1A1A1A] dark:text-white shadow-[0_12px_32px_rgba(0,0,0,0.12)] transition-all duration-500 ease-out"
           style={{
             transform: isLoaded
               ? `translate3d(${-mousePos.x * 14}px, ${-mousePos.y * 12}px, 60px)`
@@ -210,18 +210,18 @@ export default function Hero3DCardStage({ className = '' }) {
         >
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-[#EAE8E1] text-[#1A1A1A] font-bold text-[11px] flex items-center justify-center">
+              <div className="w-7 h-7 rounded-lg bg-[#EAE8E1] dark:bg-[#20201E] text-[#1A1A1A] dark:text-white font-bold text-[11px] flex items-center justify-center">
                 {currentProject.commentAuthor[0]}
               </div>
               <div>
-                <span className="font-semibold text-xs text-[#1A1A1A]">{currentProject.commentAuthor}</span>
-                <span className="text-[10px] text-[#71716E] ml-1.5">{currentProject.commentTime}</span>
+                <span className="font-semibold text-xs text-[#1A1A1A] dark:text-white">{currentProject.commentAuthor}</span>
+                <span className="text-[10px] text-[#71716E] dark:text-[#8E8E88] ml-1.5">{currentProject.commentTime}</span>
               </div>
             </div>
             <span className="w-2 h-2 rounded-full bg-emerald-500" />
           </div>
 
-          <p className="mt-2.5 text-xs leading-relaxed text-[#4A4A48]">
+          <p className="mt-2.5 text-xs leading-relaxed text-[#4A4A48] dark:text-[#C4C3BA]">
             "{currentProject.comment}"
           </p>
 
@@ -230,8 +230,8 @@ export default function Hero3DCardStage({ className = '' }) {
             onClick={() => setCommentResolved(!commentResolved)}
             className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all ${
               commentResolved
-                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                : 'bg-[#F4F3ED] text-[#71716E] hover:text-[#1A1A1A] hover:bg-[#EAE8E1]'
+                ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40'
+                : 'bg-[#F4F3ED] dark:bg-[#20201E] text-[#71716E] dark:text-[#A8A7A0] hover:text-[#1A1A1A] dark:hover:text-white hover:bg-[#EAE8E1] dark:hover:bg-[#282824]'
             }`}
           >
             <span>✓</span>
@@ -243,7 +243,7 @@ export default function Hero3DCardStage({ className = '' }) {
         {/* FLOATING OVERLAY CARD 2: ROOMMATES STATUS (Bottom-Right) */}
         {/* ======================================================== */}
         <div
-          className="absolute -bottom-6 -right-4 sm:-right-8 z-30 flex items-center gap-2.5 rounded-xl border border-[#E2E1DA] bg-white px-4 py-3 text-xs text-[#1A1A1A] shadow-[0_8px_24px_rgba(0,0,0,0.1)] transition-all duration-500 ease-out"
+          className="absolute -bottom-6 -right-4 sm:-right-8 z-30 flex items-center gap-2.5 rounded-xl border border-[#E8E7E1] dark:border-[#2A2A28] bg-white dark:bg-[#141413] px-4 py-3 text-xs text-[#1A1A1A] dark:text-white shadow-[0_8px_24px_rgba(0,0,0,0.1)] transition-all duration-500 ease-out"
           style={{
             transform: isLoaded
               ? `translate3d(${-mousePos.x * 18}px, ${-mousePos.y * 16}px, 80px)`
@@ -253,7 +253,7 @@ export default function Hero3DCardStage({ className = '' }) {
         >
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           <span className="font-medium">{currentProject.roommates}</span>
-          <span className="ml-2 text-[10px] text-[#71716E] border-l border-[#E2E1DA] pl-2.5 hidden sm:inline">
+          <span className="ml-2 text-[10px] text-[#71716E] dark:text-[#8E8E88] border-l border-[#E8E7E1] dark:border-[#2A2A28] pl-2.5 hidden sm:inline">
             ✓ Live Sync
           </span>
         </div>
@@ -266,8 +266,8 @@ export default function Hero3DCardStage({ className = '' }) {
               onClick={() => setActiveTab(idx)}
               className={`h-2.5 rounded-full transition-all duration-300 ${
                 activeTab === idx
-                  ? 'w-8 bg-[#1A1A1A]'
-                  : 'w-2.5 bg-[#1A1A1A]/25 hover:bg-[#1A1A1A]/50'
+                  ? 'w-8 bg-[#1A1A1A] dark:bg-white'
+                  : 'w-2.5 bg-[#1A1A1A]/25 dark:bg-white/25 hover:bg-[#1A1A1A]/50 dark:hover:bg-white/50'
               }`}
               aria-label={`Show ${p.tag}`}
             />

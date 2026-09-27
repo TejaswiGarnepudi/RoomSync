@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 
+@variant dark (&:where(.dark, .dark *));
+
 @layer base {
   :root {
     --bg-page: #FAF9F5;
@@ -148,14 +150,62 @@
   }
 }
 
+@keyframes pathWave1 {
+  0% {
+    stroke-dashoffset: 2400;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes pathWave2 {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: 2400;
+  }
+}
+
+@keyframes floatDrift {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(10px, -14px, 0);
+  }
+}
+
+.animate-path-wave-1 {
+  stroke-dasharray: 240 60;
+  animation: pathWave1 40s linear infinite;
+  will-change: stroke-dashoffset;
+}
+
+.animate-path-wave-2 {
+  stroke-dasharray: 180 80;
+  animation: pathWave2 50s linear infinite;
+  will-change: stroke-dashoffset;
+}
+
+.animate-float-drift {
+  animation: floatDrift 14s ease-in-out infinite;
+  will-change: transform;
+}
+
 .animate-dash-flow {
   stroke-dasharray: 600;
   animation: dashFlow 30s linear infinite;
+  will-change: stroke-dashoffset;
 }
 
 .animate-pulse-glow {
   animation: pulseGlow 8s ease-in-out infinite;
+  will-change: opacity, transform;
 }
+
+
 
 .animate-fade-in-up {
   animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;

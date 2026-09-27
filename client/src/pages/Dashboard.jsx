@@ -3,13 +3,16 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { getMyHousehold, createHousehold } from '../services/householdService';
 import { getDashboardSummary } from '../services/dashboardService';
+import { getHouseholdAvailability } from '../services/availabilityService';
+import { getShoppingLists, getShoppingListById, updateShoppingItem } from '../services/shoppingService';
+import { completeChore, claimChore } from '../services/choreService';
+import { getExpenses } from '../services/expenseService';
 import AppLayout from '../layouts/AppLayout';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
+import Card from '../components/ui/Card';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import GlobalSearchModal from '../components/GlobalSearchModal';
-import TiltCard from '../components/motion/TiltCard';
-import ScrollReveal from '../components/motion/ScrollReveal';
 
 const formatTime12h = (time24) => {
   if (!time24) return '';
@@ -20,6 +23,14 @@ const formatTime12h = (time24) => {
   h = h % 12;
   h = h ? h : 12;
   return `${h}:${m} ${ampm}`;
+};
+
+const formatDateShort = (dateStr) => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  const day = date.getDate();
+  const month = date.toLocaleDateString('en-US', { month: 'short' });
+  return { day, month };
 };
 
 const formatDateLabel = (dateStr) => {
@@ -40,32 +51,51 @@ export default function Dashboard() {
 
   const [household, setHousehold] = useState(null);
   const [summary, setSummary] = useState(null);
+  const [availabilityList, setAvailabilityList] = useState([]);
+  const [groceryItems, setGroceryItems] = useState([]);
+  const [recentExpensesList, setRecentExpensesList] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // Quick Action Dropdown State
-  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
-  const addMenuRef = useRef(null);
 
   // Global Search
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  // Household create/join state
+  // Household create/join state (for non-household users)
   const [inviteCode, setInviteCode] = useState('');
   const [newHouseholdName, setNewHouseholdName] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [createError, setCreateError] = useState('');
   const [copiedInvite, setCopiedInvite] = useState(false);
 
+  // Calendar mini-widget current date
+  const [currentDate] = useState(new Date());
+
   const fetchDashboard = async () => {
     try {
       setLoading(true);
-      const [hhRes, sumRes] = await Promise.all([
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      const [hhRes, sumRes, availRes, listsRes, expRes] = await Promise.all([
         getMyHousehold().catch(() => ({ data: { data: { household: null } } })),
-        getDashboardSummary().catch(() => ({ data: { data: null } }))
+        getDashboardSummary().catch(() => ({ data: { data: null } })),
+        getHouseholdAvailability({ startDate: todayStr, endDate: todayStr }).catch(() => ({ data: { data: { availability: [] } } })),
+        getShoppingLists({ limit: 1 }).catch(() => ({ data: { data: { shoppingLists: [] } } })),
+        getExpenses({ limit: 5 }).catch(() => ({ data: { data: { expenses: [] } } }))
       ]);
 
-      setHousehold(hhRes.data.data.household);
+      const hhData = hhRes.data.data.household;
+      setHousehold(hhData);
       setSummary(sumRes.data.data);
+      setAvailabilityList(availRes.data.data?.availability || []);
+      setRecentExpensesList(expRes.data.data?.expenses || []);
+
+      // Load grocery items from first active list if available
+      const lists = listsRes.data.data?.shoppingLists || [];
+      if (lists.length > 0) {
+        const fullListRes = await getShoppingListById(lists[0]._id).catch(() => null);
+        if (fullListRes?.data?.data?.items) {
+          setGroceryItems(fullListRes.data.data.items);
+        }
+      }
     } catch (err) {
       console.error('Failed to load dashboard:', err);
     } finally {
@@ -76,17 +106,6 @@ export default function Dashboard() {
   useEffect(() => {
     fetchDashboard();
   }, [user?._id]);
-
-  // Handle outside click for Add menu
-  useEffect(() => {
-    const handleOutsideClick = (e) => {
-      if (addMenuRef.current && !addMenuRef.current.contains(e.target)) {
-        setIsAddMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleOutsideClick);
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
-  }, []);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -126,85 +145,105 @@ export default function Dashboard() {
     }
   };
 
-  if (loading) {
+  // Toggle grocery item checkbox directly from dashboard
+  const handleToggleGroceryItem = async (item) => {
+    try {
+      const newStatus = item.status === 'purchased' ? 'pending' : 'purchased';
+      await updateShoppingItem(item._id, { status: newStatus });
+      setGroceryItems(prev => prev.map(i => i._id === item._id ? { ...i, status: newStatus } : i));
+    } catch (err) {
+      console.error('Failed to toggle grocery item:', err);
+    }
+  };
+
+  // Complete chore directly from dashboard
+  const handleCompleteChore = async (choreId) => {
+    try {
+      await completeChore(choreId);
+      fetchDashboard();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to complete chore');
+    }
+  };
+
+  if (loading && !household && !summary) {
     return (
       <AppLayout>
         <div className="flex flex-col justify-center items-center py-32 space-y-3 animate-fade-in-up">
           <LoadingSpinner />
-          <p className="text-xs text-[#3E737C] font-medium tracking-wide">Synchronizing household journal...</p>
+          <p className="text-xs text-[#71716E] dark:text-[#8E8E88] font-medium tracking-wide">
+            Synchronizing household journal...
+          </p>
         </div>
       </AppLayout>
     );
   }
 
-  // State when user does not have a household yet
+  // Non-household welcome flow
   if (!household) {
     return (
       <AppLayout>
         <div className="max-w-4xl mx-auto py-8 space-y-8 animate-fade-in-up">
-          {/* Welcome Card with Artwork & Hover Lift */}
-          <div className="rounded-3xl border border-[#E8DEC8] bg-[#FFF9F1] p-6 sm:p-8 flex flex-col md:flex-row items-center gap-6 shadow-sm hover-lift overflow-hidden group">
-            <div className="w-full md:w-1/2 aspect-4/3 rounded-2xl overflow-hidden border border-[#E8DEC8]">
-              <img
-                src="/assets/hero-living-room.jpg"
-                alt="RoomSync shared living room"
-                className="w-full h-full object-cover transform group-hover:scale-103 transition-transform duration-700 ease-out"
-              />
-            </div>
-            <div className="w-full md:w-1/2 space-y-3">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF5ED] text-[#234653] text-xs font-semibold border border-[#E8DEC8] shadow-2xs">
+          <div className="rounded-3xl border border-[#E8E7E1] dark:border-[#2A2A28] bg-white dark:bg-[#141413] p-8 sm:p-10 flex flex-col md:flex-row items-center gap-8 shadow-sm">
+            <div className="w-full md:w-1/2 space-y-4">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EAE8E1] dark:bg-[#1E1E1C] text-[#1A1A1A] dark:text-white text-xs font-medium border border-transparent dark:border-[#2E2E2A]">
                 <span>🏠</span> Welcome to RoomSync
               </span>
-              <h1 className="text-2xl sm:text-3xl font-bold text-[#234653] font-serif-editorial tracking-tight">
-                {getGreeting()}, {user?.name?.split(' ')[0] || 'there'}
+              <h1 className="text-3xl sm:text-4xl font-normal tracking-[-0.04em] text-[#1A1A1A] dark:text-white leading-tight">
+                {getGreeting()}, {user?.name?.split(' ')[0] || 'there'}.
               </h1>
-              <p className="text-xs text-[#3E737C] leading-relaxed">
-                Create a shared household journal for your home, or join your roommates with an invite code.
+              <p className="text-sm text-[#71716E] dark:text-[#A8A7A0] leading-relaxed">
+                Start by creating a shared household space for your apartment or joining your flatmates with an invite code.
               </p>
+            </div>
+            <div className="w-full md:w-1/2 aspect-video rounded-2xl overflow-hidden border border-[#E8E7E1] dark:border-[#2A2A28] bg-[#FAF9F5] dark:bg-[#1E1E1C]">
+              <img
+                src="https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=800&q=80"
+                alt="RoomSync shared living room"
+                className="w-full h-full object-cover opacity-90"
+              />
             </div>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            {/* Create Card */}
-            <div className="bg-[#FFF9F1] border border-[#E8DEC8] rounded-3xl p-6 shadow-2xs space-y-4 flex flex-col justify-between hover-lift">
+            <div className="bg-white dark:bg-[#141413] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-3xl p-7 shadow-sm space-y-4 flex flex-col justify-between">
               <div>
-                <div className="w-10 h-10 rounded-xl bg-[#F2D4C8] text-[#234653] flex items-center justify-center font-bold text-lg mb-3 shadow-2xs">
+                <div className="size-11 rounded-2xl bg-[#EAE8E1] dark:bg-[#1E1E1C] text-[#1A1A1A] dark:text-white flex items-center justify-center font-bold text-lg mb-4">
                   ✦
                 </div>
-                <h2 className="text-base font-bold text-[#234653] font-serif-editorial">Create a Household</h2>
-                <p className="text-xs text-[#3E737C] mt-1 leading-relaxed">
-                  Start fresh. You'll receive a unique invite code to share with your roommates.
+                <h2 className="text-lg font-medium text-[#1A1A1A] dark:text-white tracking-[-0.03em]">Create a Household</h2>
+                <p className="text-xs text-[#71716E] dark:text-[#8E8E88] mt-1 leading-relaxed">
+                  Start fresh. You'll receive a shareable invite code to give to your roommates.
                 </p>
               </div>
 
-              <form onSubmit={handleCreate} className="space-y-3 pt-2">
+              <form onSubmit={handleCreate} className="space-y-4 pt-2">
                 <Input
                   label="Household Name"
                   value={newHouseholdName}
                   onChange={(e) => setNewHouseholdName(e.target.value)}
-                  placeholder="e.g. Maple Flat #3B"
+                  placeholder="e.g. The Maple Flat #3B"
                   error={createError}
                   required
                 />
-                <Button type="submit" fullWidth loading={isCreating}>
-                  Create Household
+                <Button type="submit" fullWidth isLoading={isCreating}>
+                  Create Household &rarr;
                 </Button>
               </form>
             </div>
 
-            {/* Join Card */}
-            <div className="bg-[#FFF9F1] border border-[#E8DEC8] rounded-3xl p-6 shadow-2xs space-y-4 flex flex-col justify-between hover-lift">
+            <div className="bg-white dark:bg-[#141413] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-3xl p-7 shadow-sm space-y-4 flex flex-col justify-between">
               <div>
-                <div className="w-10 h-10 rounded-xl bg-[#DCE8E8] text-[#234653] flex items-center justify-center font-bold text-lg mb-3 shadow-2xs">
+                <div className="size-11 rounded-2xl bg-[#EAE8E1] dark:bg-[#1E1E1C] text-[#1A1A1A] dark:text-white flex items-center justify-center font-bold text-lg mb-4">
                   🔑
                 </div>
-                <h2 className="text-base font-bold text-[#234653] font-serif-editorial">Join Existing Household</h2>
-                <p className="text-xs text-[#3E737C] mt-1 leading-relaxed">
-                  Have an 8-character invite code from your roommate? Enter it below.
+                <h2 className="text-lg font-medium text-[#1A1A1A] dark:text-white tracking-[-0.03em]">Join Existing Household</h2>
+                <p className="text-xs text-[#71716E] dark:text-[#8E8E88] mt-1 leading-relaxed">
+                  Have an 8-character invite code from your flatmate? Enter it below.
                 </p>
               </div>
 
-              <form onSubmit={handleJoin} className="space-y-3 pt-2">
+              <form onSubmit={handleJoin} className="space-y-4 pt-2">
                 <Input
                   label="Roommate Invite Code"
                   value={inviteCode}
@@ -224,166 +263,82 @@ export default function Dashboard() {
   }
 
   const {
-    todayAgenda,
-    myResponsibilities,
-    alerts,
-    recentActivities,
-    contributionPreview,
-    overviewCounts,
-    upcomingSchedule
+    todayAgenda = { chores: [], help: [] },
+    myResponsibilities = {},
+    alerts = [],
+    recentActivities = [],
+    upcomingSchedule = { chores: [], shopping: [], polls: [] },
+    overviewCounts = {}
   } = summary || {};
 
-  // Group recent activities by relative date
-  const groupedActivities = (recentActivities || []).reduce((acc, act) => {
-    const actDate = new Date(act.createdAt);
-    const today = new Date();
-    const isToday = actDate.toDateString() === today.toDateString();
-    const groupKey = isToday ? 'TODAY' : 'EARLIER';
-    if (!acc[groupKey]) acc[groupKey] = [];
-    acc[groupKey].push(act);
-    return acc;
-  }, {});
+  // Calendar matrix calculations
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const monthName = currentDate.toLocaleString('default', { month: 'long' });
+  const firstDayIndex = new Date(year, month, 1).getDay();
+  const totalDaysInMonth = new Date(year, month + 1, 0).getDate();
+  const todayDateNum = currentDate.getDate();
 
-  // Calculate user contribution percentage
-  const totalMins = contributionPreview?.totalHouseholdMinutes || 0;
-  const userMins = contributionPreview?.userContribution?.totalMinutes || 0;
-  const userPct = totalMins > 0 ? Math.round((userMins / totalMins) * 100) : 0;
+  // Calculate expenses summary
+  const totalExpensesAmount = recentExpensesList.reduce((sum, exp) => sum + (exp.amount || 0), 0);
 
   return (
     <AppLayout>
-      <div className="space-y-8 animate-fade-in-up">
+      <div className="space-y-7 animate-fade-in-up">
         {/* ======================================================== */}
-        {/* SECTION: CONTEXTUAL HEADER & UNIFIED ACTION BAR */}
+        {/* 1. TOP PAGE HEADER & GREETING */}
         {/* ======================================================== */}
-        <header className="pb-6 border-b border-[#E8DEC8] flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <header className="pb-5 border-b border-[#E8E7E1] dark:border-[#2A2A28] flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="text-2xl sm:text-3xl font-bold text-[#234653] font-serif-editorial tracking-tight">
-                {getGreeting()}, {user?.name?.split(' ')[0] || 'there'}
-              </h1>
-
-              {/* Household contextual badge with quick invite copy */}
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF5ED] border border-[#E8DEC8] text-xs font-semibold text-[#234653] shadow-2xs hover:border-[#3E737C]/40 transition-colors">
-                <span>🏠</span>
-                <span>{household.name}</span>
-                <span className="text-[#E8DEC8]">•</span>
-                <button
-                  onClick={handleCopyCode}
-                  title="Click to copy invite code"
-                  className="font-mono text-[11px] text-[#E86F5A] hover:text-[#D65D48] transition-colors cursor-pointer active:scale-95"
-                >
-                  {copiedInvite ? '✓ Copied' : household.inviteCode}
-                </button>
-              </div>
-            </div>
-
-            <p className="text-xs sm:text-sm text-[#3E737C]">
-              Here is what needs your attention today in your household.
+            <h1 className="text-3xl sm:text-[34px] font-normal tracking-[-0.04em] text-[#1A1A1A] dark:text-white flex items-center gap-2">
+              <span>{getGreeting()}, {user?.name?.split(' ')[0] || 'Tejaswi'}!</span>
+              <span className="text-2xl select-none">👋</span>
+            </h1>
+            <p className="text-xs sm:text-sm text-[#71716E] dark:text-[#8E8E88] tracking-[-0.02em]">
+              Same house. Different dreams. One sync.
             </p>
           </div>
 
-          {/* Right Header Actions: Compact + Add Dropdown & Search */}
+          {/* Household Context Badge with Copyable Invite Code */}
           <div className="flex items-center gap-2.5 self-start md:self-auto">
-            {/* Quick Search Button */}
-            <button
-              type="button"
-              onClick={() => setIsSearchOpen(true)}
-              className="px-3 py-2 text-xs font-medium text-[#234653] bg-[#FFF9F1] border border-[#E8DEC8] hover:border-[#3E737C]/40 rounded-xl hover:bg-[#FAF5ED] transition-all duration-200 flex items-center gap-2 shadow-2xs hover:shadow-xs active:scale-95"
-            >
-              <svg className="w-4 h-4 text-[#3E737C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <span>Search</span>
-              <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono bg-[#FAF5ED] text-[#3E737C] rounded-md border border-[#E8DEC8]">
-                Ctrl+K
-              </kbd>
-            </button>
-
-            {/* Compact + Add Dropdown with Coral Action */}
-            <div className="relative" ref={addMenuRef}>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#EAE8E1] dark:bg-[#1E1E1C] border border-transparent dark:border-[#2E2E2A] text-xs font-medium text-[#1A1A1A] dark:text-[#FAF9F5]">
+              <span>🏠</span>
+              <span>{household.name}</span>
+              <span className="text-[#71716E] dark:text-[#8E8E88]">•</span>
               <button
-                type="button"
-                onClick={() => setIsAddMenuOpen(!isAddMenuOpen)}
-                className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#FFF9F1] bg-[#E86F5A] hover:bg-[#D65D48] hover-glow-coral rounded-xl transition-all duration-200 flex items-center gap-1.5 shadow-xs hover:shadow active:scale-95"
+                onClick={handleCopyCode}
+                title="Click to copy invite code"
+                className="font-mono text-[11px] font-semibold underline text-[#1A1A1A] dark:text-white hover:opacity-75 transition-opacity cursor-pointer"
               >
-                <span>+ Add</span>
-                <svg className={`w-3.5 h-3.5 transition-transform duration-200 ${isAddMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+                {copiedInvite ? '✓ Copied' : household.inviteCode}
               </button>
-
-              {isAddMenuOpen && (
-                <div className="absolute right-0 mt-2 w-52 bg-[#FFF9F1]/95 backdrop-blur-md border border-[#E8DEC8] rounded-2xl shadow-xl py-2 z-30 animate-dropdown">
-                  <Link
-                    to="/chores"
-                    onClick={() => setIsAddMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-[#234653] hover:bg-[#FAF5ED] font-medium transition-colors"
-                  >
-                    <span className="p-1 rounded-lg bg-[#FAF5ED] text-sm">🧹</span> Add Chore
-                  </Link>
-                  <Link
-                    to="/expenses"
-                    onClick={() => setIsAddMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-[#234653] hover:bg-[#FAF5ED] font-medium transition-colors"
-                  >
-                    <span className="p-1 rounded-lg bg-[#FAF5ED] text-sm">💰</span> Add Expense
-                  </Link>
-                  <Link
-                    to="/shopping"
-                    onClick={() => setIsAddMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-[#234653] hover:bg-[#FAF5ED] font-medium transition-colors"
-                  >
-                    <span className="p-1 rounded-lg bg-[#FAF5ED] text-sm">🛍️</span> Add Shopping Item
-                  </Link>
-                  <Link
-                    to="/help"
-                    onClick={() => setIsAddMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-[#234653] hover:bg-[#FAF5ED] font-medium transition-colors"
-                  >
-                    <span className="p-1 rounded-lg bg-[#FAF5ED] text-sm">🤝</span> Request Help
-                  </Link>
-                  <Link
-                    to="/decisions"
-                    onClick={() => setIsAddMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-[#234653] hover:bg-[#FAF5ED] font-medium transition-colors"
-                  >
-                    <span className="p-1 rounded-lg bg-[#FAF5ED] text-sm">🗳️</span> Add Decision
-                  </Link>
-                </div>
-              )}
             </div>
           </div>
         </header>
 
         {/* ======================================================== */}
-        {/* ALERTS BANNER */}
+        {/* 2. ALERTS (IF ANY) */}
         {/* ======================================================== */}
         {alerts && alerts.length > 0 && (
           <div className="space-y-2">
             {alerts.map((alert, i) => (
               <div
                 key={i}
-                className={`p-3.5 px-4 rounded-2xl border flex items-center justify-between gap-3 text-xs hover-lift ${
-                  alert.severity === 'high'
-                    ? 'bg-[#FBF1EB] border-[#F2D4C8] text-[#234653]'
-                    : alert.severity === 'medium'
-                    ? 'bg-[#FAF5ED] border-[#E7A83C]/40 text-[#234653]'
-                    : 'bg-[#EFF6F6] border-[#DCE8E8] text-[#234653]'
-                }`}
+                className="p-3.5 px-4.5 rounded-2xl border border-[#E8E7E1] dark:border-[#2A2A28] bg-white dark:bg-[#141413] flex items-center justify-between gap-3 text-xs shadow-2xs"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   <span className="text-base">
                     {alert.severity === 'high' ? '⚠️' : alert.severity === 'medium' ? '🔔' : 'ℹ️'}
                   </span>
                   <div className="truncate">
-                    <strong className="font-bold text-[#234653]">{alert.title}: </strong>
-                    <span className="text-[#3E737C]">{alert.message}</span>
+                    <strong className="font-semibold text-[#1A1A1A] dark:text-white">{alert.title}: </strong>
+                    <span className="text-[#71716E] dark:text-[#8E8E88]">{alert.message}</span>
                   </div>
                 </div>
 
                 <Link
                   to={alert.link}
-                  className="shrink-0 font-bold hover:underline px-3 py-1 rounded-xl bg-[#FFF9F1] border border-[#E8DEC8] text-[#E86F5A] text-[11px] shadow-2xs hover:shadow-xs active:scale-95 transition-all"
+                  className="shrink-0 font-medium px-3 py-1 rounded-full bg-[#EAE8E1] dark:bg-[#1E1E1C] text-[#1A1A1A] dark:text-white hover:bg-[#1A1A1A] hover:text-white dark:hover:bg-white dark:hover:text-[#1A1A1A] transition-all text-[11px]"
                 >
                   Resolve &rarr;
                 </Link>
@@ -393,572 +348,581 @@ export default function Dashboard() {
         )}
 
         {/* ======================================================== */}
-        {/* MAIN ASYMMETRIC GRID LAYOUT */}
+        {/* 3. TOP TIER: HERO BANNER (LEFT 65%) + HOUSEHOLD AT A GLANCE (RIGHT 35%) */}
         {/* ======================================================== */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* ======================================================== */}
-          {/* LEFT DOMINANT COLUMN (8 COLS ON DESKTOP) */}
-          {/* ======================================================== */}
-          <div className="lg:col-span-8 space-y-8">
-            {/* ---------------------------------------------------- */}
-            {/* 1. PRIMARY SECTION: TODAY'S HOUSEHOLD AGENDA WITH COMPANION ARTWORK */}
-            {/* ---------------------------------------------------- */}
-            <section className="bg-[#FFF9F1] border border-[#E8DEC8] rounded-3xl p-6 sm:p-7 shadow-2xs space-y-5 hover-lift">
-              <div className="flex items-center justify-between pb-3 border-b border-[#E8DEC8]">
-                <div className="flex items-center gap-2">
-                  <span className="text-base">🗓️</span>
-                  <h2 className="text-base font-bold text-[#234653] font-serif-editorial">Today's household agenda</h2>
-                </div>
-                <Link
-                  to="/household-calendar"
-                  className="text-xs font-semibold text-[#E86F5A] hover:text-[#D65D48] transition-colors"
-                >
-                  View full calendar &rarr;
-                </Link>
-              </div>
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* A. Hero Banner Card */}
+          <div className="lg:col-span-8 relative overflow-hidden rounded-[28px] border border-[#E8E7E1] dark:border-[#2A2A28] bg-white dark:bg-[#141413] p-7 sm:p-9 flex flex-col justify-between shadow-sm min-h-[220px]">
+            {/* Background ambient pattern */}
+            <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-15 dark:opacity-20 pointer-events-none hidden sm:block">
+              <img
+                src="https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=800&q=80"
+                alt=""
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-white dark:from-[#141413] to-transparent" />
+            </div>
 
-              {/* Visual Mini Banner Card */}
-              <div className="rounded-2xl overflow-hidden border border-[#E8DEC8]/80 bg-[#FAF5ED] flex flex-col sm:flex-row items-center gap-4 p-3.5 group">
-                <div className="w-full sm:w-28 h-20 rounded-xl overflow-hidden shrink-0 border border-[#E8DEC8]/70">
-                  <img
-                    src="/assets/kitchen-counter.jpg"
-                    alt="Kitchen Counter Rhythm"
-                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500 ease-out"
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#E86F5A] block">
-                    Morning Rhythm
-                  </span>
-                  <p className="text-xs font-semibold text-[#234653] mt-0.5">
-                    {todayAgenda?.totalItems > 0 
-                      ? `${todayAgenda.totalItems} tasks coordinated across your home today.` 
-                      : 'All morning chores and favors are up to date.'}
-                  </p>
-                  <span className="text-[10px] text-[#3E737C]">
-                    Shared harmony • {household.members?.length || 1} roommates active
-                  </span>
-                </div>
+            <div className="relative z-10 max-w-lg space-y-2.5">
+              <div className="flex items-center gap-2">
+                <h2 className="text-2xl sm:text-3xl font-medium tracking-[-0.04em] text-[#1A1A1A] dark:text-white">
+                  Your Home in Sync
+                </h2>
+                <span className="text-xl">🏠</span>
               </div>
+              <p className="text-xs sm:text-sm text-[#71716E] dark:text-[#A8A7A0] leading-relaxed max-w-md">
+                Manage your space, share responsibilities, keep everyone in the loop — all in one place.
+              </p>
+            </div>
 
-              {(!todayAgenda || todayAgenda.totalItems === 0) ? (
-                /* Compact, intentional empty state */
-                <div className="text-center py-8 px-4 border border-dashed border-[#E8DEC8] rounded-2xl bg-[#FAF5ED]">
-                  <div className="text-2xl mb-1">☀️</div>
-                  <h3 className="text-xs font-bold text-[#234653]">Nothing scheduled today</h3>
-                  <p className="text-[11px] text-[#3E737C] mt-0.5">Your household is all caught up.</p>
+            {/* Sticky Note Interactive Tags + CTA */}
+            <div className="relative z-10 pt-6 flex flex-wrap items-center gap-3">
+              <Link to="/household">
+                <Button size="sm">
+                  View All Features &rarr;
+                </Button>
+              </Link>
+
+              <Link
+                to="/help"
+                className="px-3.5 py-1.5 rounded-full bg-[#FAF9F5] dark:bg-[#1E1E1C] border border-[#E8E7E1] dark:border-[#2E2E2A] text-xs font-medium text-[#1A1A1A] dark:text-[#FAF9F5] hover:border-[#1A1A1A]/40 transition-colors shadow-2xs"
+              >
+                Help someone? 🤝
+              </Link>
+
+              <Link
+                to="/shopping"
+                className="px-3.5 py-1.5 rounded-full bg-[#FAF9F5] dark:bg-[#1E1E1C] border border-[#E8E7E1] dark:border-[#2E2E2A] text-xs font-medium text-[#1A1A1A] dark:text-[#FAF9F5] hover:border-[#1A1A1A]/40 transition-colors shadow-2xs"
+              >
+                Groceries to buy? 🛒
+              </Link>
+
+              <Link
+                to="/chores"
+                className="px-3.5 py-1.5 rounded-full bg-[#FAF9F5] dark:bg-[#1E1E1C] border border-[#E8E7E1] dark:border-[#2E2E2A] text-xs font-medium text-[#1A1A1A] dark:text-[#FAF9F5] hover:border-[#1A1A1A]/40 transition-colors shadow-2xs"
+              >
+                Chores sorted? 🧹
+              </Link>
+            </div>
+          </div>
+
+          {/* B. Household at a Glance (2x2 KPI Grid) */}
+          <div className="lg:col-span-4 rounded-[28px] border border-[#E8E7E1] dark:border-[#2A2A28] bg-white dark:bg-[#141413] p-6 sm:p-7 flex flex-col justify-between shadow-sm space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-[#E8E7E1] dark:border-[#2A2A28]">
+              <div className="flex items-center gap-2">
+                <span className="text-base">🏠</span>
+                <h3 className="text-sm font-medium tracking-tight text-[#1A1A1A] dark:text-white">
+                  Household at a Glance
+                </h3>
+              </div>
+              <Link to="/household" className="text-[11px] text-[#71716E] dark:text-[#8E8E88] hover:underline">
+                Details &rarr;
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3.5">
+              {/* Metric 1: Roommates */}
+              <Link
+                to="/household"
+                className="p-3.5 rounded-2xl bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28] hover:border-[#1A1A1A]/30 dark:hover:border-white/20 transition-all group"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="size-8 rounded-xl bg-[#EAE8E1] dark:bg-[#1E1E1C] flex items-center justify-center text-sm">
+                    👥
+                  </span>
+                  <span className="text-2xl font-medium text-[#1A1A1A] dark:text-white tracking-tight">
+                    {household.membersCount || household.members?.length || 1}
+                  </span>
+                </div>
+                <span className="text-xs text-[#71716E] dark:text-[#8E8E88] mt-2 block font-medium">
+                  Roommates
+                </span>
+              </Link>
+
+              {/* Metric 2: Active Help Requests */}
+              <Link
+                to="/help"
+                className="p-3.5 rounded-2xl bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28] hover:border-[#1A1A1A]/30 dark:hover:border-white/20 transition-all group"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="size-8 rounded-xl bg-[#EAE8E1] dark:bg-[#1E1E1C] flex items-center justify-center text-sm">
+                    🤝
+                  </span>
+                  <span className="text-2xl font-medium text-[#1A1A1A] dark:text-white tracking-tight">
+                    {overviewCounts?.openHelpRequests || 0}
+                  </span>
+                </div>
+                <span className="text-xs text-[#71716E] dark:text-[#8E8E88] mt-2 block font-medium">
+                  Active Help Requests
+                </span>
+              </Link>
+
+              {/* Metric 3: Pending Groceries */}
+              <Link
+                to="/shopping"
+                className="p-3.5 rounded-2xl bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28] hover:border-[#1A1A1A]/30 dark:hover:border-white/20 transition-all group"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="size-8 rounded-xl bg-[#EAE8E1] dark:bg-[#1E1E1C] flex items-center justify-center text-sm">
+                    🛍️
+                  </span>
+                  <span className="text-2xl font-medium text-[#1A1A1A] dark:text-white tracking-tight">
+                    {overviewCounts?.upcomingShopping || groceryItems.filter(i => i.status !== 'purchased').length || 0}
+                  </span>
+                </div>
+                <span className="text-xs text-[#71716E] dark:text-[#8E8E88] mt-2 block font-medium">
+                  Pending Groceries
+                </span>
+              </Link>
+
+              {/* Metric 4: Upcoming Chores */}
+              <Link
+                to="/chores"
+                className="p-3.5 rounded-2xl bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28] hover:border-[#1A1A1A]/30 dark:hover:border-white/20 transition-all group"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="size-8 rounded-xl bg-[#EAE8E1] dark:bg-[#1E1E1C] flex items-center justify-center text-sm">
+                    🧹
+                  </span>
+                  <span className="text-2xl font-medium text-[#1A1A1A] dark:text-white tracking-tight">
+                    {overviewCounts?.openChores || 0}
+                  </span>
+                </div>
+                <span className="text-xs text-[#71716E] dark:text-[#8E8E88] mt-2 block font-medium">
+                  Upcoming Chores
+                </span>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* ======================================================== */}
+        {/* 4. MIDDLE TIER (4-CARD GRID): AVAILABILITY, HELP REQUESTS, QUICK ACTIONS, UPCOMING EVENTS */}
+        {/* ======================================================== */}
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Card 1: Roommate Availability */}
+          <div className="rounded-[28px] border border-[#E8E7E1] dark:border-[#2A2A28] bg-white dark:bg-[#141413] p-5 sm:p-6 flex flex-col justify-between shadow-sm space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E8E7E1] dark:border-[#2A2A28]">
+              <div className="flex items-center gap-2">
+                <span className="text-sm">🗓️</span>
+                <h3 className="text-xs font-semibold tracking-tight text-[#1A1A1A] dark:text-white uppercase tracking-wider">
+                  Roommate Availability
+                </h3>
+              </div>
+              <Link to="/calendar" className="text-[11px] text-[#71716E] dark:text-[#8E8E88] hover:underline">
+                View all &rarr;
+              </Link>
+            </div>
+
+            <div className="space-y-3 flex-1">
+              {household.members?.slice(0, 4).map((member) => {
+                const isCurrent = member._id === user?._id;
+                const memberAvail = availabilityList.find(a => a.user?._id === member._id || a.user === member._id);
+                const isFree = memberAvail ? memberAvail.status === 'available' : true;
+
+                return (
+                  <div key={member._id} className="flex items-center justify-between text-xs py-1">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="size-7 rounded-full bg-[#EAE8E1] dark:bg-[#1E1E1C] text-[#1A1A1A] dark:text-white font-semibold flex items-center justify-center text-[10px] shrink-0">
+                        {member.name ? member.name.charAt(0).toUpperCase() : 'U'}
+                      </div>
+                      <div className="truncate">
+                        <span className="font-medium text-[#1A1A1A] dark:text-white block truncate">
+                          {member.name} {isCurrent && <span className="text-[#71716E] font-normal">(You)</span>}
+                        </span>
+                        <span className="text-[10px] text-[#71716E] dark:text-[#8E8E88] flex items-center gap-1 mt-0.5">
+                          <span className={`size-1.5 rounded-full ${isFree ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                          {isFree ? 'Free Today' : 'Busy'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <Link to="/household-calendar" className="text-[#71716E] hover:text-[#1A1A1A] dark:hover:text-white px-1">
+                      &rarr;
+                    </Link>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Card 2: Recent Help Requests */}
+          <div className="rounded-[28px] border border-[#E8E7E1] dark:border-[#2A2A28] bg-white dark:bg-[#141413] p-5 sm:p-6 flex flex-col justify-between shadow-sm space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E8E7E1] dark:border-[#2A2A28]">
+              <div className="flex items-center gap-2">
+                <span className="text-sm">🤝</span>
+                <h3 className="text-xs font-semibold tracking-tight text-[#1A1A1A] dark:text-white uppercase tracking-wider">
+                  Recent Help Requests
+                </h3>
+              </div>
+              <Link to="/help" className="text-[11px] text-[#71716E] dark:text-[#8E8E88] hover:underline">
+                View all &rarr;
+              </Link>
+            </div>
+
+            <div className="space-y-3 flex-1">
+              {(todayAgenda?.help?.length === 0 && (!myResponsibilities.helpProviding || myResponsibilities.helpProviding.length === 0)) ? (
+                <div className="text-center py-6 text-xs text-[#71716E] dark:text-[#8E8E88]">
+                  No active requests. Everything is calm!
+                </div>
+              ) : (
+                [...(todayAgenda?.help || []), ...(myResponsibilities?.helpProviding || [])].slice(0, 3).map((h) => (
                   <Link
-                    to="/household-calendar"
-                    className="inline-block mt-3 text-xs font-semibold text-[#E86F5A] hover:underline"
+                    key={h._id}
+                    to={`/help/${h._id}`}
+                    className="block p-2.5 rounded-xl bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28] hover:border-[#1A1A1A]/30 dark:hover:border-white/20 transition-all text-xs"
                   >
-                    View household calendar &rarr;
-                  </Link>
-                </div>
-              ) : (
-                /* Agenda Timeline List with Hover Effects */
-                <div className="divide-y divide-[#E8DEC8]/50 pt-1">
-                  {todayAgenda.chores?.map((chore) => {
-                    const isUserChore = chore.assignedTo?._id === user?._id;
-                    const isCompleted = chore.status === 'completed';
-                    return (
-                      <div
-                        key={chore._id}
-                        className="py-3 flex items-center justify-between gap-3 text-xs hover:bg-[#FAF5ED] px-3 rounded-xl transition-all duration-150 group"
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <span className="font-mono text-[11px] font-semibold text-[#3E737C] w-16 shrink-0">
-                            {formatTime12h(chore.dueTime) || 'All day'}
-                          </span>
-                          <span className="p-1.5 bg-[#FAF5ED] group-hover:bg-[#F2D4C8] text-[#234653] rounded-lg text-sm shrink-0 border border-[#E8DEC8]/60 transition-colors">
-                            🧹
-                          </span>
-                          <div className="truncate">
-                            <span className={`font-bold block truncate ${isCompleted ? 'line-through text-[#3E737C]' : 'text-[#234653]'}`}>
-                              {chore.title}
-                            </span>
-                            <span className="text-[11px] text-[#3E737C]">
-                              {isUserChore ? (
-                                <strong className="text-[#E86F5A]">Assigned to You</strong>
-                              ) : (
-                                `Assigned to ${chore.assignedTo?.name || 'Unassigned'}`
-                              )}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 shrink-0">
-                          <span
-                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase ${
-                              isCompleted
-                                ? 'bg-[#DCE8E8] text-[#234653]'
-                                : chore.status === 'in_progress'
-                                ? 'bg-[#F2D4C8] text-[#234653]'
-                                : 'bg-[#FAF5ED] text-[#3E737C] border border-[#E8DEC8]'
-                            }`}
-                          >
-                            {chore.status?.replace('_', ' ') || 'Pending'}
-                          </span>
-                          <Link
-                            to={`/chores/${chore._id}`}
-                            className="text-[#3E737C] hover:text-[#234653] group-hover:translate-x-0.5 transition-transform px-2 py-1 font-bold"
-                          >
-                            &rarr;
-                          </Link>
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                  {todayAgenda.help?.map((h) => (
-                    <div
-                      key={h._id}
-                      className="py-3 flex items-center justify-between gap-3 text-xs hover:bg-[#FAF5ED] px-3 rounded-xl transition-all duration-150 group"
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <span className="font-mono text-[11px] font-semibold text-[#3E737C] w-16 shrink-0">
-                          {formatTime12h(h.startTime) || 'Flexible'}
-                        </span>
-                        <span className="p-1.5 bg-[#FBF1EB] text-[#234653] rounded-lg text-sm shrink-0 border border-[#F2D4C8] group-hover:bg-[#DCE8E8] transition-colors">
-                          🤝
-                        </span>
-                        <div className="truncate">
-                          <span className="font-bold text-[#234653] block truncate">{h.title}</span>
-                          <span className="text-[11px] text-[#3E737C]">
-                            Requested by {h.requester?.name || 'Roommate'} • {h.type}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span
-                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase ${
-                            h.status === 'completed'
-                              ? 'bg-[#DCE8E8] text-[#234653]'
-                              : h.status === 'accepted'
-                              ? 'bg-[#F2D4C8] text-[#234653]'
-                              : 'bg-[#FAF5ED] text-[#E7A83C] border border-[#E8DEC8]'
-                          }`}
-                        >
-                          {h.status || 'Open'}
-                        </span>
-                        <Link
-                          to={`/help/${h._id}`}
-                          className="text-[#3E737C] hover:text-[#234653] group-hover:translate-x-0.5 transition-transform px-2 py-1 font-bold"
-                        >
-                          &rarr;
-                        </Link>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-
-            {/* ---------------------------------------------------- */}
-            {/* 2. MY RESPONSIBILITIES (Personal Actionable Inbox) */}
-            {/* ---------------------------------------------------- */}
-            <section className="bg-[#FFF9F1] border border-[#E8DEC8] rounded-3xl p-6 sm:p-7 shadow-2xs space-y-4 hover-lift">
-              <div className="flex items-center justify-between pb-3 border-b border-[#E8DEC8]">
-                <div>
-                  <h2 className="text-base font-bold text-[#234653] font-serif-editorial">My responsibilities</h2>
-                  <p className="text-[11px] text-[#3E737C]">Items requiring your direct action</p>
-                </div>
-
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#FAF5ED] text-[#234653] border border-[#E8DEC8] shadow-2xs">
-                    {myResponsibilities?.totalActiveTasks || 0} active
-                  </span>
-                </div>
-              </div>
-
-              {(!myResponsibilities || (myResponsibilities.totalActiveTasks === 0 && myResponsibilities.pendingOwed === 0)) ? (
-                /* Compact Empty State */
-                <div className="text-center py-6 border border-dashed border-[#E8DEC8] rounded-2xl bg-[#FAF5ED]">
-                  <div className="text-xl mb-1">🕊️</div>
-                  <h3 className="text-xs font-bold text-[#234653]">You're all caught up!</h3>
-                  <p className="text-[11px] text-[#3E737C]">No pending chores, shopping runs, or unsettled balances for you.</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                  {/* Chores assigned to user */}
-                  {myResponsibilities.chores && myResponsibilities.chores.length > 0 && (
-                    <div className="p-4 rounded-2xl border border-[#E8DEC8] bg-[#FAF5ED] space-y-2.5 hover:border-[#3E737C]/40 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold text-[#3E737C] uppercase tracking-wider">
-                          🧹 Your Chores ({myResponsibilities.choresCount})
-                        </span>
-                        <Link to="/chores" className="text-[10px] font-semibold text-[#E86F5A] hover:underline">
-                          Board &rarr;
-                        </Link>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        {myResponsibilities.chores.map((c) => (
-                          <Link
-                            key={c._id}
-                            to={`/chores/${c._id}`}
-                            className="block p-2.5 bg-[#FFF9F1] rounded-xl border border-[#E8DEC8]/80 hover:border-[#3E737C]/60 hover:shadow-2xs transition-all"
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs font-semibold text-[#234653] truncate block">
-                                {c.title}
-                              </span>
-                              <span className="text-[10px] font-bold text-[#E86F5A] bg-[#FBF1EB] px-2 py-0.5 rounded-full shrink-0 border border-[#F2D4C8]">
-                                {c.status === 'overdue' ? 'Overdue' : 'Due ' + formatDateLabel(c.dueDate)}
-                              </span>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Shopping runs assigned to user */}
-                  {myResponsibilities.shoppingAssigned && myResponsibilities.shoppingAssigned.length > 0 && (
-                    <div className="p-4 rounded-2xl border border-[#E8DEC8] bg-[#FAF5ED] space-y-2.5 hover:border-[#3E737C]/40 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold text-[#3E737C] uppercase tracking-wider">
-                          🛍️ Shopping Assigned ({myResponsibilities.shoppingAssignedCount})
-                        </span>
-                        <Link to="/shopping" className="text-[10px] font-semibold text-[#E86F5A] hover:underline">
-                          Lists &rarr;
-                        </Link>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        {myResponsibilities.shoppingAssigned.map((s) => (
-                          <Link
-                            key={s._id}
-                            to="/shopping"
-                            className="block p-2.5 bg-[#FFF9F1] rounded-xl border border-[#E8DEC8]/80 hover:border-[#3E737C]/60 hover:shadow-2xs transition-all"
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs font-semibold text-[#234653] truncate block">
-                                {s.title || s.name || 'Grocery List'}
-                              </span>
-                              <span className="text-[10px] text-[#3E737C]">
-                                {s.items?.length || 0} items
-                              </span>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Favors accepted by user */}
-                  {myResponsibilities.helpProviding && myResponsibilities.helpProviding.length > 0 && (
-                    <div className="p-4 rounded-2xl border border-[#E8DEC8] bg-[#FAF5ED] space-y-2.5 hover:border-[#3E737C]/40 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold text-[#3E737C] uppercase tracking-wider">
-                          🤝 Favors Accepted ({myResponsibilities.helpProvidingCount})
-                        </span>
-                        <Link to="/help" className="text-[10px] font-semibold text-[#E86F5A] hover:underline">
-                          View &rarr;
-                        </Link>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        {myResponsibilities.helpProviding.map((h) => (
-                          <Link
-                            key={h._id}
-                            to={`/help/${h._id}`}
-                            className="block p-2.5 bg-[#FFF9F1] rounded-xl border border-[#E8DEC8]/80 hover:border-[#3E737C]/60 hover:shadow-2xs transition-all"
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs font-semibold text-[#234653] truncate block">
-                                {h.title}
-                              </span>
-                              <span className="text-[10px] text-[#234653] bg-[#DCE8E8] px-2 py-0.5 rounded-full">
-                                For {h.requester?.name || 'Roommate'}
-                              </span>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Financial Balance / Owed Card */}
-                  <div className="p-4 rounded-2xl border border-[#E8DEC8] bg-[#FAF5ED] space-y-2.5 hover:border-[#3E737C]/40 transition-colors">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold text-[#3E737C] uppercase tracking-wider">
-                        💰 Your Expense Balance
+                      <span className="font-medium text-[#1A1A1A] dark:text-white truncate block">
+                        {h.title}
                       </span>
-                      <Link to="/expenses" className="text-[10px] font-semibold text-[#E86F5A] hover:underline">
-                        Settle &rarr;
-                      </Link>
+                      <span className="text-[10px] text-[#71716E] dark:text-[#8E8E88] shrink-0">
+                        {h.urgency || 'Open'}
+                      </span>
                     </div>
+                    <span className="text-[10px] text-[#71716E] dark:text-[#8E8E88] block mt-0.5">
+                      By {h.requester?.name || 'Flatmate'} • {formatTime12h(h.startTime) || 'Flexible'}
+                    </span>
+                  </Link>
+                ))
+              )}
+            </div>
+          </div>
 
-                    <div className="p-3 bg-[#FFF9F1] rounded-xl border border-[#E8DEC8]/80 flex items-center justify-between shadow-2xs">
-                      <div>
-                        <span className="text-[10px] text-[#3E737C] block">Pending Balance</span>
-                        <span className={`text-base font-bold font-serif-editorial ${myResponsibilities.pendingOwed > 0 ? 'text-[#E86F5A]' : 'text-[#234653]'}`}>
-                          {myResponsibilities.pendingOwed > 0
-                            ? `You owe ₹${myResponsibilities.pendingOwed.toFixed(2)}`
-                            : 'All Settled Up'}
+          {/* Card 3: Quick Actions (2x2 Grid) */}
+          <div className="rounded-[28px] border border-[#E8E7E1] dark:border-[#2A2A28] bg-white dark:bg-[#141413] p-5 sm:p-6 flex flex-col justify-between shadow-sm space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E8E7E1] dark:border-[#2A2A28]">
+              <div className="flex items-center gap-2">
+                <span className="text-sm">⚡</span>
+                <h3 className="text-xs font-semibold tracking-tight text-[#1A1A1A] dark:text-white uppercase tracking-wider">
+                  Quick Actions
+                </h3>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5 flex-1">
+              <Link
+                to="/help"
+                className="p-3 rounded-2xl bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28] hover:border-[#1A1A1A]/30 dark:hover:border-white/20 transition-all flex flex-col items-center justify-center text-center group"
+              >
+                <span className="text-lg mb-1">🤝</span>
+                <span className="text-[11px] font-medium text-[#1A1A1A] dark:text-white leading-tight">
+                  Add Help Request
+                </span>
+              </Link>
+
+              <Link
+                to="/shopping"
+                className="p-3 rounded-2xl bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28] hover:border-[#1A1A1A]/30 dark:hover:border-white/20 transition-all flex flex-col items-center justify-center text-center group"
+              >
+                <span className="text-lg mb-1">🛒</span>
+                <span className="text-[11px] font-medium text-[#1A1A1A] dark:text-white leading-tight">
+                  Add Groceries
+                </span>
+              </Link>
+
+              <Link
+                to="/chores"
+                className="p-3 rounded-2xl bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28] hover:border-[#1A1A1A]/30 dark:hover:border-white/20 transition-all flex flex-col items-center justify-center text-center group"
+              >
+                <span className="text-lg mb-1">🧹</span>
+                <span className="text-[11px] font-medium text-[#1A1A1A] dark:text-white leading-tight">
+                  Add Chore
+                </span>
+              </Link>
+
+              <Link
+                to="/expenses"
+                className="p-3 rounded-2xl bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28] hover:border-[#1A1A1A]/30 dark:hover:border-white/20 transition-all flex flex-col items-center justify-center text-center group"
+              >
+                <span className="text-lg mb-1">💰</span>
+                <span className="text-[11px] font-medium text-[#1A1A1A] dark:text-white leading-tight">
+                  Split Expense
+                </span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Card 4: Upcoming Events / Agenda */}
+          <div className="rounded-[28px] border border-[#E8E7E1] dark:border-[#2A2A28] bg-white dark:bg-[#141413] p-5 sm:p-6 flex flex-col justify-between shadow-sm space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E8E7E1] dark:border-[#2A2A28]">
+              <div className="flex items-center gap-2">
+                <span className="text-sm">📅</span>
+                <h3 className="text-xs font-semibold tracking-tight text-[#1A1A1A] dark:text-white uppercase tracking-wider">
+                  Upcoming Events
+                </h3>
+              </div>
+              <Link to="/household-calendar" className="text-[11px] text-[#71716E] dark:text-[#8E8E88] hover:underline">
+                View all &rarr;
+              </Link>
+            </div>
+
+            <div className="space-y-3 flex-1">
+              {(upcomingSchedule?.chores?.length === 0 && todayAgenda?.chores?.length === 0) ? (
+                <div className="text-center py-6 text-xs text-[#71716E] dark:text-[#8E8E88]">
+                  No upcoming events scheduled this week.
+                </div>
+              ) : (
+                [...(todayAgenda?.chores || []), ...(upcomingSchedule?.chores || [])].slice(0, 3).map((ev) => {
+                  const dateMeta = formatDateShort(ev.dueDate || new Date());
+                  return (
+                    <div key={ev._id} className="flex items-center gap-3 text-xs">
+                      <div className="size-10 rounded-xl bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28] flex flex-col items-center justify-center shrink-0">
+                        <span className="font-bold text-[#1A1A1A] dark:text-white text-xs leading-none">{dateMeta.day}</span>
+                        <span className="text-[9px] uppercase text-[#71716E] dark:text-[#8E8E88] mt-0.5">{dateMeta.month}</span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="font-medium text-[#1A1A1A] dark:text-white block truncate">{ev.title}</span>
+                        <span className="text-[10px] text-[#71716E] dark:text-[#8E8E88] block">
+                          {formatTime12h(ev.dueTime) || 'Scheduled'} • {ev.assignedTo?.name || 'Unassigned'}
                         </span>
                       </div>
-                      <Link
-                        to="/expenses"
-                        className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-[#FAF5ED] hover:bg-[#FBF1EB] text-[#234653] border border-[#E8DEC8] transition-all active:scale-95 shadow-2xs"
-                      >
-                        Splits
-                      </Link>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* ======================================================== */}
+        {/* 5. BOTTOM TIER (5 MODULES): CALENDAR, GROCERIES, CHORES, EXPENSES, RECENT ACTIVITY */}
+        {/* ======================================================== */}
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
+          {/* Card 1: Household Calendar Mini Widget (Col span 3) */}
+          <div className="lg:col-span-3 rounded-[28px] border border-[#E8E7E1] dark:border-[#2A2A28] bg-white dark:bg-[#141413] p-5 sm:p-6 flex flex-col justify-between shadow-sm space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E8E7E1] dark:border-[#2A2A28]">
+              <h3 className="text-xs font-semibold text-[#1A1A1A] dark:text-white uppercase tracking-wider">
+                {monthName} {year}
+              </h3>
+              <Link to="/household-calendar" className="text-[11px] text-[#71716E] dark:text-[#8E8E88] hover:underline">
+                View &rarr;
+              </Link>
+            </div>
+
+            {/* 7-Day Day Names */}
+            <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-medium text-[#71716E] dark:text-[#8E8E88]">
+              <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+            </div>
+
+            {/* Calendar Days Matrix */}
+            <div className="grid grid-cols-7 gap-1 text-center text-xs">
+              {Array.from({ length: firstDayIndex }).map((_, i) => (
+                <div key={`empty-${i}`} className="py-1 opacity-20 text-[11px]">.</div>
+              ))}
+              {Array.from({ length: totalDaysInMonth }).map((_, i) => {
+                const dayNum = i + 1;
+                const isToday = dayNum === todayDateNum;
+                return (
+                  <div
+                    key={dayNum}
+                    className={`py-1 rounded-lg text-xs font-medium transition-colors ${
+                      isToday
+                        ? 'bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A] font-bold shadow-2xs'
+                        : 'text-[#1A1A1A] dark:text-[#FAF9F5] hover:bg-[#FAF9F5] dark:hover:bg-[#181816]'
+                    }`}
+                  >
+                    {dayNum}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="pt-2 border-t border-[#E8E7E1] dark:border-[#2A2A28] text-center">
+              <span className="text-[10px] text-[#71716E] dark:text-[#8E8E88]">
+                {todayAgenda?.totalItems || 0} scheduled tasks today
+              </span>
+            </div>
+          </div>
+
+          {/* Card 2: Groceries & Essentials Checklist (Col span 2) */}
+          <div className="lg:col-span-2 rounded-[28px] border border-[#E8E7E1] dark:border-[#2A2A28] bg-white dark:bg-[#141413] p-5 sm:p-6 flex flex-col justify-between shadow-sm space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E8E7E1] dark:border-[#2A2A28]">
+              <h3 className="text-xs font-semibold text-[#1A1A1A] dark:text-white uppercase tracking-wider truncate">
+                Groceries
+              </h3>
+              <Link to="/shopping" className="text-[11px] text-[#71716E] dark:text-[#8E8E88] hover:underline">
+                View &rarr;
+              </Link>
+            </div>
+
+            <div className="space-y-2 flex-1">
+              {groceryItems.length === 0 ? (
+                <div className="text-center py-6 text-xs text-[#71716E] dark:text-[#8E8E88]">
+                  Pantry is fully stocked!
+                </div>
+              ) : (
+                groceryItems.slice(0, 4).map((item) => {
+                  const isDone = item.status === 'purchased';
+                  return (
+                    <div
+                      key={item._id}
+                      onClick={() => handleToggleGroceryItem(item)}
+                      className="flex items-center gap-2 text-xs cursor-pointer select-none py-1 group"
+                    >
+                      <span className={`size-4 rounded-md flex items-center justify-center text-[10px] transition-colors shrink-0 ${
+                        isDone
+                          ? 'bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A]'
+                          : 'border border-[#71716E]/40 dark:border-white/30'
+                      }`}>
+                        {isDone && '✓'}
+                      </span>
+                      <span className={`truncate text-xs ${isDone ? 'line-through text-[#71716E] dark:text-[#666660]' : 'text-[#1A1A1A] dark:text-white font-medium'}`}>
+                        {item.name}
+                      </span>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="pt-2 border-t border-[#E8E7E1] dark:border-[#2A2A28] text-[10px] text-[#71716E] dark:text-[#8E8E88] text-center">
+              Small things, big comfort ♡
+            </div>
+          </div>
+
+          {/* Card 3: Chores Rotation (Col span 2) */}
+          <div className="lg:col-span-2 rounded-[28px] border border-[#E8E7E1] dark:border-[#2A2A28] bg-white dark:bg-[#141413] p-5 sm:p-6 flex flex-col justify-between shadow-sm space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E8E7E1] dark:border-[#2A2A28]">
+              <h3 className="text-xs font-semibold text-[#1A1A1A] dark:text-white uppercase tracking-wider truncate">
+                Chores
+              </h3>
+              <Link to="/chores" className="text-[11px] text-[#71716E] dark:text-[#8E8E88] hover:underline">
+                View &rarr;
+              </Link>
+            </div>
+
+            <div className="space-y-3 flex-1">
+              {(todayAgenda?.chores?.length === 0 && myResponsibilities?.chores?.length === 0) ? (
+                <div className="text-center py-6 text-xs text-[#71716E] dark:text-[#8E8E88]">
+                  All chores up to date!
+                </div>
+              ) : (
+                [...(todayAgenda?.chores || []), ...(myResponsibilities?.chores || [])].slice(0, 3).map((ch) => {
+                  const isDone = ch.status === 'completed';
+                  return (
+                    <div key={ch._id} className="flex items-center justify-between text-xs py-0.5">
+                      <div className="min-w-0 pr-1">
+                        <span className={`font-medium block truncate ${isDone ? 'line-through text-[#71716E]' : 'text-[#1A1A1A] dark:text-white'}`}>
+                          {ch.title}
+                        </span>
+                        <span className="text-[10px] text-[#71716E] dark:text-[#8E8E88]">
+                          {ch.assignedTo?.name ? ch.assignedTo.name : 'Unassigned'}
+                        </span>
+                      </div>
+
+                      {!isDone && (
+                        <button
+                          onClick={() => handleCompleteChore(ch._id)}
+                          title="Mark complete"
+                          className="size-5 rounded-full border border-[#71716E]/40 hover:border-[#1A1A1A] dark:hover:border-white flex items-center justify-center text-[10px] shrink-0 cursor-pointer"
+                        >
+                          ✓
+                        </button>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="pt-2 border-t border-[#E8E7E1] dark:border-[#2A2A28] text-[10px] text-[#71716E] dark:text-[#8E8E88] text-center">
+              Fair workload balance
+            </div>
+          </div>
+
+          {/* Card 4: Monthly Expenses & Splits (Col span 2) */}
+          <div className="lg:col-span-2 rounded-[28px] border border-[#E8E7E1] dark:border-[#2A2A28] bg-white dark:bg-[#141413] p-5 sm:p-6 flex flex-col justify-between shadow-sm space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E8E7E1] dark:border-[#2A2A28]">
+              <h3 className="text-xs font-semibold text-[#1A1A1A] dark:text-white uppercase tracking-wider truncate">
+                Monthly Expenses
+              </h3>
+              <Link to="/expenses" className="text-[11px] text-[#71716E] dark:text-[#8E8E88] hover:underline">
+                View &rarr;
+              </Link>
+            </div>
+
+            {/* Total Balance Pill */}
+            <div className="p-3 rounded-2xl bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28] text-center">
+              <span className="text-[10px] text-[#71716E] dark:text-[#8E8E88] uppercase block">Total logged</span>
+              <span className="text-base font-semibold text-[#1A1A1A] dark:text-white block mt-0.5">
+                ₹{totalExpensesAmount.toLocaleString()}
+              </span>
+            </div>
+
+            <div className="space-y-1.5 text-[11px]">
+              <div className="flex justify-between text-[#71716E] dark:text-[#8E8E88]">
+                <span>Pending due</span>
+                <span className="font-semibold text-[#1A1A1A] dark:text-white">₹{myResponsibilities?.pendingOwed?.toFixed(0) || 0}</span>
+              </div>
+              <div className="flex justify-between text-[#71716E] dark:text-[#8E8E88]">
+                <span>Shared splits</span>
+                <span className="font-medium text-[#1A1A1A] dark:text-white">{recentExpensesList.length} total</span>
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-[#E8E7E1] dark:border-[#2A2A28] text-[10px] text-[#71716E] dark:text-[#8E8E88] text-center">
+              Debt minimized splits
+            </div>
+          </div>
+
+          {/* Card 5: Recent Household Activity (Col span 3) */}
+          <div className="lg:col-span-3 rounded-[28px] border border-[#E8E7E1] dark:border-[#2A2A28] bg-white dark:bg-[#141413] p-5 sm:p-6 flex flex-col justify-between shadow-sm space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E8E7E1] dark:border-[#2A2A28]">
+              <div className="flex items-center gap-1.5">
+                <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+                <h3 className="text-xs font-semibold text-[#1A1A1A] dark:text-white uppercase tracking-wider">
+                  Recent Activity
+                </h3>
+              </div>
+              <Link to="/notifications" className="text-[11px] text-[#71716E] dark:text-[#8E8E88] hover:underline">
+                View &rarr;
+              </Link>
+            </div>
+
+            <div className="space-y-3 flex-1">
+              {recentActivities.length === 0 ? (
+                <div className="text-center py-6 text-xs text-[#71716E] dark:text-[#8E8E88]">
+                  No recent activities recorded.
+                </div>
+              ) : (
+                recentActivities.slice(0, 3).map((act) => (
+                  <div key={act._id} className="flex items-start gap-2.5 text-xs">
+                    <div className="size-6 rounded-full bg-[#EAE8E1] dark:bg-[#1E1E1C] text-[#1A1A1A] dark:text-white font-semibold flex items-center justify-center text-[10px] shrink-0 mt-0.5">
+                      {act.actor?.name ? act.actor.name.charAt(0).toUpperCase() : 'R'}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[#1A1A1A] dark:text-[#FAF9F5] text-xs leading-snug line-clamp-2">
+                        <strong>{act.actor?.name === user?.name ? 'You' : act.actor?.name || 'Roommate'}</strong>{' '}
+                        {act.message?.replace(act.actor?.name, '').trim() || act.message}
+                      </p>
+                      <span className="text-[10px] text-[#71716E] dark:text-[#8E8E88] block mt-0.5">
+                        {new Date(act.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
                     </div>
                   </div>
-                </div>
-              )}
-            </section>
-
-            {/* ---------------------------------------------------- */}
-            {/* 3. RECENT ACTIVITY TIMELINE */}
-            {/* ---------------------------------------------------- */}
-            <section className="bg-[#FFF9F1] border border-[#E8DEC8] rounded-3xl p-6 sm:p-7 shadow-2xs space-y-4 hover-lift">
-              <div className="flex items-center justify-between pb-3 border-b border-[#E8DEC8]">
-                <div className="flex items-center gap-2">
-                  <span className="text-base">⚡</span>
-                  <h2 className="text-base font-bold text-[#234653] font-serif-editorial">Household activity</h2>
-                </div>
-                <span className="text-[11px] text-[#3E737C] font-medium flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[#E86F5A] animate-pulse"></span>
-                  Live rhythm
-                </span>
-              </div>
-
-              {(!recentActivities || recentActivities.length === 0) ? (
-                <div className="text-center py-6 text-[#3E737C] text-xs">
-                  Your household activity will appear here.
-                </div>
-              ) : (
-                <div className="space-y-5">
-                  {Object.entries(groupedActivities).map(([groupLabel, items]) => (
-                    <div key={groupLabel} className="space-y-3">
-                      <span className="text-[10px] font-bold text-[#3E737C] uppercase tracking-wider block font-serif-editorial">
-                        {groupLabel}
-                      </span>
-
-                      <div className="space-y-2 border-l-2 border-[#E8DEC8] ml-2 pl-3.5">
-                        {items.map((act) => (
-                          <div key={act._id} className="relative flex items-start gap-3 text-xs py-1 group">
-                            {/* Dot indicator */}
-                            <div className="w-6 h-6 rounded-full bg-[#DCE8E8] text-[#234653] font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5 font-serif group-hover:scale-110 transition-transform shadow-2xs">
-                              {act.actor?.name ? act.actor.name.charAt(0).toUpperCase() : 'R'}
-                            </div>
-
-                            <div className="flex-1 min-w-0 bg-[#FAF5ED]/60 group-hover:bg-[#FAF5ED] p-2 rounded-xl transition-colors">
-                              <p className="text-[#234653] leading-snug">
-                                <strong className="font-semibold text-[#17272C]">
-                                  {act.actor?.name === user?.name ? 'You' : act.actor?.name || 'Roommate'}
-                                </strong>{' '}
-                                {act.message?.replace(act.actor?.name, '').trim() || act.message}
-                              </p>
-                              <span className="text-[10px] text-[#3E737C]/80 mt-0.5 block font-mono">
-                                {new Date(act.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-          </div>
-
-          {/* ======================================================== */}
-          {/* RIGHT SUPPORTING COLUMN (4 COLS ON DESKTOP) */}
-          {/* ======================================================== */}
-          <div className="lg:col-span-4 space-y-6">
-            {/* ---------------------------------------------------- */}
-            {/* A. HOUSEHOLD PULSE / SNAPSHOT */}
-            {/* ---------------------------------------------------- */}
-            <div className="bg-[#FFF9F1] border border-[#E8DEC8] rounded-3xl p-6 shadow-2xs space-y-3.5 hover-lift">
-              <span className="text-[10px] font-bold text-[#3E737C] uppercase tracking-wider block font-serif-editorial">
-                Household pulse
-              </span>
-
-              <div className="grid grid-cols-2 gap-2.5">
-                {/* Chores Pulse */}
-                <TiltCard maxTilt={4} spotlightColor="rgba(35, 70, 83, 0.08)" className="rounded-2xl shadow-2xs">
-                  <Link
-                    to="/chores"
-                    className="block p-3.5 bg-[#FAF5ED] rounded-2xl border border-[#E8DEC8] hover:border-[#3E737C]/60 hover:bg-[#FFF9F1] transition-all group"
-                  >
-                    <div className="flex items-center gap-1.5 text-[#3E737C] text-[11px] font-medium">
-                      <span className="w-2 h-2 rounded-full bg-[#234653]"></span>
-                      Chores
-                    </div>
-                    <span className="text-xl font-bold text-[#234653] font-serif-editorial block mt-1 group-hover:scale-105 transition-transform">
-                      {overviewCounts?.openChores || 0}
-                    </span>
-                    <span className="text-[10px] text-[#3E737C]">open tasks</span>
-                  </Link>
-                </TiltCard>
-
-                {/* Expenses Pulse */}
-                <TiltCard maxTilt={4} spotlightColor="rgba(232, 111, 90, 0.08)" className="rounded-2xl shadow-2xs">
-                  <Link
-                    to="/expenses"
-                    className="block p-3.5 bg-[#FAF5ED] rounded-2xl border border-[#E8DEC8] hover:border-[#3E737C]/60 hover:bg-[#FFF9F1] transition-all group"
-                  >
-                    <div className="flex items-center gap-1.5 text-[#3E737C] text-[11px] font-medium">
-                      <span className="w-2 h-2 rounded-full bg-[#E86F5A]"></span>
-                      Expenses
-                    </div>
-                    <span className="text-xl font-bold text-[#234653] font-serif-editorial block mt-1 group-hover:scale-105 transition-transform">
-                      {overviewCounts?.pendingOwed > 0 ? '₹' + overviewCounts.pendingOwed.toFixed(0) : '₹0'}
-                    </span>
-                    <span className="text-[10px] text-[#3E737C]">
-                      {overviewCounts?.pendingOwed > 0 ? 'pending due' : 'all settled'}
-                    </span>
-                  </Link>
-                </TiltCard>
-
-                {/* Shopping Pulse */}
-                <TiltCard maxTilt={4} spotlightColor="rgba(231, 168, 60, 0.08)" className="rounded-2xl shadow-2xs">
-                  <Link
-                    to="/shopping"
-                    className="block p-3.5 bg-[#FAF5ED] rounded-2xl border border-[#E8DEC8] hover:border-[#3E737C]/60 hover:bg-[#FFF9F1] transition-all group"
-                  >
-                    <div className="flex items-center gap-1.5 text-[#3E737C] text-[11px] font-medium">
-                      <span className="w-2 h-2 rounded-full bg-[#E7A83C]"></span>
-                      Shopping
-                    </div>
-                    <span className="text-xl font-bold text-[#234653] font-serif-editorial block mt-1 group-hover:scale-105 transition-transform">
-                      {overviewCounts?.upcomingShopping || 0}
-                    </span>
-                    <span className="text-[10px] text-[#3E737C]">lists active</span>
-                  </Link>
-                </TiltCard>
-
-                {/* Help / Decisions Pulse */}
-                <TiltCard maxTilt={4} spotlightColor="rgba(62, 115, 124, 0.08)" className="rounded-2xl shadow-2xs">
-                  <Link
-                    to="/decisions"
-                    className="block p-3.5 bg-[#FAF5ED] rounded-2xl border border-[#E8DEC8] hover:border-[#3E737C]/60 hover:bg-[#FFF9F1] transition-all group"
-                  >
-                    <div className="flex items-center gap-1.5 text-[#3E737C] text-[11px] font-medium">
-                      <span className="w-2 h-2 rounded-full bg-[#3E737C]"></span>
-                      Decisions
-                    </div>
-                    <span className="text-xl font-bold text-[#234653] font-serif-editorial block mt-1 group-hover:scale-105 transition-transform">
-                      {overviewCounts?.activePolls || 0}
-                    </span>
-                    <span className="text-[10px] text-[#3E737C]">active votes</span>
-                  </Link>
-                </TiltCard>
-              </div>
-            </div>
-
-            {/* ---------------------------------------------------- */}
-            {/* B. CONTRIBUTION / BALANCE MODULE */}
-            {/* ---------------------------------------------------- */}
-            <div className="bg-[#FFF9F1] border border-[#E8DEC8] rounded-3xl p-6 shadow-2xs space-y-3.5 hover-lift">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-[#3E737C] uppercase tracking-wider font-serif-editorial">
-                  Household contributions
-                </span>
-                <Link
-                  to="/contribution"
-                  className="text-[11px] font-semibold text-[#E86F5A] hover:text-[#D65D48] transition-colors"
-                >
-                  Details &rarr;
-                </Link>
-              </div>
-
-              <div className="space-y-2.5">
-                <div className="flex items-baseline justify-between">
-                  <span className="text-xs text-[#3E737C]">Your monthly contribution</span>
-                  <span className="text-xl font-bold text-[#234653] font-serif-editorial">{userPct}%</span>
-                </div>
-
-                {/* Progress bar */}
-                <div className="w-full bg-[#FAF5ED] border border-[#E8DEC8] h-2.5 rounded-full overflow-hidden">
-                  <div
-                    className="bg-[#234653] h-full rounded-full transition-all duration-700 ease-out"
-                    style={{ width: `${Math.min(userPct, 100)}%` }}
-                  ></div>
-                </div>
-
-                <div className="flex items-center justify-between text-[11px] text-[#3E737C] pt-1">
-                  <span>Your time: <strong className="text-[#234653]">{userMins} min</strong></span>
-                  <span>Household total: <strong className="text-[#234653]">{totalMins} min</strong></span>
-                </div>
-              </div>
-            </div>
-
-            {/* ---------------------------------------------------- */}
-            {/* C. CALENDAR PREVIEW (UP NEXT) */}
-            {/* ---------------------------------------------------- */}
-            <div className="bg-[#FFF9F1] border border-[#E8DEC8] rounded-3xl p-6 shadow-2xs space-y-3.5 hover-lift">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-[#3E737C] uppercase tracking-wider font-serif-editorial">
-                  Up next
-                </span>
-                <Link
-                  to="/household-calendar"
-                  className="text-[11px] font-semibold text-[#E86F5A] hover:text-[#D65D48] transition-colors"
-                >
-                  Calendar &rarr;
-                </Link>
-              </div>
-
-              {(!upcomingSchedule?.chores || upcomingSchedule.chores.length === 0) ? (
-                <p className="text-xs text-[#3E737C] py-2">No upcoming scheduled tasks this week.</p>
-              ) : (
-                <div className="space-y-2 text-xs">
-                  {upcomingSchedule.chores.slice(0, 3).map((ch) => (
-                    <div
-                      key={ch._id}
-                      className="p-3 rounded-2xl bg-[#FAF5ED] border border-[#E8DEC8] flex items-center justify-between hover:bg-[#FFF9F1] transition-colors group"
-                    >
-                      <div className="min-w-0">
-                        <span className="font-bold text-[#234653] block truncate">{ch.title}</span>
-                        <span className="text-[10px] text-[#3E737C]">
-                          {formatDateLabel(ch.dueDate)} • {ch.assignedTo?.name || 'Unassigned'}
-                        </span>
-                      </div>
-                      <Link
-                        to={`/chores/${ch._id}`}
-                        className="text-[#3E737C] hover:text-[#234653] group-hover:translate-x-0.5 transition-transform text-xs px-1 font-bold"
-                      >
-                        &rarr;
-                      </Link>
-                    </div>
-                  ))}
-                </div>
+                ))
               )}
             </div>
 
-            {/* ---------------------------------------------------- */}
-            {/* D. HOUSEHOLD ROOMMATE CODE */}
-            {/* ---------------------------------------------------- */}
-            <div className="p-5 rounded-3xl bg-[#234653] text-[#FFF9F1] space-y-2 shadow-xs hover-lift group">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase font-bold text-[#F2D4C8] tracking-widest font-serif-editorial">
-                  Roommate Invite Code
-                </span>
-                <Link to="/household" className="text-xs font-semibold text-[#DCE8E8] hover:text-white transition-colors">
-                  Manage &rarr;
-                </Link>
-              </div>
-              <div className="flex items-center justify-between pt-1">
-                <span className="font-mono text-lg font-bold text-white tracking-widest">
-                  {household.inviteCode}
-                </span>
-                <button
-                  type="button"
-                  onClick={handleCopyCode}
-                  className="px-3 py-1.5 rounded-xl bg-[#FFF9F1] hover:bg-[#FBF1EB] text-xs font-semibold text-[#234653] transition-all active:scale-95 shadow-2xs"
-                >
-                  {copiedInvite ? '✓ Copied' : 'Copy'}
-                </button>
-              </div>
+            <div className="pt-2 border-t border-[#E8E7E1] dark:border-[#2A2A28] text-[10px] text-[#71716E] dark:text-[#8E8E88] text-center">
+              Live household rhythm
             </div>
           </div>
-        </div>
+        </section>
+
+        {/* ======================================================== */}
+        {/* 6. BOTTOM BANNER / HOUSEHOLD SLOGAN */}
+        {/* ======================================================== */}
+        <footer className="p-4 px-6 rounded-2xl border border-[#E8E7E1] dark:border-[#2A2A28] bg-white/60 dark:bg-[#141413]/60 flex items-center justify-between text-xs text-[#71716E] dark:text-[#8E8E88]">
+          <div className="flex items-center gap-2">
+            <span>🌱</span>
+            <span>Different people. Different habits. Same home.</span>
+          </div>
+          <span className="font-mono text-[11px] font-medium text-[#1A1A1A] dark:text-white">
+            {household.name}
+          </span>
+        </footer>
       </div>
 
       {/* Global Search Dialog Modal */}

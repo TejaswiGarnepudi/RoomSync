@@ -33,7 +33,6 @@ const getCategoryIcon = (category) => {
   return match ? match.icon : '📌';
 };
 
-// Helper: Format YYYY-MM-DD
 const formatDateStr = (d) => {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -41,7 +40,6 @@ const formatDateStr = (d) => {
   return `${y}-${m}-${day}`;
 };
 
-// Helper: Format 24h time to 12h AM/PM
 const formatTime12h = (time24) => {
   if (!time24) return '';
   const [hStr, mStr] = time24.split(':');
@@ -139,7 +137,6 @@ export default function Chores() {
       const newChore = res.data.data.chore;
       setIsCreateModalOpen(false);
 
-      // If smart assignment selected, open recommendation flow
       if (formData.assignmentType === 'smart') {
         openSmartRecommendationModal(newChore);
       }
@@ -156,32 +153,25 @@ export default function Chores() {
     setSmartRecChore(chore);
     setSmartRecModalOpen(true);
     setLoadingRec(true);
-    setSmartRecData(null);
-
     try {
       const res = await getSmartRecommendation(chore._id);
       setSmartRecData(res.data.data);
     } catch (err) {
-      console.error('Failed to fetch recommendation:', err);
+      console.error('Failed to get smart recommendation:', err);
     } finally {
       setLoadingRec(false);
     }
   };
 
-  const handleConfirmSmartAssign = async () => {
-    if (!smartRecChore || !smartRecData || !smartRecData.recommendedUser) return;
+  const handleApplySmartAssignment = async () => {
+    if (!smartRecChore || !smartRecData?.recommendedUser?._id) return;
     setAssigningSmart(true);
-
     try {
-      await assignSmartRecommendation(smartRecChore._id, {
-        userId: smartRecData.recommendedUser._id,
-        startTime: smartRecData.startTime,
-        endTime: smartRecData.endTime
-      });
+      await assignSmartRecommendation(smartRecChore._id, smartRecData.recommendedUser._id);
       setSmartRecModalOpen(false);
       fetchDashboardData();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to assign smart recommendation');
+      alert(err.response?.data?.message || 'Failed to assign chore');
     } finally {
       setAssigningSmart(false);
     }
@@ -205,666 +195,366 @@ export default function Chores() {
     }
   };
 
-  // Filtered lists
-  const todayStr = formatDateStr(new Date());
-
-  const filteredChores = choresList.filter(c => {
-    // Tab filter
-    if (activeTab === 'my') {
-      const isAssignedToMe = c.assignedTo?._id === user._id || c.assignedTo === user._id;
-      if (!isAssignedToMe) return false;
-    }
-    // Category filter
-    if (selectedCategory !== 'all' && c.category !== selectedCategory) {
-      return false;
-    }
-    // Search query
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      const matchTitle = c.title?.toLowerCase().includes(query);
-      const matchDesc = c.description?.toLowerCase().includes(query);
-      const matchUser = c.assignedTo?.name?.toLowerCase().includes(query);
-      if (!matchTitle && !matchDesc && !matchUser) return false;
-    }
-    return true;
-  });
-
-  const overdueChores = filteredChores.filter(c => c.status === 'overdue');
-  const todayChores = filteredChores.filter(c => c.dueDate === todayStr && c.status !== 'completed' && c.status !== 'overdue');
-  const upcomingChores = filteredChores.filter(c => c.dueDate > todayStr && c.status !== 'completed');
-  const completedChores = filteredChores.filter(c => c.status === 'completed');
-
   if (loading) {
     return (
       <AppLayout>
-        <div className="flex justify-center py-20">
+        <div className="flex justify-center items-center py-24">
           <LoadingSpinner />
         </div>
       </AppLayout>
     );
   }
 
+  // Filter chores
+  const filteredChores = choresList.filter(chore => {
+    if (activeTab === 'my' && chore.assignedTo?._id !== user?._id && chore.assignedTo !== user?._id) {
+      return false;
+    }
+    if (selectedCategory !== 'all' && chore.category !== selectedCategory) {
+      return false;
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const matchTitle = chore.title.toLowerCase().includes(q);
+      const matchAssignee = (chore.assignedTo?.name || '').toLowerCase().includes(q);
+      if (!matchTitle && !matchAssignee) return false;
+    }
+    return true;
+  });
+
   return (
     <AppLayout>
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-stone-900">Household Chores</h1>
-          <p className="text-stone-600 mt-1">
-            Coordinate tasks, track workloads, and use smart availability scheduling.
-          </p>
-        </div>
+      <div className="space-y-8 animate-fade-in-up">
+        {/* Header */}
+        <div className="pb-6 border-b border-[#E8E7E1] dark:border-[#2A2A28] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-normal tracking-[-0.04em] text-[#1A1A1A] dark:text-white">
+              Chores & Household Rhythm
+            </h1>
+            <p className="text-xs sm:text-sm text-[#71716E] dark:text-[#8E8E88] mt-1 tracking-[-0.02em]">
+              Automated fair rotations, smart availability matching, and workload balancing.
+            </p>
+          </div>
 
-        <div className="flex items-center gap-3">
-          <Link to="/chores/history">
-            <Button variant="secondary">
-              <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Chore History
+          <div className="flex items-center gap-2.5">
+            <Link to="/chores/history">
+              <Button variant="outline" size="sm">
+                Rotation Log ↗
+              </Button>
+            </Link>
+            <Button size="sm" onClick={() => setIsCreateModalOpen(true)}>
+              + New Chore
             </Button>
-          </Link>
-          <Button onClick={() => setIsCreateModalOpen(true)}>
-            <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Create Chore
-          </Button>
-        </div>
-      </div>
-
-      {/* Roommate Workload Summary Strip */}
-      <div className="mb-6">
-        <div className="bg-white border border-stone-200 rounded-2xl p-4 shadow-xs">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold uppercase tracking-wider text-stone-500">
-              Fair Workload Balance
-            </span>
-            <span className="text-xs text-stone-400">Calculated by pending chore minutes</span>
           </div>
+        </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {workloads.map((w) => {
-              const isCurrentUser = w.user._id === user._id;
-              return (
-                <div
-                  key={w.user._id}
-                  className={`p-3 rounded-xl border transition-all ${
-                    isCurrentUser ? 'bg-teal-50/50 border-teal-200' : 'bg-stone-50 border-stone-100'
-                  }`}
-                >
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <div className="w-6 h-6 rounded-full bg-teal-100 text-teal-700 text-xs font-bold flex items-center justify-center">
-                      {w.user.name.charAt(0).toUpperCase()}
+        {/* Workload Fair Balance Strip */}
+        {workloads.length > 0 && (
+          <div className="bg-white dark:bg-[#141413] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-3xl p-5 shadow-2xs space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] uppercase font-medium text-[#71716E] dark:text-[#8E8E88] tracking-wider">
+                Household Workload Balance (Past 30 Days)
+              </span>
+              <span className="text-xs text-[#71716E] dark:text-[#8E8E88]">
+                Fair distribution based on completion time
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-1">
+              {workloads.map((wl) => (
+                <div key={wl.user?._id || wl.userId} className="p-3 bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-2xl flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="size-7 rounded-full bg-[#EAE8E1] dark:bg-[#1E1E1C] text-[10px] font-semibold flex items-center justify-center text-[#1A1A1A] dark:text-white">
+                      {wl.user?.name ? wl.user.name.charAt(0).toUpperCase() : 'U'}
                     </div>
-                    <span className="text-sm font-semibold text-stone-800 truncate">
-                      {w.user.name} {isCurrentUser && '(You)'}
-                    </span>
+                    <div>
+                      <span className="text-xs font-medium text-[#1A1A1A] dark:text-white block">{wl.user?.name}</span>
+                      <span className="text-[10px] text-[#71716E] dark:text-[#8E8E88]">{wl.completedChores || 0} chores done</span>
+                    </div>
                   </div>
-                  <div className="flex items-baseline justify-between text-xs">
-                    <span className="text-stone-500">{w.pendingCount} pending</span>
-                    <span className="font-bold text-stone-800">{w.pendingMinutes}m load</span>
-                  </div>
+                  <span className="text-xs font-medium text-[#1A1A1A] dark:text-white">
+                    {wl.totalMinutes || 0}m
+                  </span>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Filters & Tabs Bar */}
-      <div className="bg-white border border-stone-200 rounded-xl p-4 mb-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        {/* All vs My Chores Toggle */}
-        <div className="flex items-center space-x-2">
-          <div className="bg-stone-100 p-1 rounded-lg flex text-xs font-semibold">
-            <button
-              onClick={() => setActiveTab('all')}
-              className={`px-3 py-1.5 rounded-md transition-colors ${
-                activeTab === 'all'
-                  ? 'bg-white text-stone-900 shadow-xs'
-                  : 'text-stone-600 hover:text-stone-900'
-              }`}
-            >
-              All Chores ({choresList.filter(c => c.status !== 'completed').length})
-            </button>
-            <button
-              onClick={() => setActiveTab('my')}
-              className={`px-3 py-1.5 rounded-md transition-colors ${
-                activeTab === 'my'
-                  ? 'bg-white text-stone-900 shadow-xs'
-                  : 'text-stone-600 hover:text-stone-900'
-              }`}
-            >
-              My Chores ({choresList.filter(c => (c.assignedTo?._id === user._id || c.assignedTo === user._id) && c.status !== 'completed').length})
-            </button>
-          </div>
-        </div>
-
-        {/* Category Pills & Search */}
-        <div className="flex flex-wrap items-center gap-2 flex-1 md:justify-end">
-          <div className="w-full sm:w-48">
-            <Input
-              id="search"
-              placeholder="Search chores..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="mb-0 text-xs"
-            />
-          </div>
-
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-3 py-2 border border-stone-300 rounded-lg text-xs font-medium text-stone-700 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500"
-          >
-            {CATEGORIES.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.icon} {cat.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Chores Groups */}
-      <div className="space-y-8">
-        {/* OVERDUE SECTION */}
-        {overdueChores.length > 0 && (
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
-              <h2 className="text-base font-bold text-rose-900 uppercase tracking-wide">
-                Overdue Chores ({overdueChores.length})
-              </h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {overdueChores.map((chore) => (
-                <ChoreCard
-                  key={chore._id}
-                  chore={chore}
-                  currentUser={user}
-                  onClaim={() => handleClaim(chore._id)}
-                  onComplete={() => handleComplete(chore._id)}
-                  onSmartRecommend={() => openSmartRecommendationModal(chore)}
-                />
               ))}
             </div>
           </div>
         )}
 
-        {/* TODAY SECTION */}
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-teal-500"></span>
-            <h2 className="text-base font-bold text-stone-900 uppercase tracking-wide">
-              Due Today ({todayChores.length})
-            </h2>
+        {/* Chores Section */}
+        <div className="bg-white dark:bg-[#141413] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-3xl p-6 sm:p-7 shadow-sm space-y-6">
+          {/* Controls: Tabs, Filters, Search */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#E8E7E1] dark:border-[#2A2A28]">
+            <div className="flex gap-2">
+              <button
+                onClick={() => setActiveTab('all')}
+                className={`px-4 py-2 text-xs font-medium rounded-full transition-all cursor-pointer ${
+                  activeTab === 'all'
+                    ? 'bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A] shadow-xs'
+                    : 'text-[#71716E] dark:text-[#8E8E88] hover:bg-[#FAF9F5] dark:hover:bg-[#181816]'
+                }`}
+              >
+                All Chores ({choresList.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('my')}
+                className={`px-4 py-2 text-xs font-medium rounded-full transition-all cursor-pointer ${
+                  activeTab === 'my'
+                    ? 'bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A] shadow-xs'
+                    : 'text-[#71716E] dark:text-[#8E8E88] hover:bg-[#FAF9F5] dark:hover:bg-[#181816]'
+                }`}
+              >
+                My Chores ({choresList.filter(c => c.assignedTo?._id === user?._id || c.assignedTo === user?._id).length})
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <input
+                type="text"
+                placeholder="Search chores..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full sm:w-48 px-3 py-1.5 text-xs bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-full text-[#1A1A1A] dark:text-white placeholder-[#71716E] focus:outline-none"
+              />
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="px-3 py-1.5 text-xs bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-full text-[#1A1A1A] dark:text-white"
+              >
+                {CATEGORIES.map(c => (
+                  <option key={c.id} value={c.id} className="bg-white dark:bg-[#141413]">{c.icon} {c.name}</option>
+                ))}
+              </select>
+            </div>
           </div>
-          {todayChores.length === 0 ? (
-            <div className="bg-white border border-stone-200 rounded-xl p-6 text-center text-stone-500 text-sm">
-              ✨ No chores due today. Enjoy your day!
+
+          {/* Chores Cards Grid */}
+          {filteredChores.length === 0 ? (
+            <div className="text-center py-16 border border-dashed border-[#E8E7E1] dark:border-[#2A2A28] rounded-2xl bg-[#FAF9F5] dark:bg-[#181816]">
+              <div className="text-3xl mb-2 opacity-75">🧹</div>
+              <h3 className="text-sm font-medium text-[#1A1A1A] dark:text-white">No chores found</h3>
+              <p className="text-xs text-[#71716E] dark:text-[#8E8E88] mt-1">
+                {activeTab === 'my' ? 'You have no active chores assigned to you right now.' : 'All household chores are complete.'}
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {todayChores.map((chore) => (
-                <ChoreCard
-                  key={chore._id}
-                  chore={chore}
-                  currentUser={user}
-                  onClaim={() => handleClaim(chore._id)}
-                  onComplete={() => handleComplete(chore._id)}
-                  onSmartRecommend={() => openSmartRecommendationModal(chore)}
-                />
-              ))}
+              {filteredChores.map((chore) => {
+                const isCompleted = chore.status === 'completed';
+                const isAssignedToUser = chore.assignedTo?._id === user?._id || chore.assignedTo === user?._id;
+
+                return (
+                  <div
+                    key={chore._id}
+                    className={`p-5 rounded-3xl border border-[#E8E7E1] dark:border-[#2A2A28] bg-[#FAF9F5] dark:bg-[#181816] flex flex-col justify-between space-y-4 hover:border-[#1A1A1A]/30 dark:hover:border-white/20 transition-all shadow-2xs ${
+                      isCompleted ? 'opacity-65' : ''
+                    }`}
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-[#71716E] dark:text-[#8E8E88] flex items-center gap-1.5">
+                          <span>{getCategoryIcon(chore.category)}</span>
+                          <span className="capitalize">{chore.category}</span>
+                        </span>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium uppercase tracking-wider ${
+                          isCompleted
+                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                            : chore.status === 'in_progress'
+                            ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                            : 'bg-[#EAE8E1] dark:bg-[#1E1E1C] text-[#71716E] dark:text-[#8E8E88]'
+                        }`}>
+                          {chore.status?.replace('_', ' ')}
+                        </span>
+                      </div>
+
+                      <Link to={`/chores/${chore._id}`}>
+                        <h3 className={`text-sm font-medium hover:underline text-[#1A1A1A] dark:text-white ${isCompleted ? 'line-through' : ''}`}>
+                          {chore.title}
+                        </h3>
+                      </Link>
+
+                      {chore.description && (
+                        <p className="text-xs text-[#71716E] dark:text-[#A8A7A0] line-clamp-2">
+                          {chore.description}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="pt-3 border-t border-[#E8E7E1] dark:border-[#2A2A28] space-y-2.5">
+                      <div className="flex items-center justify-between text-xs text-[#71716E] dark:text-[#8E8E88]">
+                        <span>Due {formatDateStr(new Date(chore.dueDate))}</span>
+                        <span>{chore.estimatedDuration || 30} mins</span>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-xs font-medium text-[#1A1A1A] dark:text-white">
+                          {chore.assignedTo?.name ? chore.assignedTo.name : 'Unassigned'}
+                        </span>
+
+                        <div className="flex items-center gap-2">
+                          {!isCompleted && !chore.assignedTo && (
+                            <Button size="sm" variant="secondary" onClick={() => handleClaim(chore._id)}>
+                              Claim
+                            </Button>
+                          )}
+                          {!isCompleted && (isAssignedToUser || !chore.assignedTo) && (
+                            <Button size="sm" onClick={() => handleComplete(chore._id)}>
+                              Complete ✓
+                            </Button>
+                          )}
+                          <Link
+                            to={`/chores/${chore._id}`}
+                            className="text-xs font-medium text-[#71716E] dark:text-[#8E8E88] hover:text-[#1A1A1A] dark:hover:text-white px-1"
+                          >
+                            &rarr;
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
-
-        {/* UPCOMING SECTION */}
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-stone-400"></span>
-            <h2 className="text-base font-bold text-stone-700 uppercase tracking-wide">
-              Upcoming ({upcomingChores.length})
-            </h2>
-          </div>
-          {upcomingChores.length === 0 ? (
-            <div className="bg-white border border-stone-200 rounded-xl p-6 text-center text-stone-500 text-sm">
-              No upcoming scheduled chores.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {upcomingChores.map((chore) => (
-                <ChoreCard
-                  key={chore._id}
-                  chore={chore}
-                  currentUser={user}
-                  onClaim={() => handleClaim(chore._id)}
-                  onComplete={() => handleComplete(chore._id)}
-                  onSmartRecommend={() => openSmartRecommendationModal(chore)}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* RECENTLY COMPLETED SECTION */}
-        {completedChores.length > 0 && (
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-              <h2 className="text-base font-bold text-stone-700 uppercase tracking-wide">
-                Recently Completed ({completedChores.length})
-              </h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {completedChores.slice(0, 6).map((chore) => (
-                <ChoreCard
-                  key={chore._id}
-                  chore={chore}
-                  currentUser={user}
-                  onClaim={() => handleClaim(chore._id)}
-                  onComplete={() => handleComplete(chore._id)}
-                  onSmartRecommend={() => openSmartRecommendationModal(chore)}
-                />
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* CREATE CHORE MODAL */}
-      <Modal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        title="Create Household Chore"
-      >
-        <form onSubmit={handleCreateSubmit} className="space-y-4">
-          {createError && (
-            <div className="p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-100">
-              {createError}
-            </div>
-          )}
+      {/* Create Chore Modal */}
+      <Modal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} title="Create Household Chore">
+        {createError && (
+          <div className="mb-4 p-3 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs rounded-xl border border-rose-200 dark:border-rose-900/50">
+            {createError}
+          </div>
+        )}
 
+        <form onSubmit={handleCreateSubmit} className="space-y-4 text-xs">
           <Input
             label="Chore Title"
-            id="title"
-            type="text"
-            placeholder="e.g. Clean Kitchen Sink, Wash Dishes"
             value={formData.title}
-            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+            onChange={(e) => setFormData(p => ({ ...p, title: e.target.value }))}
+            placeholder="e.g. Wipe kitchen counters, Take out recycling"
             required
-          />
-
-          <Input
-            label="Description (Optional)"
-            id="description"
-            type="text"
-            placeholder="e.g. Wipe down counters and empty trash"
-            value={formData.description}
-            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
           />
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">Category</label>
+              <label className="block text-xs font-medium uppercase tracking-wider text-[#71716E] dark:text-[#8E8E88] mb-1.5">Category</label>
               <select
                 value={formData.category}
-                onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-teal-500"
+                onChange={(e) => setFormData(p => ({ ...p, category: e.target.value }))}
+                className="w-full px-3 py-2 text-xs bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-xl text-[#1A1A1A] dark:text-white"
               >
                 {CATEGORIES.filter(c => c.id !== 'all').map(c => (
-                  <option key={c.id} value={c.id}>
-                    {c.icon} {c.name}
-                  </option>
+                  <option key={c.id} value={c.id} className="bg-white dark:bg-[#141413]">{c.icon} {c.name}</option>
                 ))}
               </select>
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">Priority</label>
+              <label className="block text-xs font-medium uppercase tracking-wider text-[#71716E] dark:text-[#8E8E88] mb-1.5">Estimated Time (mins)</label>
+              <input
+                type="number"
+                min="5"
+                step="5"
+                value={formData.estimatedDuration}
+                onChange={(e) => setFormData(p => ({ ...p, estimatedDuration: Number(e.target.value) }))}
+                className="w-full px-3 py-2 text-xs bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-xl text-[#1A1A1A] dark:text-white"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium uppercase tracking-wider text-[#71716E] dark:text-[#8E8E88] mb-1.5">Due Date</label>
+              <input
+                type="date"
+                value={formData.dueDate}
+                onChange={(e) => setFormData(p => ({ ...p, dueDate: e.target.value }))}
+                className="w-full px-3 py-2 text-xs bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-xl text-[#1A1A1A] dark:text-white"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium uppercase tracking-wider text-[#71716E] dark:text-[#8E8E88] mb-1.5">Assignment Method</label>
               <select
-                value={formData.priority}
-                onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value }))}
-                className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-teal-500"
+                value={formData.assignmentType}
+                onChange={(e) => setFormData(p => ({ ...p, assignmentType: e.target.value }))}
+                className="w-full px-3 py-2 text-xs bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-xl text-[#1A1A1A] dark:text-white"
               >
-                <option value="low">🟢 Low Priority</option>
-                <option value="medium">🟡 Medium Priority</option>
-                <option value="high">🔴 High Priority</option>
+                <option value="smart" className="bg-white dark:bg-[#141413]">Smart Suggestion (Availability & Workload)</option>
+                <option value="manual" className="bg-white dark:bg-[#141413]">Assign to Specific Roommate</option>
+                <option value="unassigned" className="bg-white dark:bg-[#141413]">Leave Open for Claiming</option>
               </select>
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          {formData.assignmentType === 'manual' && (
             <div>
-              <Input
-                label="Duration (mins)"
-                id="duration"
-                type="number"
-                min="1"
-                value={formData.estimatedDuration}
-                onChange={(e) => setFormData(prev => ({ ...prev, estimatedDuration: e.target.value }))}
-                required
-              />
-            </div>
-            <div>
-              <Input
-                label="Due Date"
-                id="dueDate"
-                type="date"
-                value={formData.dueDate}
-                onChange={(e) => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
-                required
-              />
-            </div>
-            <div>
-              <Input
-                label="Due Time"
-                id="dueTime"
-                type="time"
-                value={formData.dueTime}
-                onChange={(e) => setFormData(prev => ({ ...prev, dueTime: e.target.value }))}
-                required
-              />
-            </div>
-          </div>
-
-          {/* Recurrence */}
-          <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Recurrence</label>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, recurrenceType: 'none' }))}
-                className={`py-1.5 text-xs font-semibold rounded-md border transition-colors ${
-                  formData.recurrenceType === 'none'
-                    ? 'bg-teal-50 border-teal-500 text-teal-900'
-                    : 'bg-white border-stone-200 text-stone-600'
-                }`}
-              >
-                One-Time
-              </button>
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, recurrenceType: 'daily' }))}
-                className={`py-1.5 text-xs font-semibold rounded-md border transition-colors ${
-                  formData.recurrenceType === 'daily'
-                    ? 'bg-teal-50 border-teal-500 text-teal-900'
-                    : 'bg-white border-stone-200 text-stone-600'
-                }`}
-              >
-                Daily
-              </button>
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, recurrenceType: 'weekly' }))}
-                className={`py-1.5 text-xs font-semibold rounded-md border transition-colors ${
-                  formData.recurrenceType === 'weekly'
-                    ? 'bg-teal-50 border-teal-500 text-teal-900'
-                    : 'bg-white border-stone-200 text-stone-600'
-                }`}
-              >
-                Weekly
-              </button>
-            </div>
-          </div>
-
-          {/* Assignment Mode */}
-          <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Assignment Mode</label>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, assignmentType: 'smart' }))}
-                className={`p-2 rounded-lg border text-left text-xs transition-colors ${
-                  formData.assignmentType === 'smart'
-                    ? 'bg-teal-50 border-teal-500 text-teal-900'
-                    : 'bg-white border-stone-200 text-stone-600'
-                }`}
-              >
-                <span className="font-bold block">✨ Smart</span>
-                <span className="text-3xs opacity-80">Auto-recommend by availability</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, assignmentType: 'unassigned' }))}
-                className={`p-2 rounded-lg border text-left text-xs transition-colors ${
-                  formData.assignmentType === 'unassigned'
-                    ? 'bg-teal-50 border-teal-500 text-teal-900'
-                    : 'bg-white border-stone-200 text-stone-600'
-                }`}
-              >
-                <span className="font-bold block">Open Claim</span>
-                <span className="text-3xs opacity-80">Anyone can claim</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, assignmentType: 'manual' }))}
-                className={`p-2 rounded-lg border text-left text-xs transition-colors ${
-                  formData.assignmentType === 'manual'
-                    ? 'bg-teal-50 border-teal-500 text-teal-900'
-                    : 'bg-white border-stone-200 text-stone-600'
-                }`}
-              >
-                <span className="font-bold block">Manual</span>
-                <span className="text-3xs opacity-80">Pick specific person</span>
-              </button>
-            </div>
-          </div>
-
-          {formData.assignmentType === 'manual' && household && (
-            <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">Assign to Roommate</label>
+              <label className="block text-xs font-medium uppercase tracking-wider text-[#71716E] dark:text-[#8E8E88] mb-1.5">Assign To</label>
               <select
                 value={formData.assignedTo}
-                onChange={(e) => setFormData(prev => ({ ...prev, assignedTo: e.target.value }))}
-                required
-                className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-teal-500"
+                onChange={(e) => setFormData(p => ({ ...p, assignedTo: e.target.value }))}
+                className="w-full px-3 py-2 text-xs bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-xl text-[#1A1A1A] dark:text-white"
               >
-                <option value="">-- Select Roommate --</option>
-                {household.members.map(m => (
-                  <option key={m._id} value={m._id}>
-                    {m.name} ({m.email})
-                  </option>
+                <option value="" className="bg-white dark:bg-[#141413]">Select Roommate</option>
+                {household?.members?.map((m) => (
+                  <option key={m._id} value={m._id} className="bg-white dark:bg-[#141413]">{m.name}</option>
                 ))}
               </select>
             </div>
           )}
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-stone-100">
-            <Button type="button" variant="secondary" onClick={() => setIsCreateModalOpen(false)}>
+          <div className="pt-2 flex justify-end gap-2">
+            <Button variant="outline" type="button" onClick={() => setIsCreateModalOpen(false)}>
               Cancel
             </Button>
             <Button type="submit" isLoading={creating}>
-              Create Chore
+              Create Chore &rarr;
             </Button>
           </div>
         </form>
       </Modal>
 
-      {/* SMART RECOMMENDATION MODAL */}
-      <Modal
-        isOpen={smartRecModalOpen}
-        onClose={() => setSmartRecModalOpen(false)}
-        title="✨ Smart Chore Recommendation"
-      >
+      {/* Smart Recommendation Modal */}
+      <Modal isOpen={smartRecModalOpen} onClose={() => setSmartRecModalOpen(false)} title="Smart Chore Suggestion">
         {loadingRec ? (
-          <div className="py-12 flex flex-col items-center justify-center space-y-3">
-            <LoadingSpinner />
-            <p className="text-xs text-stone-500">
-              Evaluating roommate availability, workload balances, and rotation history...
-            </p>
+          <div className="py-10 text-center text-xs text-[#71716E] dark:text-[#8E8E88]">
+            Analyzing flatmate availability and workload balances...
           </div>
-        ) : smartRecData && smartRecData.recommendedUser ? (
-          <div className="space-y-4">
-            <div className="bg-gradient-to-r from-teal-50 to-teal-100/60 p-4 rounded-xl border border-teal-200">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-full bg-teal-600 text-white flex items-center justify-center font-bold text-base">
-                  {smartRecData.recommendedUser.name.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <span className="text-xs uppercase font-semibold text-teal-700">Recommended Roommate</span>
-                  <h3 className="text-lg font-bold text-stone-900">{smartRecData.recommendedUser.name}</h3>
-                </div>
-              </div>
+        ) : smartRecData?.recommendedUser ? (
+          <div className="space-y-4 text-xs">
+            <p className="text-xs text-[#71716E] dark:text-[#8E8E88]">
+              Based on who is free and who did the least chores this cycle, RoomSync suggests:
+            </p>
 
-              <div className="mt-3 bg-white/80 p-2.5 rounded-lg border border-teal-200/60 text-xs">
-                <span className="font-semibold text-stone-800">Suggested Time Slot:</span>{' '}
-                <span className="font-mono text-teal-800 font-bold">
-                  {formatTime12h(smartRecData.startTime)} – {formatTime12h(smartRecData.endTime)}
+            <div className="p-4 rounded-2xl bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28] flex items-center justify-between">
+              <div>
+                <span className="text-sm font-semibold text-[#1A1A1A] dark:text-white block">
+                  {smartRecData.recommendedUser.name}
+                </span>
+                <span className="text-xs text-[#71716E] dark:text-[#8E8E88] mt-0.5 block">
+                  {smartRecData.reason || 'Free today & lowest chore balance'}
                 </span>
               </div>
-            </div>
-
-            {/* Explanations */}
-            <div>
-              <span className="text-xs font-semibold uppercase tracking-wider text-stone-500 block mb-2">
-                Why was {smartRecData.recommendedUser.name} chosen?
+              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full">
+                Best Fit
               </span>
-              <ul className="space-y-1.5">
-                {smartRecData.reasons?.map((reason, idx) => (
-                  <li key={idx} className="flex items-start text-xs text-stone-700">
-                    <span className="text-teal-600 font-bold mr-2">✓</span>
-                    {reason}
-                  </li>
-                ))}
-              </ul>
             </div>
 
-            <div className="flex justify-end gap-2 pt-4 border-t border-stone-100">
-              <Button variant="secondary" size="sm" onClick={() => setSmartRecModalOpen(false)}>
-                Decide Later
+            <div className="pt-2 flex justify-end gap-2">
+              <Button variant="outline" type="button" onClick={() => setSmartRecModalOpen(false)}>
+                Skip
               </Button>
-              <Button size="sm" onClick={handleConfirmSmartAssign} isLoading={assigningSmart}>
-                Assign to {smartRecData.recommendedUser.name}
+              <Button onClick={handleApplySmartAssignment} isLoading={assigningSmart}>
+                Assign to {smartRecData.recommendedUser.name} &rarr;
               </Button>
             </div>
           </div>
         ) : (
-          <div className="py-6 text-center space-y-3">
-            <p className="text-sm text-stone-600">
-              No suitable roommate recommendation found for this time slot.
-            </p>
-            <Button variant="secondary" size="sm" onClick={() => setSmartRecModalOpen(false)}>
-              Close
-            </Button>
+          <div className="py-6 text-center text-xs text-[#71716E] dark:text-[#8E8E88]">
+            No specific recommendation found. The chore remains open.
           </div>
         )}
       </Modal>
     </AppLayout>
-  );
-}
-
-// Reusable Chore Card Component
-function ChoreCard({ chore, currentUser, onClaim, onComplete, onSmartRecommend }) {
-  const isAssignedToMe = chore.assignedTo?._id === currentUser._id || chore.assignedTo === currentUser._id;
-  const isOverdue = chore.status === 'overdue';
-  const isCompleted = chore.status === 'completed';
-
-  const priorityStyles = {
-    low: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    medium: 'bg-amber-50 text-amber-700 border-amber-200',
-    high: 'bg-rose-50 text-rose-700 border-rose-200'
-  };
-
-  return (
-    <div
-      className={`bg-white border rounded-xl p-4 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between ${
-        isOverdue
-          ? 'border-rose-300 ring-1 ring-rose-300'
-          : isCompleted
-          ? 'border-stone-200 bg-stone-50/50 opacity-80'
-          : 'border-stone-200'
-      }`}
-    >
-      <div>
-        {/* Header Badges */}
-        <div className="flex items-center justify-between gap-2 mb-2">
-          <span className="text-base flex items-center gap-1.5 font-medium text-stone-800">
-            <span>{getCategoryIcon(chore.category)}</span>
-            <span className="truncate">{chore.title}</span>
-          </span>
-
-          <span
-            className={`text-3xs px-2 py-0.5 rounded-full font-bold uppercase border ${
-              priorityStyles[chore.priority] || priorityStyles.medium
-            }`}
-          >
-            {chore.priority}
-          </span>
-        </div>
-
-        {chore.description && (
-          <p className="text-xs text-stone-500 line-clamp-2 mb-3">
-            {chore.description}
-          </p>
-        )}
-
-        {/* Due Date & Duration details */}
-        <div className="flex items-center justify-between text-xs text-stone-600 mb-3 bg-stone-50 p-2 rounded-lg">
-          <span className="flex items-center gap-1">
-            <svg className="w-3.5 h-3.5 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            {chore.dueDate} {formatTime12h(chore.dueTime)}
-          </span>
-
-          <span className="font-semibold text-stone-700">
-            ⏱️ {chore.estimatedDuration} mins
-          </span>
-        </div>
-      </div>
-
-      {/* Assignee Footer & Actions */}
-      <div className="pt-3 border-t border-stone-100 flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          {chore.assignedTo ? (
-            <div className="flex items-center gap-1.5">
-              <div className="w-5 h-5 rounded-full bg-teal-100 text-teal-700 text-3xs font-bold flex items-center justify-center">
-                {chore.assignedTo.name?.charAt(0).toUpperCase()}
-              </div>
-              <span className="text-xs font-medium text-stone-700 truncate max-w-[100px]">
-                {chore.assignedTo.name} {isAssignedToMe && '(You)'}
-              </span>
-            </div>
-          ) : (
-            <span className="text-xs text-amber-600 font-medium flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-amber-400"></span> Unassigned
-            </span>
-          )}
-        </div>
-
-        <div className="flex items-center gap-1.5">
-          {!isCompleted && !chore.assignedTo && (
-            <>
-              <Button size="sm" variant="ghost" onClick={onSmartRecommend} title="Smart Assign">
-                ✨
-              </Button>
-              <Button size="sm" variant="secondary" onClick={onClaim}>
-                Claim
-              </Button>
-            </>
-          )}
-
-          {!isCompleted && chore.assignedTo && isAssignedToMe && (
-            <Button size="sm" onClick={onComplete}>
-              ✓ Done
-            </Button>
-          )}
-
-          {isCompleted && (
-            <span className="text-xs text-emerald-700 font-semibold bg-emerald-50 px-2 py-1 rounded">
-              ✓ Completed
-            </span>
-          )}
-
-          <Link to={`/chores/${chore._id}`}>
-            <Button size="sm" variant="ghost">
-              Details
-            </Button>
-          </Link>
-        </div>
-      </div>
-    </div>
   );
 }

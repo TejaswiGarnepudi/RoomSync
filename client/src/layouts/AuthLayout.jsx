@@ -15,18 +15,19 @@ export default function AuthLayout({
   return (
     <div className="min-h-screen w-full flex flex-col lg:flex-row bg-[#FAF9F5] dark:bg-[#0E0E0D] text-[#1A1A1A] dark:text-[#FAF9F5] transition-colors duration-300 overflow-x-clip font-sans selection:bg-[#1A1A1A] selection:text-white dark:selection:bg-white dark:selection:text-[#1A1A1A]">
       {/* ======================================================== */}
-      {/* LEFT PANEL: ANIMATED VISUAL CANVAS (DESKTOP ONLY) */}
+      {/* LEFT PANEL: ORIGINAL FLOWING VISUAL CANVAS (DESKTOP ONLY) */}
       {/* ======================================================== */}
       <div className="relative hidden lg:flex lg:w-[48%] xl:w-[50%] flex-col justify-between p-10 xl:p-14 2xl:p-16 overflow-hidden bg-[#121211] text-white border-r border-[#262624] select-none">
+        
         {/* Ambient Multi-Hue Gradient Glows */}
         <div className="absolute -top-20 -left-20 w-[480px] h-[480px] bg-emerald-500/15 rounded-full blur-[140px] pointer-events-none animate-pulse-glow" />
         <div className="absolute top-1/3 -right-24 w-[420px] h-[420px] bg-cyan-500/12 rounded-full blur-[150px] pointer-events-none animate-pulse-glow" style={{ animationDelay: '2.5s' }} />
         <div className="absolute -bottom-20 left-1/4 w-[460px] h-[460px] bg-amber-500/12 rounded-full blur-[150px] pointer-events-none animate-pulse-glow" style={{ animationDelay: '5s' }} />
         <div className="absolute top-2/3 right-1/4 w-80 h-80 bg-indigo-500/10 rounded-full blur-[130px] pointer-events-none animate-pulse-glow" style={{ animationDelay: '7s' }} />
 
-        {/* Rich Multi-Layered Flowing Decorative SVG Pattern Background */}
+        {/* Rich Multi-Layered Flowing Decorative SVG Lines (GPU Composited, Zero Lag) */}
         <svg
-          className="absolute inset-0 w-full h-full pointer-events-none opacity-60"
+          className="absolute inset-0 w-full h-full pointer-events-none opacity-65"
           xmlns="http://www.w3.org/2000/svg"
         >
           <defs>
@@ -145,6 +146,13 @@ export default function AuthLayout({
           <circle cx="850" cy="260" r="3" fill="#F59E0B" opacity="0.9" className="animate-pulse" />
           <circle cx="850" cy="260" r="9" fill="#F59E0B" opacity="0.2" className="animate-pulse" />
         </svg>
+
+
+
+
+
+
+
 
         {/* 1. Top Branding */}
         <div className="relative z-10">

@@ -50,7 +50,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Search Household Journal">
+    <Modal isOpen={isOpen} onClose={onClose} title="Search Household Journal" maxWidth="max-w-xl">
       <div className="space-y-4">
         {/* Search Input */}
         <div className="relative">
@@ -60,18 +60,18 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
             placeholder="Search chores, expenses, groceries, favors..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 text-xs text-[#234653] placeholder:text-[#3E737C]/60 bg-[#FFF9F1] border border-[#E8DEC8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3E737C]/25 focus:border-[#3E737C] transition-all"
+            className="w-full pl-10 pr-4 py-3 text-xs sm:text-sm text-[#1A1A1A] dark:text-white placeholder:text-[#71716E] dark:placeholder:text-[#888880] bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-2xl focus:outline-none focus:border-[#1A1A1A] dark:focus:border-white transition-all shadow-2xs"
           />
-          <span className="absolute left-3.5 top-3 text-sm">🔍</span>
+          <span className="absolute left-3.5 top-3.5 text-sm opacity-60">🔍</span>
           {loading && (
-            <span className="absolute right-3.5 top-3 text-xs text-[#3E737C] animate-spin">⏳</span>
+            <span className="absolute right-3.5 top-3.5 text-xs text-[#71716E] animate-spin">⏳</span>
           )}
         </div>
 
         {/* Results Body */}
         <div className="max-h-80 overflow-y-auto space-y-4 pt-1">
           {query.trim() && totalMatches === 0 && !loading ? (
-            <div className="text-center py-8 text-[#3E737C] text-xs">
+            <div className="text-center py-8 text-[#71716E] dark:text-[#8E8E88] text-xs">
               No household entries found for "{query}".
             </div>
           ) : null}
@@ -79,7 +79,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
           {/* Chores */}
           {results.chores && results.chores.length > 0 && (
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#3E737C] block mb-1.5">
+              <span className="text-[10px] font-medium uppercase tracking-wider text-[#71716E] dark:text-[#8E8E88] block mb-1.5">
                 🧹 Chores ({results.chores.length})
               </span>
               <div className="space-y-1.5">
@@ -87,10 +87,10 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                   <div
                     key={c._id}
                     onClick={() => handleSelect(`/chores/${c._id}`)}
-                    className="p-2.5 bg-[#FAF5ED] hover:bg-[#FBF1EB] rounded-xl border border-[#E8DEC8]/70 cursor-pointer flex items-center justify-between text-xs transition-colors"
+                    className="p-3 bg-[#FAF9F5] dark:bg-[#181816] hover:bg-[#EAE8E1] dark:hover:bg-[#20201E] rounded-xl border border-[#E8E7E1] dark:border-[#2A2A28] cursor-pointer flex items-center justify-between text-xs transition-colors"
                   >
-                    <span className="font-semibold text-[#234653]">{c.title}</span>
-                    <span className="text-[#3E737C] capitalize">{c.category} • Due {c.dueDate}</span>
+                    <span className="font-medium text-[#1A1A1A] dark:text-white">{c.title}</span>
+                    <span className="text-[#71716E] dark:text-[#8E8E88] capitalize">{c.category} • Due {c.dueDate}</span>
                   </div>
                 ))}
               </div>
@@ -100,7 +100,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
           {/* Expenses */}
           {results.expenses && results.expenses.length > 0 && (
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#3E737C] block mb-1.5">
+              <span className="text-[10px] font-medium uppercase tracking-wider text-[#71716E] dark:text-[#8E8E88] block mb-1.5">
                 💰 Expenses ({results.expenses.length})
               </span>
               <div className="space-y-1.5">
@@ -108,10 +108,10 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                   <div
                     key={exp._id}
                     onClick={() => handleSelect(`/expenses/${exp._id}`)}
-                    className="p-2.5 bg-[#FAF5ED] hover:bg-[#FBF1EB] rounded-xl border border-[#E8DEC8]/70 cursor-pointer flex items-center justify-between text-xs transition-colors"
+                    className="p-3 bg-[#FAF9F5] dark:bg-[#181816] hover:bg-[#EAE8E1] dark:hover:bg-[#20201E] rounded-xl border border-[#E8E7E1] dark:border-[#2A2A28] cursor-pointer flex items-center justify-between text-xs transition-colors"
                   >
-                    <span className="font-semibold text-[#234653]">{exp.title}</span>
-                    <span className="font-bold text-[#E86F5A]">₹{exp.amount}</span>
+                    <span className="font-medium text-[#1A1A1A] dark:text-white">{exp.title}</span>
+                    <span className="font-semibold text-[#1A1A1A] dark:text-white">₹{exp.amount}</span>
                   </div>
                 ))}
               </div>
@@ -121,7 +121,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
           {/* Help Requests */}
           {results.helpRequests && results.helpRequests.length > 0 && (
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#3E737C] block mb-1.5">
+              <span className="text-[10px] font-medium uppercase tracking-wider text-[#71716E] dark:text-[#8E8E88] block mb-1.5">
                 🤝 Favors & Help ({results.helpRequests.length})
               </span>
               <div className="space-y-1.5">
@@ -129,10 +129,10 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                   <div
                     key={h._id}
                     onClick={() => handleSelect(`/help/${h._id}`)}
-                    className="p-2.5 bg-[#FAF5ED] hover:bg-[#FBF1EB] rounded-xl border border-[#E8DEC8]/70 cursor-pointer flex items-center justify-between text-xs transition-colors"
+                    className="p-3 bg-[#FAF9F5] dark:bg-[#181816] hover:bg-[#EAE8E1] dark:hover:bg-[#20201E] rounded-xl border border-[#E8E7E1] dark:border-[#2A2A28] cursor-pointer flex items-center justify-between text-xs transition-colors"
                   >
-                    <span className="font-semibold text-[#234653]">{h.title}</span>
-                    <span className="text-[#3E737C] capitalize">{h.type} • {h.urgency}</span>
+                    <span className="font-medium text-[#1A1A1A] dark:text-white">{h.title}</span>
+                    <span className="text-[#71716E] dark:text-[#8E8E88] capitalize">{h.type} • {h.urgency}</span>
                   </div>
                 ))}
               </div>
@@ -142,7 +142,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
           {/* Shopping */}
           {(results.shoppingLists?.length > 0 || results.shoppingItems?.length > 0) && (
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#3E737C] block mb-1.5">
+              <span className="text-[10px] font-medium uppercase tracking-wider text-[#71716E] dark:text-[#8E8E88] block mb-1.5">
                 🛍️ Groceries & Shopping
               </span>
               <div className="space-y-1.5">
@@ -150,20 +150,20 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                   <div
                     key={l._id}
                     onClick={() => handleSelect(`/shopping`)}
-                    className="p-2.5 bg-[#FAF5ED] hover:bg-[#FBF1EB] rounded-xl border border-[#E8DEC8]/70 cursor-pointer flex items-center justify-between text-xs transition-colors"
+                    className="p-3 bg-[#FAF9F5] dark:bg-[#181816] hover:bg-[#EAE8E1] dark:hover:bg-[#20201E] rounded-xl border border-[#E8E7E1] dark:border-[#2A2A28] cursor-pointer flex items-center justify-between text-xs transition-colors"
                   >
-                    <span className="font-semibold text-[#234653]">📋 List: {l.name}</span>
-                    <span className="text-[#3E737C]">{l.store || 'Household'}</span>
+                    <span className="font-medium text-[#1A1A1A] dark:text-white">📋 List: {l.name}</span>
+                    <span className="text-[#71716E] dark:text-[#8E8E88]">{l.store || 'Household'}</span>
                   </div>
                 ))}
                 {results.shoppingItems?.map(i => (
                   <div
                     key={i._id}
                     onClick={() => handleSelect(`/shopping`)}
-                    className="p-2.5 bg-[#FAF5ED] hover:bg-[#FBF1EB] rounded-xl border border-[#E8DEC8]/70 cursor-pointer flex items-center justify-between text-xs transition-colors"
+                    className="p-3 bg-[#FAF9F5] dark:bg-[#181816] hover:bg-[#EAE8E1] dark:hover:bg-[#20201E] rounded-xl border border-[#E8E7E1] dark:border-[#2A2A28] cursor-pointer flex items-center justify-between text-xs transition-colors"
                   >
-                    <span className="font-medium text-[#234653]">🛒 {i.name}</span>
-                    <span className="text-[#3E737C]">In {i.listId?.name || 'Shopping List'}</span>
+                    <span className="font-medium text-[#1A1A1A] dark:text-white">🛒 {i.name}</span>
+                    <span className="text-[#71716E] dark:text-[#8E8E88]">In {i.listId?.name || 'Shopping List'}</span>
                   </div>
                 ))}
               </div>
@@ -173,7 +173,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
           {/* Polls */}
           {results.polls && results.polls.length > 0 && (
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#3E737C] block mb-1.5">
+              <span className="text-[10px] font-medium uppercase tracking-wider text-[#71716E] dark:text-[#8E8E88] block mb-1.5">
                 🗳️ Decisions & Polls ({results.polls.length})
               </span>
               <div className="space-y-1.5">
@@ -181,10 +181,10 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                   <div
                     key={p._id}
                     onClick={() => handleSelect(`/decisions`)}
-                    className="p-2.5 bg-[#FAF5ED] hover:bg-[#FBF1EB] rounded-xl border border-[#E8DEC8]/70 cursor-pointer flex items-center justify-between text-xs transition-colors"
+                    className="p-3 bg-[#FAF9F5] dark:bg-[#181816] hover:bg-[#EAE8E1] dark:hover:bg-[#20201E] rounded-xl border border-[#E8E7E1] dark:border-[#2A2A28] cursor-pointer flex items-center justify-between text-xs transition-colors"
                   >
-                    <span className="font-semibold text-[#234653]">{p.title}</span>
-                    <span className="text-[#3E737C] capitalize">{p.status}</span>
+                    <span className="font-medium text-[#1A1A1A] dark:text-white">{p.title}</span>
+                    <span className="text-[#71716E] dark:text-[#8E8E88] capitalize">{p.status}</span>
                   </div>
                 ))}
               </div>

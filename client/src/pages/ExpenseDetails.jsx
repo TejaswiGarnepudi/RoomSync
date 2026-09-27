@@ -59,7 +59,7 @@ export default function ExpenseDetails() {
   if (loading) {
     return (
       <AppLayout>
-        <div className="flex justify-center items-center py-20">
+        <div className="flex justify-center items-center py-24">
           <LoadingSpinner />
         </div>
       </AppLayout>
@@ -70,10 +70,10 @@ export default function ExpenseDetails() {
     return (
       <AppLayout>
         <div className="space-y-4">
-          <Link to="/expenses" className="text-teal-600 hover:text-teal-700 font-semibold text-sm">
-            ← Back to Expenses
+          <Link to="/expenses" className="text-xs font-medium text-[#71716E] dark:text-[#8E8E88] hover:text-[#1A1A1A] dark:hover:text-white">
+            &larr; Back to Expenses
           </Link>
-          <div className="p-4 bg-rose-50 text-rose-700 rounded-xl text-sm border border-rose-200">
+          <div className="p-4 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs rounded-2xl border border-rose-200 dark:border-rose-900/50">
             {error || 'Expense not found'}
           </div>
         </div>
@@ -85,122 +85,96 @@ export default function ExpenseDetails() {
 
   return (
     <AppLayout>
-      <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <Link to="/expenses" className="text-stone-500 hover:text-stone-800 text-sm font-medium flex items-center gap-1">
-          ← Back to Expenses
-        </Link>
-        {isPayer && (
-          <Button variant="danger" size="sm" onClick={handleDelete}>
-            Delete Expense
-          </Button>
-        )}
-      </div>
+      <div className="max-w-4xl mx-auto space-y-6 animate-fade-in-up">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <Link to="/expenses" className="text-xs font-medium text-[#71716E] dark:text-[#8E8E88] hover:text-[#1A1A1A] dark:hover:text-white transition-colors flex items-center gap-1.5">
+            &larr; Back to Expenses
+          </Link>
+          {isPayer && (
+            <Button variant="danger" size="sm" onClick={handleDelete}>
+              Delete Expense
+            </Button>
+          )}
+        </div>
 
-      {/* Main Expense Info Card */}
-      <Card className="p-6 border-stone-200">
-        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-1 text-xs font-semibold bg-stone-100 text-stone-700 rounded-md capitalize">
+        {/* Main Card */}
+        <div className="bg-white dark:bg-[#141413] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-3xl p-7 sm:p-9 shadow-sm space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-6 border-b border-[#E8E7E1] dark:border-[#2A2A28]">
+            <div className="space-y-1">
+              <span className="text-xs font-medium uppercase tracking-wider text-[#71716E] dark:text-[#8E8E88]">
                 {expense.category}
               </span>
-              <span className={`px-2.5 py-1 text-xs font-semibold rounded-md ${
-                expense.status === 'settled'
-                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                  : 'bg-amber-50 text-amber-700 border border-amber-200'
-              }`}>
-                {expense.status === 'settled' ? 'Fully Settled' : 'Payment Pending'}
+              <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-[#1A1A1A] dark:text-white">
+                {expense.title}
+              </h1>
+              <p className="text-xs text-[#71716E] dark:text-[#8E8E88]">
+                Paid by <strong className="text-[#1A1A1A] dark:text-white">{expense.paidBy?.name}</strong> on {expense.expenseDate || expense.date}
+              </p>
+            </div>
+
+            <div className="text-right">
+              <span className="text-2xl sm:text-3xl font-semibold text-[#1A1A1A] dark:text-white">
+                ₹{expense.amount?.toFixed(2) || expense.amount}
+              </span>
+              <span className="text-xs text-[#71716E] dark:text-[#8E8E88] block mt-0.5">
+                Total amount
               </span>
             </div>
-
-            <h1 className="text-2xl font-bold text-stone-900 mt-3">{expense.title}</h1>
-            {expense.description && (
-              <p className="text-sm text-stone-600 mt-2">{expense.description}</p>
-            )}
-
-            <div className="mt-4 flex flex-wrap gap-4 text-xs text-stone-500">
-              <div>
-                Paid by: <span className="font-semibold text-stone-800">{expense.paidBy?.name}</span>
-              </div>
-              <div>
-                Date: <span className="font-semibold text-stone-800">{expense.expenseDate}</span>
-              </div>
-              <div>
-                Split Model: <span className="font-semibold text-stone-800 uppercase">{expense.splitType}</span>
-              </div>
-            </div>
           </div>
 
-          <div className="sm:text-right bg-stone-50 p-4 rounded-xl border border-stone-200 sm:min-w-[160px]">
-            <p className="text-xs font-medium text-stone-500 uppercase tracking-wider">Total Bill</p>
-            <p className="text-3xl font-extrabold text-stone-900 mt-1">
-              ₹{expense.amount.toFixed(2)}
-            </p>
-          </div>
-        </div>
-      </Card>
+          {/* Breakdown / Splits List */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium text-[#1A1A1A] dark:text-white">Roommate Share Breakdown</h3>
+            <div className="divide-y divide-[#E8E7E1]/60 dark:divide-[#2A2A28]">
+              {expense.participants?.map((p, idx) => {
+                const participantUser = p.user;
+                const isPaid = p.paid;
+                const isCurrentUser = participantUser?._id === user?._id;
 
-      {/* Breakdown per participant */}
-      <Card className="p-6 border-stone-200">
-        <h2 className="text-base font-bold text-stone-900 mb-4">Participant Breakdown</h2>
-
-        <div className="divide-y divide-stone-100">
-          {expense.participants?.map((p) => {
-            const pUser = p.user;
-            const isMe = pUser?._id === user?._id;
-            const isPaid = p.paidStatus === 'paid';
-            const isPayerOfExpense = pUser?._id === expense.paidBy?._id;
-
-            return (
-              <div key={pUser?._id || pUser} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-teal-100 text-teal-800 font-bold text-sm flex items-center justify-center">
-                    {pUser?.name ? pUser.name.charAt(0).toUpperCase() : '?'}
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-stone-900">
-                      {pUser?.name} {isMe && <span className="text-xs text-teal-600 font-normal">(You)</span>}
-                      {isPayerOfExpense && (
-                        <span className="ml-2 px-2 py-0.5 text-xs bg-stone-100 text-stone-600 rounded-sm">
-                          Payer
+                return (
+                  <div key={idx} className="py-3.5 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-3">
+                      <div className="size-8 rounded-full bg-[#EAE8E1] dark:bg-[#1E1E1C] text-[#1A1A1A] dark:text-white font-semibold flex items-center justify-center text-xs">
+                        {participantUser?.name ? participantUser.name.charAt(0).toUpperCase() : 'U'}
+                      </div>
+                      <div>
+                        <span className="font-medium text-[#1A1A1A] dark:text-white block">
+                          {participantUser?.name} {isCurrentUser && '(You)'}
                         </span>
+                        <span className="text-[11px] text-[#71716E] dark:text-[#8E8E88]">
+                          Share: ₹{p.share?.toFixed(2) || p.share}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-medium uppercase tracking-wider ${
+                        isPaid
+                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                          : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                      }`}>
+                        {isPaid ? 'Settled' : 'Unpaid'}
+                      </span>
+
+                      {!isPaid && isPayer && participantUser?._id !== user?._id && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => handleMarkAsPaid(participantUser._id)}
+                          isLoading={settling}
+                        >
+                          Mark Paid
+                        </Button>
                       )}
                     </div>
-                    <div className="text-xs text-stone-500 mt-0.5">
-                      {p.percentage ? `${p.percentage}% share • ` : ''}
-                      Share: <span className="font-semibold text-stone-800">₹{p.shareAmount.toFixed(2)}</span>
-                    </div>
                   </div>
-                </div>
-
-                <div className="flex items-center gap-3 self-end sm:self-center">
-                  <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${
-                    isPaid
-                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                      : 'bg-amber-50 text-amber-700 border border-amber-200'
-                  }`}>
-                    {isPaid ? 'Paid' : 'Pending'}
-                  </span>
-
-                  {!isPaid && (isMe || isPayer) && (
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      loading={settling}
-                      onClick={() => handleMarkAsPaid(pUser?._id || pUser)}
-                    >
-                      Mark as Paid
-                    </Button>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+                );
+              })}
+            </div>
+          </div>
         </div>
-      </Card>
-    </div>
+      </div>
     </AppLayout>
   );
 }

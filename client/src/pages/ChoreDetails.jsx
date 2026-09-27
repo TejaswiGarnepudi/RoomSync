@@ -16,7 +16,6 @@ import {
   assignSmartRecommendation
 } from '../services/choreService';
 
-// Helper: Format 24h time to 12h AM/PM
 const formatTime12h = (time24) => {
   if (!time24) return '';
   const [hStr, mStr] = time24.split(':');
@@ -59,7 +58,6 @@ export default function ChoreDetails() {
       setChore(choreRes.data.data.chore);
       setHistory(choreRes.data.data.history || []);
 
-      // If chore is not completed and unassigned, automatically check smart recommendation
       if (choreRes.data.data.chore && choreRes.data.data.chore.status !== 'completed' && !choreRes.data.data.chore.assignedTo) {
         fetchRecommendation();
       }
@@ -100,7 +98,6 @@ export default function ChoreDetails() {
     setAssigningManual(true);
     try {
       await assignChore(id, selectedAssignee);
-      setSelectedAssignee('');
       fetchChoreData();
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to assign chore');
@@ -109,18 +106,14 @@ export default function ChoreDetails() {
     }
   };
 
-  const handleConfirmSmart = async () => {
-    if (!recommendation || !recommendation.recommendedUser) return;
+  const handleApplySmart = async () => {
+    if (!recommendation?.recommendedUser?._id) return;
     setAssigningSmart(true);
     try {
-      await assignSmartRecommendation(id, {
-        userId: recommendation.recommendedUser._id,
-        startTime: recommendation.startTime,
-        endTime: recommendation.endTime
-      });
+      await assignSmartRecommendation(id, recommendation.recommendedUser._id);
       fetchChoreData();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to confirm smart assignment');
+      alert(err.response?.data?.message || 'Failed to apply smart suggestion');
     } finally {
       setAssigningSmart(false);
     }
@@ -148,7 +141,7 @@ export default function ChoreDetails() {
   if (loading) {
     return (
       <AppLayout>
-        <div className="flex justify-center py-20">
+        <div className="flex justify-center items-center py-24">
           <LoadingSpinner />
         </div>
       </AppLayout>
@@ -158,268 +151,143 @@ export default function ChoreDetails() {
   if (error || !chore) {
     return (
       <AppLayout>
-        <div className="max-w-xl mx-auto mt-12">
-          <Card title="Error">
-            <p className="text-stone-600 mb-4">{error || 'Chore not found'}</p>
-            <Link to="/chores">
-              <Button>Back to Chores</Button>
-            </Link>
-          </Card>
+        <div className="space-y-4">
+          <Link to="/chores" className="text-xs font-medium text-[#71716E] dark:text-[#8E8E88] hover:text-[#1A1A1A] dark:hover:text-white">
+            &larr; Back to Chores
+          </Link>
+          <div className="p-4 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs rounded-2xl border border-rose-200 dark:border-rose-900/50">
+            {error || 'Chore not found'}
+          </div>
         </div>
       </AppLayout>
     );
   }
 
-  const isAssignedToMe = chore.assignedTo?._id === user._id || chore.assignedTo === user._id;
-  const isCreator = chore.createdBy?._id === user._id || chore.createdBy === user._id;
-  const isOwner = household?.owner?._id === user._id || household?.owner === user._id;
   const isCompleted = chore.status === 'completed';
+  const isAssignedToUser = chore.assignedTo?._id === user?._id || chore.assignedTo === user?._id;
 
   return (
     <AppLayout>
-      {/* Top Navigation */}
-      <div className="mb-6 flex items-center justify-between">
-        <Link to="/chores" className="inline-flex items-center text-sm font-medium text-stone-600 hover:text-teal-600 transition-colors">
-          <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          Back to Chores
-        </Link>
-
-        {(isCreator || isOwner) && (
+      <div className="max-w-4xl mx-auto space-y-6 animate-fade-in-up">
+        {/* Header / Nav */}
+        <div className="flex items-center justify-between">
+          <Link to="/chores" className="text-xs font-medium text-[#71716E] dark:text-[#8E8E88] hover:text-[#1A1A1A] dark:hover:text-white transition-colors flex items-center gap-1.5">
+            &larr; Back to Chores Board
+          </Link>
           <Button variant="danger" size="sm" onClick={handleDelete}>
             Delete Chore
           </Button>
-        )}
-      </div>
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Details (Col 1 & 2) */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <div className="flex items-start justify-between gap-4 mb-4">
-              <div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-teal-600 mb-1 block">
+        {/* Main Details Card */}
+        <div className="bg-white dark:bg-[#141413] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-3xl p-7 sm:p-9 shadow-sm space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-6 border-b border-[#E8E7E1] dark:border-[#2A2A28]">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium uppercase tracking-wider text-[#71716E] dark:text-[#8E8E88]">
                   {chore.category}
                 </span>
-                <h1 className="text-2xl sm:text-3xl font-bold text-stone-900">
-                  {chore.title}
-                </h1>
+                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-medium uppercase tracking-wider ${
+                  isCompleted
+                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                    : chore.status === 'in_progress'
+                    ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                    : 'bg-[#EAE8E1] dark:bg-[#1E1E1C] text-[#71716E] dark:text-[#8E8E88]'
+                }`}>
+                  {chore.status?.replace('_', ' ')}
+                </span>
               </div>
+              <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-[#1A1A1A] dark:text-white">
+                {chore.title}
+              </h1>
+            </div>
 
-              <span
-                className={`text-xs px-3 py-1 rounded-full font-bold uppercase ${
-                  chore.status === 'completed'
-                    ? 'bg-emerald-100 text-emerald-800'
-                    : chore.status === 'overdue'
-                    ? 'bg-rose-100 text-rose-800'
-                    : 'bg-teal-100 text-teal-800'
-                }`}
-              >
-                {chore.status}
+            {!isCompleted && (
+              <div className="flex items-center gap-2">
+                {!chore.assignedTo && (
+                  <Button variant="secondary" onClick={handleClaim}>
+                    Claim Chore
+                  </Button>
+                )}
+                {(isAssignedToUser || !chore.assignedTo) && (
+                  <Button onClick={handleComplete}>
+                    Mark Completed ✓
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Description */}
+          {chore.description && (
+            <div className="space-y-1">
+              <h3 className="text-xs font-medium uppercase tracking-wider text-[#71716E] dark:text-[#8E8E88]">Notes</h3>
+              <p className="text-sm text-[#1A1A1A] dark:text-[#FAF9F5] leading-relaxed">{chore.description}</p>
+            </div>
+          )}
+
+          {/* Key Details Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 text-xs">
+            <div className="p-4 rounded-2xl bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28]">
+              <span className="text-[10px] uppercase font-medium text-[#71716E] dark:text-[#8E8E88] block">Due Date</span>
+              <span className="text-sm font-medium text-[#1A1A1A] dark:text-white mt-1 block">
+                {chore.dueDate ? new Date(chore.dueDate).toLocaleDateString() : 'Today'}
               </span>
             </div>
-
-            {chore.description && (
-              <p className="text-stone-600 text-sm mb-6 bg-stone-50 p-4 rounded-xl border border-stone-100">
-                {chore.description}
-              </p>
-            )}
-
-            {/* Metrics Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-stone-100">
-              <div className="bg-stone-50 p-3 rounded-lg border border-stone-100">
-                <span className="text-3xs font-semibold text-stone-500 uppercase block">Due Date</span>
-                <span className="text-sm font-bold text-stone-800">{chore.dueDate}</span>
-              </div>
-              <div className="bg-stone-50 p-3 rounded-lg border border-stone-100">
-                <span className="text-3xs font-semibold text-stone-500 uppercase block">Due Time</span>
-                <span className="text-sm font-bold text-stone-800">{formatTime12h(chore.dueTime)}</span>
-              </div>
-              <div className="bg-stone-50 p-3 rounded-lg border border-stone-100">
-                <span className="text-3xs font-semibold text-stone-500 uppercase block">Duration</span>
-                <span className="text-sm font-bold text-stone-800">{chore.estimatedDuration} mins</span>
-              </div>
-              <div className="bg-stone-50 p-3 rounded-lg border border-stone-100">
-                <span className="text-3xs font-semibold text-stone-500 uppercase block">Priority</span>
-                <span className="text-sm font-bold capitalize text-stone-800">{chore.priority}</span>
-              </div>
+            <div className="p-4 rounded-2xl bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28]">
+              <span className="text-[10px] uppercase font-medium text-[#71716E] dark:text-[#8E8E88] block">Estimated Time</span>
+              <span className="text-sm font-medium text-[#1A1A1A] dark:text-white mt-1 block">
+                {chore.estimatedDuration || 30} minutes
+              </span>
             </div>
+            <div className="p-4 rounded-2xl bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28]">
+              <span className="text-[10px] uppercase font-medium text-[#71716E] dark:text-[#8E8E88] block">Assigned Roommate</span>
+              <span className="text-sm font-medium text-[#1A1A1A] dark:text-white mt-1 block">
+                {chore.assignedTo?.name || 'Unassigned / Open'}
+              </span>
+            </div>
+          </div>
 
-            {/* Recurrence Banner if recurring */}
-            {chore.recurrence && chore.recurrence.type !== 'none' && (
-              <div className="mt-4 p-3 bg-teal-50/60 rounded-lg border border-teal-100 flex items-center gap-2 text-xs text-teal-900 font-medium">
-                <svg className="w-4 h-4 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                <span>Recurring task: Repeating {chore.recurrence.type} (Interval: {chore.recurrence.interval || 1})</span>
-              </div>
-            )}
-          </Card>
-
-          {/* Smart Recommendation Card */}
-          {!isCompleted && !chore.assignedTo && (
-            <Card title="✨ Smart Assignment Engine">
-              {loadingRec ? (
-                <div className="py-8 flex flex-col items-center justify-center space-y-2">
-                  <LoadingSpinner />
-                  <p className="text-xs text-stone-500">Calculating best roommate fit...</p>
-                </div>
-              ) : recommendation && recommendation.recommendedUser ? (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between bg-teal-50 p-4 rounded-xl border border-teal-200">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-teal-600 text-white font-bold flex items-center justify-center">
-                        {recommendation.recommendedUser.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <span className="text-3xs uppercase font-bold text-teal-700">Top Candidate</span>
-                        <h3 className="text-base font-bold text-stone-900">{recommendation.recommendedUser.name}</h3>
-                        <p className="text-xs text-teal-800">
-                          Recommended Time: {formatTime12h(recommendation.startTime)} – {formatTime12h(recommendation.endTime)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <Button size="sm" onClick={handleConfirmSmart} isLoading={assigningSmart}>
-                      Assign to {recommendation.recommendedUser.name}
-                    </Button>
-                  </div>
-
-                  <div>
-                    <span className="text-xs font-semibold uppercase tracking-wider text-stone-500 block mb-2">
-                      Recommendation Factors:
-                    </span>
-                    <ul className="space-y-1">
-                      {recommendation.reasons?.map((r, i) => (
-                        <li key={i} className="text-xs text-stone-700 flex items-center gap-2">
-                          <span className="text-teal-600 font-bold">✓</span> {r}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-sm text-stone-500">No automatic availability match found for this deadline.</p>
-              )}
-            </Card>
-          )}
-
-          {/* History / Audit Log */}
-          <Card title="Activity Timeline">
-            {history.length === 0 ? (
-              <p className="text-stone-500 text-sm">No activity recorded yet.</p>
-            ) : (
-              <ul className="divide-y divide-stone-100">
-                {history.map((h) => (
-                  <li key={h._id} className="py-3 flex items-start justify-between text-xs">
-                    <div>
-                      <span className="font-semibold text-stone-800">
-                        {h.userId?.name || 'User'}
-                      </span>{' '}
-                      <span className="text-stone-600 font-medium">
-                        {h.action === 'created' && 'created this chore'}
-                        {h.action === 'claimed' && 'claimed this chore'}
-                        {h.action === 'assigned' && `assigned to ${h.newAssignee?.name || 'a member'}`}
-                        {h.action === 'reassigned' && `reassigned from ${h.previousAssignee?.name || 'previous'} to ${h.newAssignee?.name || 'new'}`}
-                        {h.action === 'completed' && 'marked this chore as completed'}
-                        {h.action === 'marked_overdue' && 'marked this chore as overdue'}
-                        {h.action === 'updated' && 'updated chore details'}
-                      </span>
-                      {h.notes && (
-                        <p className="text-3xs text-stone-400 mt-0.5">{h.notes}</p>
-                      )}
-                    </div>
-                    <span className="text-stone-400 whitespace-nowrap ml-4">
-                      {new Date(h.timestamp).toLocaleDateString()} {new Date(h.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                  </li>
+          {/* Reassignment Controls if unassigned or open */}
+          {!isCompleted && (
+            <div className="pt-4 border-t border-[#E8E7E1] dark:border-[#2A2A28] flex flex-col sm:flex-row items-center gap-3">
+              <span className="text-xs text-[#71716E] dark:text-[#8E8E88]">Assign to roommate:</span>
+              <select
+                value={selectedAssignee}
+                onChange={(e) => setSelectedAssignee(e.target.value)}
+                className="px-3 py-1.5 text-xs bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-xl text-[#1A1A1A] dark:text-white"
+              >
+                <option value="" className="bg-white dark:bg-[#141413]">Select Roommate</option>
+                {household?.members?.map((m) => (
+                  <option key={m._id} value={m._id} className="bg-white dark:bg-[#141413]">{m.name}</option>
                 ))}
-              </ul>
-            )}
-          </Card>
-        </div>
-
-        {/* Sidebar Actions (Col 3) */}
-        <div className="space-y-6">
-          {/* Assignment Status Card */}
-          <Card title="Assignment">
-            <div className="space-y-4">
-              <div>
-                <span className="text-3xs font-semibold uppercase tracking-wider text-stone-500 block mb-1">
-                  Current Assignee
-                </span>
-                {chore.assignedTo ? (
-                  <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-xl border border-stone-200">
-                    <div className="w-8 h-8 rounded-full bg-teal-100 text-teal-700 font-bold flex items-center justify-center text-sm">
-                      {chore.assignedTo.name?.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-stone-900 text-sm">{chore.assignedTo.name}</p>
-                      <p className="text-3xs text-stone-500">{chore.assignedTo.email}</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-amber-900 text-xs font-medium">
-                    Unassigned — Open for any roommate to claim.
-                  </div>
-                )}
-              </div>
-
-              {/* Action Buttons */}
-              <div className="space-y-2 pt-2 border-t border-stone-100">
-                {!isCompleted && !chore.assignedTo && (
-                  <Button fullWidth onClick={handleClaim}>
-                    Claim this Chore
-                  </Button>
-                )}
-
-                {!isCompleted && chore.assignedTo && (isAssignedToMe || isOwner) && (
-                  <Button fullWidth onClick={handleComplete}>
-                    ✓ Mark as Completed
-                  </Button>
-                )}
-
-                {isCompleted && (
-                  <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-center text-emerald-800 text-xs font-semibold">
-                    ✓ Completed on {new Date(chore.completedAt).toLocaleDateString()}
-                  </div>
-                )}
-              </div>
+              </select>
+              <Button size="sm" variant="outline" onClick={handleManualAssign} isLoading={assigningManual}>
+                Assign
+              </Button>
             </div>
-          </Card>
-
-          {/* Manual Reassignment Card */}
-          {!isCompleted && household && (
-            <Card title="Manual Assignment">
-              <div className="space-y-3">
-                <select
-                  value={selectedAssignee}
-                  onChange={(e) => setSelectedAssignee(e.target.value)}
-                  className="w-full px-3 py-2 border border-stone-300 rounded-lg text-xs bg-white focus:outline-none focus:ring-1 focus:ring-teal-500"
-                >
-                  <option value="">-- Choose Roommate --</option>
-                  {household.members.map(m => (
-                    <option key={m._id} value={m._id}>
-                      {m.name}
-                    </option>
-                  ))}
-                </select>
-
-                <Button
-                  fullWidth
-                  variant="secondary"
-                  size="sm"
-                  onClick={handleManualAssign}
-                  isLoading={assigningManual}
-                  disabled={!selectedAssignee}
-                >
-                  Assign to Roommate
-                </Button>
-              </div>
-            </Card>
           )}
         </div>
+
+        {/* Rotation History for this chore */}
+        {history.length > 0 && (
+          <div className="bg-white dark:bg-[#141413] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-3xl p-6 sm:p-7 shadow-sm space-y-3">
+            <h3 className="text-base font-medium text-[#1A1A1A] dark:text-white">Chore Activity Log</h3>
+            <div className="divide-y divide-[#E8E7E1]/60 dark:divide-[#2A2A28]">
+              {history.map((h, i) => (
+                <div key={i} className="py-2.5 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-[#1A1A1A] dark:text-white capitalize">{h.action}</span>
+                    <span className="text-[#71716E] dark:text-[#8E8E88]">by {h.user?.name || 'Roommate'}</span>
+                  </div>
+                  <span className="text-[11px] text-[#71716E] dark:text-[#8E8E88]">
+                    {new Date(h.timestamp || h.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </AppLayout>
   );

@@ -56,7 +56,7 @@ const getEntityLink = (notification) => {
   }
 };
 
-export default function NotificationDropdown() {
+export default function NotificationDropdown({ align = 'right', direction = 'down' }) {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -163,19 +163,15 @@ export default function NotificationDropdown() {
         type="button"
         onClick={handleToggle}
         aria-label="View notifications"
-        className="relative p-2 text-[#3E737C] hover:text-[#234653] rounded-xl hover:bg-[#F4EDE3] transition-colors focus:outline-none focus:ring-2 focus:ring-[#3E737C]/30"
+        className="relative size-9 rounded-full border border-[#E8E7E1] dark:border-[#2E2E2A] bg-[#EAE8E1] dark:bg-[#1E1E1C] text-[#1A1A1A] dark:text-[#FAF9F5] flex items-center justify-center transition-all hover:scale-105 cursor-pointer shadow-2xs"
       >
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.8}
-            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-          />
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+          <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
         </svg>
 
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 min-w-[17px] h-[17px] px-1 bg-[#E86F5A] text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-[#FFF9F1] shadow-2xs">
+          <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A] text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-[#FAF9F5] dark:border-[#0E0E0D]">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -183,13 +179,13 @@ export default function NotificationDropdown() {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-[#FFF9F1] border border-[#E8DEC8] rounded-2xl shadow-xl z-50 overflow-hidden animate-in fade-in duration-100">
+        <div className={`absolute ${direction === 'up' ? 'bottom-full mb-2.5' : 'top-full mt-2.5'} ${align === 'left' ? 'left-0' : 'right-0'} w-80 sm:w-96 bg-white dark:bg-[#141413] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-2xl shadow-xl z-50 overflow-hidden animate-dropdown`}>
           {/* Header */}
-          <div className="p-3.5 px-4 bg-[#FAF5ED] border-b border-[#E8DEC8] flex items-center justify-between">
+          <div className="p-3.5 px-4 bg-[#FAF9F5] dark:bg-[#181816] border-b border-[#E8E7E1] dark:border-[#2A2A28] flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-[#234653] text-xs uppercase tracking-wider font-serif-editorial">Notifications</span>
+              <span className="font-medium text-[#1A1A1A] dark:text-white text-xs uppercase tracking-wider">Notifications</span>
               {unreadCount > 0 && (
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#F2D4C8] text-[#234653]">
+                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#EAE8E1] dark:bg-[#252522] text-[#1A1A1A] dark:text-[#FAF9F5]">
                   {unreadCount} unread
                 </span>
               )}
@@ -198,7 +194,7 @@ export default function NotificationDropdown() {
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllRead}
-                className="text-xs font-semibold text-[#E86F5A] hover:text-[#D65D48] transition-colors"
+                className="text-xs font-medium text-[#71716E] dark:text-[#8E8E88] hover:text-[#1A1A1A] dark:hover:text-white transition-colors cursor-pointer"
               >
                 Mark all read
               </button>
@@ -206,16 +202,16 @@ export default function NotificationDropdown() {
           </div>
 
           {/* List */}
-          <div className="max-h-80 overflow-y-auto divide-y divide-[#E8DEC8]/50">
+          <div className="max-h-80 overflow-y-auto divide-y divide-[#E8E7E1]/60 dark:divide-[#2A2A28]">
             {loading && notifications.length === 0 ? (
-              <div className="py-8 text-center text-xs text-[#3E737C]">
+              <div className="py-8 text-center text-xs text-[#71716E] dark:text-[#8E8E88]">
                 Loading notifications...
               </div>
             ) : notifications.length === 0 ? (
-              <div className="py-10 text-center text-[#3E737C]">
-                <div className="text-2xl mb-1.5">🕊️</div>
-                <p className="text-xs font-medium text-[#234653]">Quiet and synchronized</p>
-                <p className="text-[11px] text-[#3E737C]/80 mt-0.5">No new household notifications.</p>
+              <div className="py-10 text-center text-[#71716E] dark:text-[#8E8E88]">
+                <div className="text-xl mb-1.5 opacity-75">🕊️</div>
+                <p className="text-xs font-medium text-[#1A1A1A] dark:text-white">Quiet and synchronized</p>
+                <p className="text-[11px] text-[#71716E] dark:text-[#8E8E88] mt-0.5">No new household notifications.</p>
               </div>
             ) : (
               notifications.map((notif) => {
@@ -224,25 +220,25 @@ export default function NotificationDropdown() {
                   <div
                     key={notif._id}
                     onClick={() => handleNotificationClick(notif)}
-                    className={`p-3.5 px-4 flex items-start gap-3 cursor-pointer transition-colors hover:bg-[#FBF1EB]/50 ${
-                      !notif.read ? 'bg-[#FBF1EB]' : 'bg-[#FFF9F1]'
+                    className={`p-3.5 px-4 flex items-start gap-3 cursor-pointer transition-colors hover:bg-[#FAF9F5] dark:hover:bg-[#181816] ${
+                      !notif.read ? 'bg-[#FAF9F5]/70 dark:bg-[#1A1A18]' : 'bg-white dark:bg-[#141413]'
                     }`}
                   >
-                    <div className="text-base p-1.5 bg-[#F4EDE3] rounded-xl shrink-0 mt-0.5 border border-[#E8DEC8]/50">
+                    <div className="text-sm p-1.5 bg-[#EAE8E1] dark:bg-[#20201E] rounded-xl shrink-0 mt-0.5 border border-transparent dark:border-[#2E2E2A]">
                       {icon}
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1">
-                        <span className={`text-xs font-bold truncate ${!notif.read ? 'text-[#17272C]' : 'text-[#234653]'}`}>
+                        <span className={`text-xs truncate ${!notif.read ? 'font-semibold text-[#1A1A1A] dark:text-white' : 'text-[#71716E] dark:text-[#A8A7A0]'}`}>
                           {notif.title}
                         </span>
-                        <span className="text-[10px] text-[#3E737C]/70 shrink-0">
+                        <span className="text-[10px] text-[#71716E] dark:text-[#888880] shrink-0">
                           {formatTimeAgo(notif.createdAt)}
                         </span>
                       </div>
 
-                      <p className="text-xs text-[#3E737C] line-clamp-2 mt-0.5 leading-relaxed">
+                      <p className="text-xs text-[#71716E] dark:text-[#A8A7A0] line-clamp-2 mt-0.5 leading-relaxed">
                         {notif.message}
                       </p>
                     </div>
@@ -251,7 +247,7 @@ export default function NotificationDropdown() {
                       <button
                         onClick={(e) => handleMarkRead(e, notif._id)}
                         title="Mark as read"
-                        className="w-2 h-2 rounded-full bg-[#E86F5A] shrink-0 mt-2 hover:scale-150 transition-transform"
+                        className="size-2 rounded-full bg-[#1A1A1A] dark:bg-white shrink-0 mt-2 hover:scale-150 transition-transform cursor-pointer"
                       />
                     )}
                   </div>
@@ -261,11 +257,11 @@ export default function NotificationDropdown() {
           </div>
 
           {/* Footer */}
-          <div className="p-2.5 bg-[#FAF5ED] border-t border-[#E8DEC8] text-center">
+          <div className="p-2.5 bg-[#FAF9F5] dark:bg-[#181816] border-t border-[#E8E7E1] dark:border-[#2A2A28] text-center">
             <Link
               to="/notifications"
               onClick={() => setIsOpen(false)}
-              className="text-xs font-semibold text-[#234653] hover:text-[#E86F5A] block py-0.5 transition-colors"
+              className="text-xs font-medium text-[#71716E] dark:text-[#8E8E88] hover:text-[#1A1A1A] dark:hover:text-white block py-0.5 transition-colors"
             >
               View all notification history &rarr;
             </Link>

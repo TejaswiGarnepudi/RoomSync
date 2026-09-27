@@ -12,7 +12,6 @@ import {
 
 const HOURS = Array.from({ length: 16 }, (_, i) => i + 7); // 7 AM to 10 PM (22:00)
 
-// Helper: Format YYYY-MM-DD
 const formatDateStr = (d) => {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -20,7 +19,6 @@ const formatDateStr = (d) => {
   return `${y}-${m}-${day}`;
 };
 
-// Helper: Format 24h time to 12h AM/PM
 const formatTime12h = (time24) => {
   if (!time24) return '';
   const [hStr, mStr] = time24.split(':');
@@ -32,7 +30,6 @@ const formatTime12h = (time24) => {
   return `${h}:${m} ${ampm}`;
 };
 
-// Helper: Convert "HH:MM" to minutes from midnight
 const timeToMinutes = (timeStr) => {
   if (!timeStr) return 0;
   const [h, m] = timeStr.split(':').map(Number);
@@ -75,7 +72,6 @@ export default function HouseholdCalendar() {
     init();
   }, []);
 
-  // Fetch Availability & Common Slots when Date or Selected Members change
   const fetchCalendarData = async () => {
     if (!household || selectedMemberIds.length === 0) {
       setAvailabilityList([]);
@@ -111,7 +107,6 @@ export default function HouseholdCalendar() {
     }
   }, [household, selectedDate, selectedMemberIds]);
 
-  // Date Navigation
   const handlePrevDay = () => {
     const [y, m, d] = selectedDate.split('-').map(Number);
     const prev = new Date(y, m - 1, d - 1);
@@ -128,7 +123,6 @@ export default function HouseholdCalendar() {
     setSelectedDate(formatDateStr(new Date()));
   };
 
-  // Member Filter Toggles
   const toggleMember = (mId) => {
     setSelectedMemberIds((prev) =>
       prev.includes(mId) ? prev.filter((id) => id !== mId) : [...prev, mId]
@@ -147,347 +141,171 @@ export default function HouseholdCalendar() {
   if (loading) {
     return (
       <AppLayout>
-        <div className="flex justify-center py-20">
+        <div className="flex justify-center items-center py-24">
           <LoadingSpinner />
         </div>
       </AppLayout>
     );
   }
 
-  if (error || !household) {
-    return (
-      <AppLayout>
-        <div className="max-w-xl mx-auto mt-12">
-          <Card title="No Household Found">
-            <p className="text-stone-600 mb-4">
-              You must be in a household to view the shared roommate calendar.
-            </p>
-            <Button onClick={() => (window.location.href = '/dashboard')}>
-              Go to Dashboard
-            </Button>
-          </Card>
-        </div>
-      </AppLayout>
-    );
-  }
-
-  const dateObj = new Date(selectedDate + 'T00:00:00');
-  const formattedDateTitle = dateObj.toLocaleDateString('default', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric'
-  });
-
-  const selectedMembers = household.members.filter((m) =>
-    selectedMemberIds.includes(m._id)
-  );
-
   return (
     <AppLayout>
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-stone-900">
-            Household Calendar
-          </h1>
-          <p className="text-stone-600 mt-1">
-            Coordinate schedules and find common free time with your roommates.
-          </p>
-        </div>
-
-        {/* Date Navigator */}
-        <div className="flex items-center gap-2 bg-white p-1.5 rounded-xl border border-stone-200 shadow-xs">
-          <Button variant="secondary" size="sm" onClick={handlePrevDay}>
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </Button>
-          <Button variant="ghost" size="sm" onClick={handleToday}>
-            Today
-          </Button>
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="px-2 py-1 text-xs border border-stone-200 rounded-md font-medium text-stone-700 focus:outline-none focus:ring-1 focus:ring-teal-500"
-          />
-          <Button variant="secondary" size="sm" onClick={handleNextDay}>
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </Button>
-        </div>
-      </div>
-
-      {/* Summary Highlight: Best Common Free Time */}
-      <div className="mb-6">
-        <div className="bg-gradient-to-r from-teal-700 to-teal-800 text-white rounded-2xl p-6 shadow-xs relative overflow-hidden">
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <span className="text-teal-200 text-xs font-semibold uppercase tracking-wider block mb-1">
-                Common Free Time • {formattedDateTitle}
-              </span>
-              {commonSlots.length > 0 ? (
-                <div>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <h2 className="text-2xl font-bold">
-                      {formatTime12h(commonSlots[0].startTime)} – {formatTime12h(commonSlots[0].endTime)}
-                    </h2>
-                    <span className="bg-teal-600/80 border border-teal-400/40 text-xs px-2.5 py-1 rounded-full font-medium">
-                      {commonSlots[0].durationMinutes} mins free
-                    </span>
-                  </div>
-                  <p className="text-teal-100 text-sm mt-1">
-                    All {selectedMemberIds.length} selected roommates are available during this time.
-                  </p>
-                </div>
-              ) : (
-                <div>
-                  <h2 className="text-xl font-bold">No overlapping free time found</h2>
-                  <p className="text-teal-100 text-sm mt-1">
-                    Try adjusting the member filters or adding new availability blocks.
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {commonSlots.length > 1 && (
-              <div className="bg-white/10 rounded-xl p-3 border border-white/10 text-xs space-y-1">
-                <span className="font-semibold text-teal-100 block">Other common slots today:</span>
-                {commonSlots.slice(1).map((s, idx) => (
-                  <div key={idx} className="flex justify-between gap-4 text-teal-50">
-                    <span>{formatTime12h(s.startTime)} – {formatTime12h(s.endTime)}</span>
-                    <span>({s.durationMinutes}m)</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Roommate Filter Bar */}
-      <div className="bg-white border border-stone-200 rounded-xl p-4 mb-6 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider">
-              Filter Roommates:
-            </span>
-            <button
-              onClick={toggleSelectAll}
-              className="text-xs text-teal-600 hover:text-teal-700 font-semibold underline underline-offset-2"
-            >
-              {selectedMemberIds.length === household.members.length ? 'Deselect All' : 'Select All'}
-            </button>
+      <div className="space-y-8 animate-fade-in-up">
+        {/* Header & Date Controls */}
+        <div className="pb-6 border-b border-[#E8E7E1] dark:border-[#2A2A28] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-normal tracking-[-0.04em] text-[#1A1A1A] dark:text-white">
+              Household Calendar
+            </h1>
+            <p className="text-xs sm:text-sm text-[#71716E] dark:text-[#8E8E88] mt-1 tracking-[-0.02em]">
+              Synchronized schedules, chore duties, and common free times across your home.
+            </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {household.members.map((m) => {
-              const isSelected = selectedMemberIds.includes(m._id);
-              return (
-                <button
-                  key={m._id}
-                  onClick={() => toggleMember(m._id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 border transition-all ${
-                    isSelected
-                      ? 'bg-teal-50 border-teal-500 text-teal-900 shadow-2xs'
-                      : 'bg-stone-50 border-stone-200 text-stone-500 hover:bg-stone-100'
-                  }`}
-                >
-                  <span
-                    className={`w-2 h-2 rounded-full ${
-                      isSelected ? 'bg-teal-500' : 'bg-stone-300'
-                    }`}
-                  ></span>
-                  <span>{m.name}</span>
-                  {m._id === user._id && (
-                    <span className="text-3xs text-stone-400 font-normal">(You)</span>
-                  )}
-                </button>
-              );
-            })}
+          {/* Date Picker Buttons */}
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <Button variant="outline" size="sm" onClick={handlePrevDay}>
+              &larr;
+            </Button>
+            <Button variant="secondary" size="sm" onClick={handleToday}>
+              Today
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleNextDay}>
+              &rarr;
+            </Button>
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="px-3 py-1.5 text-xs bg-white dark:bg-[#141413] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-full text-[#1A1A1A] dark:text-white"
+            />
           </div>
         </div>
 
-        {/* Source Event Category Filters */}
-        <div className="flex items-center gap-4 text-xs flex-wrap pt-3 mt-3 border-t border-stone-100">
-          <span className="text-stone-400 font-semibold uppercase text-[10px] tracking-wider">Event Types:</span>
-          <label className="flex items-center gap-1.5 cursor-pointer font-medium text-stone-700">
-            <input
-              type="checkbox"
-              checked={filterTypes.availability}
-              onChange={(e) => setFilterTypes(prev => ({ ...prev, availability: e.target.checked }))}
-              className="w-3.5 h-3.5 text-teal-600 rounded border-stone-300 focus:ring-teal-500"
-            />
-            <span className="w-2.5 h-2.5 rounded-full bg-teal-500 inline-block" /> Availability
-          </label>
-          <label className="flex items-center gap-1.5 cursor-pointer font-medium text-stone-700">
-            <input
-              type="checkbox"
-              checked={filterTypes.chores}
-              onChange={(e) => setFilterTypes(prev => ({ ...prev, chores: e.target.checked }))}
-              className="w-3.5 h-3.5 text-teal-600 rounded border-stone-300 focus:ring-teal-500"
-            />
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block" /> Chores
-          </label>
-          <label className="flex items-center gap-1.5 cursor-pointer font-medium text-stone-700">
-            <input
-              type="checkbox"
-              checked={filterTypes.shopping}
-              onChange={(e) => setFilterTypes(prev => ({ ...prev, shopping: e.target.checked }))}
-              className="w-3.5 h-3.5 text-teal-600 rounded border-stone-300 focus:ring-teal-500"
-            />
-            <span className="w-2.5 h-2.5 rounded-full bg-sky-500 inline-block" /> Shopping
-          </label>
-          <label className="flex items-center gap-1.5 cursor-pointer font-medium text-stone-700">
-            <input
-              type="checkbox"
-              checked={filterTypes.help}
-              onChange={(e) => setFilterTypes(prev => ({ ...prev, help: e.target.checked }))}
-              className="w-3.5 h-3.5 text-teal-600 rounded border-stone-300 focus:ring-teal-500"
-            />
-            <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 inline-block" /> Help
-          </label>
-        </div>
-      </div>
-
-      {/* Combined Availability Grid */}
-      {selectedMembers.length === 0 ? (
-        <Card className="text-center py-12">
-          <p className="text-stone-500">Please select at least one roommate to view the calendar.</p>
-        </Card>
-      ) : (
-        <div className="bg-white border border-stone-200 rounded-xl overflow-hidden shadow-xs">
-          {/* Grid Header: Roommates */}
-          <div className="grid border-b border-stone-200 bg-stone-50 text-stone-800"
-               style={{ gridTemplateColumns: `80px repeat(${selectedMembers.length}, minmax(180px, 1fr))` }}>
-            <div className="p-3 border-r border-stone-200 text-xs font-semibold text-stone-500 uppercase flex items-center justify-center">
-              Time
-            </div>
-            {selectedMembers.map((m) => (
-              <div
+        {/* Roommates Filter Bar */}
+        <div className="bg-white dark:bg-[#141413] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-3xl p-5 shadow-2xs flex flex-wrap items-center gap-3">
+          <span className="text-xs font-medium text-[#71716E] dark:text-[#8E8E88] mr-1">Filter flatmates:</span>
+          <button
+            onClick={toggleSelectAll}
+            className={`px-3 py-1 rounded-full text-xs font-medium transition-colors cursor-pointer ${
+              selectedMemberIds.length === (household?.members?.length || 0)
+                ? 'bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A]'
+                : 'bg-[#EAE8E1] dark:bg-[#1E1E1C] text-[#71716E] dark:text-[#8E8E88]'
+            }`}
+          >
+            All Flatmates
+          </button>
+          {household?.members?.map((m) => {
+            const isSelected = selectedMemberIds.includes(m._id);
+            return (
+              <button
                 key={m._id}
-                className="p-3 border-r last:border-r-0 border-stone-200 text-center font-semibold text-sm flex items-center justify-center gap-2"
+                onClick={() => toggleMember(m._id)}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  isSelected
+                    ? 'bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A]'
+                    : 'bg-[#EAE8E1] dark:bg-[#1E1E1C] text-[#71716E] dark:text-[#8E8E88]'
+                }`}
               >
-                <div className="w-6 h-6 rounded-full bg-teal-100 text-teal-700 text-xs flex items-center justify-center font-bold">
-                  {m.name.charAt(0).toUpperCase()}
-                </div>
-                <span className="truncate">{m.name}</span>
-                {m._id === user._id && (
-                  <span className="text-3xs bg-stone-200 text-stone-600 px-1.5 py-0.5 rounded font-normal">
-                    You
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
+                <span>{m.name}</span>
+                {isSelected && <span>✓</span>}
+              </button>
+            );
+          })}
+        </div>
 
-          {/* Hour-by-Hour Timeline Grid */}
-          <div className="divide-y divide-stone-100 max-h-[600px] overflow-y-auto">
-            {HOURS.map((hour) => {
-              const hourStartMins = hour * 60;
-              const hourEndMins = (hour + 1) * 60;
-              const hourLabel = formatTime12h(`${String(hour).padStart(2, '0')}:00`);
-
-              return (
-                <div
-                  key={hour}
-                  className="grid hover:bg-stone-50/40 transition-colors"
-                  style={{ gridTemplateColumns: `80px repeat(${selectedMembers.length}, minmax(180px, 1fr))` }}
+        {/* Common Free Slots Banner */}
+        {commonSlots && commonSlots.length > 0 && (
+          <div className="bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20 rounded-3xl p-5 shadow-2xs space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+              <h3 className="text-xs font-medium uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+                Common Free Times Today ({commonSlots.length} available)
+              </h3>
+            </div>
+            <div className="flex flex-wrap gap-2 pt-1">
+              {commonSlots.map((slot, idx) => (
+                <span
+                  key={idx}
+                  className="px-3 py-1 rounded-full bg-white dark:bg-[#141413] border border-emerald-500/30 text-xs font-medium text-emerald-700 dark:text-emerald-300 shadow-2xs"
                 >
-                  {/* Time label */}
-                  <div className="p-2 border-r border-stone-200 text-xs font-medium text-stone-500 flex items-start justify-center pt-3">
-                    {hourLabel}
-                  </div>
+                  {formatTime12h(slot.startTime)} – {formatTime12h(slot.endTime)} ({slot.durationMinutes || slot.duration} min)
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
-                  {/* Roommate slots */}
-                  {selectedMembers.map((m) => {
-                    const memberEvents = availabilityList
-                      .filter((item) => {
-                        const mId = item.userId?._id || item.userId;
-                        if (mId.toString() !== m._id.toString()) return false;
-                        const sMins = timeToMinutes(item.startTime);
-                        const eMins = timeToMinutes(item.endTime);
-                        // Overlaps with this hour slot
-                        return sMins < hourEndMins && eMins > hourStartMins;
-                      })
-                      .filter((item) => {
-                        const isChore = item.isChore || item.status === 'chore';
-                        const isShopping = item.isShopping || item.status === 'shopping';
-                        const isHelp = item.isHelp || item.status === 'help' || (item.title && item.title.startsWith('🤝 Help'));
-                        const isAvailability = !isChore && !isShopping && !isHelp;
-
-                        if (isChore && !filterTypes.chores) return false;
-                        if (isShopping && !filterTypes.shopping) return false;
-                        if (isHelp && !filterTypes.help) return false;
-                        if (isAvailability && !filterTypes.availability) return false;
-                        return true;
-                      });
-
-                    return (
-                      <div
-                        key={m._id + '-' + hour}
-                        className="p-1.5 border-r last:border-r-0 border-stone-100 min-h-[54px] flex flex-col justify-center space-y-1"
-                      >
-                        {memberEvents.length === 0 ? (
-                          <div className="h-full rounded border border-dashed border-stone-100 flex items-center justify-center">
-                            <span className="text-3xs text-stone-300">—</span>
-                          </div>
-                        ) : (
-                          memberEvents.map((ev) => {
-                            const isChore = ev.isChore || ev.status === 'chore';
-                            const isShopping = ev.isShopping || ev.status === 'shopping';
-                            const isHelp = ev.isHelp || ev.status === 'help' || (ev.title && ev.title.startsWith('🤝 Help'));
-                            const isAvailable = ev.status === 'available';
-                            const isChoreCompleted = ev.isCompleted || ev.choreStatus === 'completed';
-
-                            return (
-                              <div
-                                key={ev._id + (ev.effectiveDate || '')}
-                                onClick={() => {
-                                  if (isChore) window.location.href = `/chores/${ev._id}`;
-                                  else if (isShopping) window.location.href = `/shopping`;
-                                  else if (isHelp) window.location.href = ev.helpRequestId ? `/help/${ev.helpRequestId}` : `/help`;
-                                }}
-                                className={`px-2 py-1 rounded-md text-xs font-medium border leading-tight ${
-                                  isChore
-                                    ? isChoreCompleted
-                                      ? 'bg-emerald-50 border-emerald-300 text-emerald-900 cursor-pointer hover:bg-emerald-100'
-                                      : 'bg-amber-50 border-amber-300 text-amber-900 cursor-pointer hover:bg-amber-100'
-                                    : isShopping
-                                    ? 'bg-sky-50 border-sky-300 text-sky-900 cursor-pointer hover:bg-sky-100'
-                                    : isHelp
-                                    ? 'bg-indigo-50 border-indigo-300 text-indigo-900 cursor-pointer hover:bg-indigo-100'
-                                    : isAvailable
-                                    ? 'bg-teal-50 border-teal-200 text-teal-900'
-                                    : 'bg-rose-50 border-rose-200 text-rose-900'
-                                }`}
-                              >
-                                <div className="flex items-center justify-between text-3xs font-semibold">
-                                  <span>{isChore ? (isChoreCompleted ? 'CHORE (DONE)' : 'CHORE') : isShopping ? 'SHOPPING' : isHelp ? 'HELP' : ev.status.toUpperCase()}</span>
-                                  <span>
-                                    {formatTime12h(ev.startTime)} – {formatTime12h(ev.endTime)}
-                                  </span>
-                                </div>
-                                {ev.title && (
-                                  <p className="text-3xs truncate mt-0.5 opacity-90">
-                                    {ev.title}
-                                  </p>
-                                )}
-                              </div>
-                            );
-                          })
-                        )}
-                      </div>
-                    );
-                  })}
+        {/* Multi-Roommate Timeline Grid */}
+        <div className="bg-white dark:bg-[#141413] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-3xl p-6 sm:p-7 shadow-sm overflow-x-auto">
+          <div className="min-w-[700px] space-y-4">
+            {/* Header Timeline Legend */}
+            <div className="grid grid-cols-16 gap-1 border-b border-[#E8E7E1] dark:border-[#2A2A28] pb-3 text-center text-[10px] font-mono text-[#71716E] dark:text-[#8E8E88]">
+              <div className="col-span-2 text-left font-sans text-xs font-medium text-[#1A1A1A] dark:text-white">
+                Roommate
+              </div>
+              {HOURS.map((h) => (
+                <div key={h} className="col-span-1">
+                  {h > 12 ? `${h - 12}p` : `${h}a`}
                 </div>
-              );
-            })}
+              ))}
+            </div>
+
+            {/* Member Rows */}
+            {household?.members
+              ?.filter((m) => selectedMemberIds.includes(m._id))
+              .map((member) => {
+                const memberAvails = availabilityList.filter(
+                  (a) => a.user?._id === member._id || a.user === member._id
+                );
+
+                return (
+                  <div key={member._id} className="grid grid-cols-16 gap-1 items-center py-2.5 border-b border-[#E8E7E1]/40 dark:border-[#2A2A28]/60">
+                    <div className="col-span-2 flex items-center gap-2 pr-2">
+                      <div className="size-6 rounded-full bg-[#EAE8E1] dark:bg-[#1E1E1C] text-[#1A1A1A] dark:text-white font-semibold flex items-center justify-center text-[10px]">
+                        {member.name.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="text-xs font-medium text-[#1A1A1A] dark:text-white truncate">
+                        {member.name}
+                      </span>
+                    </div>
+
+                    {/* Hourly Blocks */}
+                    <div className="col-span-14 relative h-8 bg-[#FAF9F5] dark:bg-[#181816] rounded-xl border border-[#E8E7E1]/80 dark:border-[#2A2A28] overflow-hidden">
+                      {memberAvails.map((avail, idx) => {
+                        const startMin = timeToMinutes(avail.startTime);
+                        const endMin = timeToMinutes(avail.endTime);
+                        const gridStart = 7 * 60; // 7 AM
+                        const gridTotal = 14 * 60; // 14 hours
+
+                        const leftPct = Math.max(0, ((startMin - gridStart) / gridTotal) * 100);
+                        const widthPct = Math.min(100 - leftPct, ((endMin - startMin) / gridTotal) * 100);
+
+                        return (
+                          <div
+                            key={idx}
+                            title={`${avail.title || 'Available'}: ${avail.startTime} - ${avail.endTime}`}
+                            className={`absolute top-1 bottom-1 rounded-lg px-2 text-[10px] font-medium flex items-center truncate ${
+                              avail.status === 'busy'
+                                ? 'bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30'
+                                : 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30'
+                            }`}
+                            style={{
+                              left: `${leftPct}%`,
+                              width: `${widthPct}%`
+                            }}
+                          >
+                            <span className="truncate">{avail.title || (avail.status === 'busy' ? 'Busy' : 'Free')}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
           </div>
         </div>
-      )}
+      </div>
     </AppLayout>
   );
 }

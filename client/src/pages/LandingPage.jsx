@@ -12,6 +12,7 @@ import BentoFeatures from '../components/motion/BentoFeatures';
 import TheProcessStage from '../components/motion/TheProcessStage';
 
 export default function LandingPage() {
+
   const { isAuthenticated, user } = useContext(AuthContext);
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -314,6 +315,7 @@ export default function LandingPage() {
         <div className="mx-auto grid w-full max-w-7xl grid-cols-1 lg:grid-cols-2 items-center gap-12 lg:gap-16 px-6 sm:px-10 lg:px-14">
           {/* Left Hero Content */}
           <ScrollReveal direction="up" distance={20} duration={0.65} className="space-y-6 max-w-xl">
+
             {/* Sparkdesign Pill Badge */}
             <a
               href="#features"
@@ -619,58 +621,58 @@ export default function LandingPage() {
       {/* ======================================================== */}
       {/* 8. ELEVATED FINAL CTA (SPARKDESIGN FLOATING CANVAS) */}
       {/* ======================================================== */}
-      <section className="relative overflow-hidden py-32 sm:py-40 bg-[#141413] text-white border-b border-[#2A2A28]">
+      <section className="relative overflow-hidden py-32 sm:py-40 bg-[#FAF9F5] dark:bg-[#141413] text-[#1A1A1A] dark:text-white border-b border-[#E8E7E1] dark:border-[#2A2A28] transition-colors duration-300">
         {/* Subtle Background Radial Glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-white/[0.02] rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-[#1A1A1A]/[0.03] dark:bg-white/[0.02] rounded-full blur-[120px] pointer-events-none" />
 
         {/* 6 Scattered Floating Lifestyle & Apartment Image Tiles */}
         {/* 1. Top Left - Happy Flatmate */}
         <img
           src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80"
           alt="Flatmate"
-          className="absolute left-6 sm:left-12 lg:left-24 top-12 sm:top-16 size-20 sm:size-28 md:size-32 rounded-3xl object-cover -rotate-6 border border-white/10 shadow-2xl animate-float-a hidden sm:block pointer-events-none"
+          className="absolute left-6 sm:left-12 lg:left-24 top-12 sm:top-16 size-20 sm:size-28 md:size-32 rounded-3xl object-cover -rotate-6 border border-[#E8E7E1] dark:border-white/10 shadow-2xl animate-float-a hidden sm:block pointer-events-none"
         />
 
         {/* 2. Top Right - Creative Roommate Work */}
         <img
           src="https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=300&q=80"
           alt="Sketchbook"
-          className="absolute right-6 sm:right-12 lg:right-24 top-12 sm:top-20 size-20 sm:size-28 md:size-32 rounded-3xl object-cover rotate-6 border border-white/10 shadow-2xl animate-float-b hidden sm:block pointer-events-none"
+          className="absolute right-6 sm:right-12 lg:right-24 top-12 sm:top-20 size-20 sm:size-28 md:size-32 rounded-3xl object-cover rotate-6 border border-[#E8E7E1] dark:border-white/10 shadow-2xl animate-float-b hidden sm:block pointer-events-none"
         />
 
         {/* 3. Middle Left - Minimalist Apartment Corner */}
         <img
           src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=300&q=80"
           alt="Apartment space"
-          className="absolute left-8 lg:left-32 top-1/2 -translate-y-12 size-18 sm:size-24 md:size-28 rounded-3xl object-cover -rotate-3 border border-white/10 shadow-2xl animate-float-c hidden md:block pointer-events-none"
+          className="absolute left-8 lg:left-32 top-1/2 -translate-y-12 size-18 sm:size-24 md:size-28 rounded-3xl object-cover -rotate-3 border border-[#E8E7E1] dark:border-white/10 shadow-2xl animate-float-c hidden md:block pointer-events-none"
         />
 
         {/* 4. Middle Right - Flatmate Portrait */}
         <img
           src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80"
           alt="Flatmate"
-          className="absolute right-8 lg:right-32 top-1/2 -translate-y-8 size-18 sm:size-24 md:size-28 rounded-3xl object-cover rotate-3 border border-white/10 shadow-2xl animate-float-a hidden md:block pointer-events-none"
+          className="absolute right-8 lg:right-32 top-1/2 -translate-y-8 size-18 sm:size-24 md:size-28 rounded-3xl object-cover rotate-3 border border-[#E8E7E1] dark:border-white/10 shadow-2xl animate-float-a hidden md:block pointer-events-none"
         />
 
         {/* 5. Bottom Left - Sunlit Living Space */}
         <img
           src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=300&q=80"
           alt="Architecture hallway"
-          className="absolute left-6 sm:left-12 lg:left-20 bottom-10 sm:bottom-16 size-24 sm:size-32 md:size-36 rounded-3xl object-cover rotate-2 border border-white/10 shadow-2xl animate-float-b hidden sm:block pointer-events-none"
+          className="absolute left-6 sm:left-12 lg:left-20 bottom-10 sm:bottom-16 size-24 sm:size-32 md:size-36 rounded-3xl object-cover rotate-2 border border-[#E8E7E1] dark:border-white/10 shadow-2xl animate-float-b hidden sm:block pointer-events-none"
         />
 
         {/* 6. Bottom Right - Balcony Courtyard View */}
         <img
           src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=300&q=80"
           alt="Patio garden"
-          className="absolute right-6 sm:right-12 lg:right-20 bottom-10 sm:bottom-14 size-24 sm:size-32 md:size-36 rounded-3xl object-cover -rotate-6 border border-white/10 shadow-2xl animate-float-c hidden sm:block pointer-events-none"
+          className="absolute right-6 sm:right-12 lg:right-20 bottom-10 sm:bottom-14 size-24 sm:size-32 md:size-36 rounded-3xl object-cover -rotate-6 border border-[#E8E7E1] dark:border-white/10 shadow-2xl animate-float-c hidden sm:block pointer-events-none"
         />
 
         {/* Centered Main Content */}
         <div className="relative z-10 max-w-3xl mx-auto px-6 text-center space-y-7">
           {/* Top Logo Icon */}
           <ScrollReveal direction="zoom">
-            <div className="size-14 rounded-2xl bg-[#1E1E1C] border border-[#2E2E2A] flex items-center justify-center text-white mx-auto shadow-xl">
+            <div className="size-14 rounded-2xl bg-[#EAE8E1] dark:bg-[#1E1E1C] border border-[#E8E7E1] dark:border-[#2E2E2A] flex items-center justify-center text-[#1A1A1A] dark:text-white mx-auto shadow-xl">
               <svg width="26" height="26" viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="1.8">
                 <rect x="4" y="4" width="23" height="23" rx="8" />
                 <rect x="13" y="13" width="23" height="23" rx="8" />
@@ -681,11 +683,11 @@ export default function LandingPage() {
 
           {/* Sparkdesign Centered Headline */}
           <ScrollReveal direction="up" delay={0.1} className="space-y-3">
-            <h2 className="text-4xl sm:text-5xl lg:text-[56px] font-normal tracking-[-0.045em] text-white leading-[1.12]">
+            <h2 className="text-4xl sm:text-5xl lg:text-[56px] font-normal tracking-[-0.045em] text-[#1A1A1A] dark:text-white leading-[1.12]">
               A good idea is just the start.<br />
               Let's make something of it.
             </h2>
-            <p className="text-base sm:text-lg text-[#A8A7A0] tracking-[-0.02em] max-w-lg mx-auto">
+            <p className="text-base sm:text-lg text-[#71716E] dark:text-[#A8A7A0] tracking-[-0.02em] max-w-lg mx-auto">
               A fresh canvas. A few good people. Your next chapter.
             </p>
           </ScrollReveal>
@@ -698,12 +700,12 @@ export default function LandingPage() {
                 value={quickEmail}
                 onChange={(e) => setQuickEmail(e.target.value)}
                 placeholder="Your email goes here"
-                className="h-12 w-full sm:w-72 rounded-full border border-[#2E2E2A] bg-[#1E1E1C] px-5 text-sm text-white placeholder-[#71716E] focus:outline-none focus:border-white transition-colors"
+                className="h-12 w-full sm:w-72 rounded-full border border-[#E8E7E1] dark:border-[#2E2E2A] bg-[#EAE8E1] dark:bg-[#1E1E1C] px-5 text-sm text-[#1A1A1A] dark:text-white placeholder-[#71716E] dark:placeholder-[#888880] focus:outline-none focus:border-[#1A1A1A] dark:focus:border-white transition-colors"
               />
               <Magnet magnetStrength={0.2}>
                 <button
                   type="submit"
-                  className="h-12 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 text-sm font-medium text-[#1A1A1A] hover:bg-[#FAF9F5] shadow-lg transition-all active:scale-95 shrink-0 cursor-pointer"
+                  className="h-12 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-[#1A1A1A] dark:bg-white px-7 text-sm font-medium text-white dark:text-[#1A1A1A] hover:bg-black dark:hover:bg-[#FAF9F5] shadow-lg transition-all active:scale-95 shrink-0 cursor-pointer"
                 >
                   <span>Start creating</span>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -713,10 +715,10 @@ export default function LandingPage() {
               </Magnet>
             </form>
 
-            <p className="mt-3 text-[11px] text-[#71716E] tracking-tight">
+            <p className="mt-3 text-[11px] text-[#71716E] dark:text-[#888880] tracking-tight">
               A little preview. No account needed. No email sent.
             </p>
-            <p className="mt-6 text-xs text-[#888880]">
+            <p className="mt-6 text-xs text-[#8E8E88] dark:text-[#6C6C68]">
               Made for the things you haven't made yet.
             </p>
           </ScrollReveal>

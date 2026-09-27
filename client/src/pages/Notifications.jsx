@@ -101,7 +101,7 @@ export default function Notifications() {
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
       setUnreadCount(0);
     } catch (err) {
-      console.error('Failed to mark all read:', err);
+      console.error('Failed to mark all as read:', err);
     } finally {
       setActionLoading(false);
     }
@@ -109,7 +109,13 @@ export default function Notifications() {
 
   const handleNotificationClick = async (notif) => {
     if (!notif.read) {
-      await markNotificationRead(notif._id).catch(() => {});
+      try {
+        await markNotificationRead(notif._id);
+        setNotifications(prev => prev.map(n => (n._id === notif._id ? { ...n, read: true } : n)));
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      } catch (err) {
+        console.error(err);
+      }
     }
     const link = getEntityLink(notif);
     if (link) {
@@ -117,140 +123,113 @@ export default function Notifications() {
     }
   };
 
+  if (loading && notifications.length === 0) {
+    return (
+      <AppLayout>
+        <div className="flex justify-center items-center py-24">
+          <LoadingSpinner />
+        </div>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout>
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="pb-6 border-b border-[#E8E7E1] dark:border-[#2A2A28] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-stone-900 tracking-tight flex items-center gap-2">
-              <span>🔔</span> Notification Center
+            <h1 className="text-3xl sm:text-4xl font-normal tracking-[-0.04em] text-[#1A1A1A] dark:text-white">
+              Household Notifications
             </h1>
-            <p className="text-sm text-stone-600 mt-1">
-              Stay updated on chore assignments, roommate favors, bill settlements, and household votes.
+            <p className="text-xs sm:text-sm text-[#71716E] dark:text-[#8E8E88] mt-1 tracking-[-0.02em]">
+              Real-time updates on chores, split settlements, grocery items, and favors.
             </p>
           </div>
 
           {unreadCount > 0 && (
-            <Button
-              variant="secondary"
-              size="sm"
-              loading={actionLoading}
-              onClick={handleMarkAllRead}
-              className="shadow-xs self-start sm:self-auto"
-            >
-              Mark All as Read
+            <Button variant="outline" size="sm" onClick={handleMarkAllRead} isLoading={actionLoading}>
+              Mark all read
             </Button>
           )}
         </div>
 
-        {/* Tabs & List Card */}
-        <Card className="p-6">
-          <div className="flex border-b border-stone-200 pb-3 mb-6 gap-2">
-            <button
-              onClick={() => setActiveTab('all')}
-              className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${
-                activeTab === 'all'
-                  ? 'bg-teal-600 text-white shadow-xs'
-                  : 'text-stone-600 hover:bg-stone-100'
-              }`}
-            >
-              All Notifications
-            </button>
-            <button
-              onClick={() => setActiveTab('unread')}
-              className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${
-                activeTab === 'unread'
-                  ? 'bg-teal-600 text-white shadow-xs'
-                  : 'text-stone-600 hover:bg-stone-100'
-              }`}
-            >
-              Unread ({unreadCount})
-            </button>
-          </div>
+        {/* Tabs */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => setActiveTab('all')}
+            className={`px-4 py-2 text-xs font-medium rounded-full transition-all cursor-pointer ${
+              activeTab === 'all'
+                ? 'bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A] shadow-xs'
+                : 'text-[#71716E] dark:text-[#8E8E88] hover:bg-[#EAE8E1] dark:hover:bg-[#1E1E1C]'
+            }`}
+          >
+            All Activity
+          </button>
+          <button
+            onClick={() => setActiveTab('unread')}
+            className={`px-4 py-2 text-xs font-medium rounded-full transition-all cursor-pointer ${
+              activeTab === 'unread'
+                ? 'bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A] shadow-xs'
+                : 'text-[#71716E] dark:text-[#8E8E88] hover:bg-[#EAE8E1] dark:hover:bg-[#1E1E1C]'
+            }`}
+          >
+            Unread {unreadCount > 0 && `(${unreadCount})`}
+          </button>
+        </div>
 
-          {loading ? (
-            <div className="flex justify-center py-16">
-              <LoadingSpinner />
-            </div>
-          ) : notifications.length === 0 ? (
-            <div className="text-center py-16 border border-dashed border-stone-200 rounded-xl bg-stone-50/50">
-              <div className="text-4xl mb-3">🔔</div>
-              <h3 className="text-base font-semibold text-stone-800">
-                {activeTab === 'unread' ? 'No unread notifications' : 'No notifications yet'}
-              </h3>
-              <p className="text-xs text-stone-500 mt-1 max-w-sm mx-auto">
-                {activeTab === 'unread'
-                  ? 'You are all caught up with your household updates!'
-                  : 'When chores are assigned or roommate favors are posted, they will appear here.'}
-              </p>
+        {/* Notifications List Card */}
+        <div className="bg-white dark:bg-[#141413] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-3xl p-6 sm:p-7 shadow-sm">
+          {notifications.length === 0 ? (
+            <div className="text-center py-16 text-xs text-[#71716E] dark:text-[#8E8E88]">
+              <div className="text-3xl mb-2 opacity-75">🕊️</div>
+              <p className="font-medium text-sm text-[#1A1A1A] dark:text-white">All caught up</p>
+              <p className="mt-0.5">No notifications to display.</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="divide-y divide-[#E8E7E1]/60 dark:divide-[#2A2A28]">
               {notifications.map((notif) => {
                 const icon = getEntityIcon(notif.type);
-                const link = getEntityLink(notif);
-
                 return (
                   <div
                     key={notif._id}
                     onClick={() => handleNotificationClick(notif)}
-                    className={`p-4 rounded-xl border transition-all cursor-pointer flex items-start justify-between gap-4 ${
-                      !notif.read
-                        ? 'bg-teal-50/30 border-teal-200 shadow-2xs hover:bg-teal-50/60'
-                        : 'bg-white border-stone-200 hover:border-stone-300'
+                    className={`p-4 flex items-start gap-4 cursor-pointer transition-colors hover:bg-[#FAF9F5] dark:hover:bg-[#181816] rounded-2xl ${
+                      !notif.read ? 'bg-[#FAF9F5]/80 dark:bg-[#181816]' : ''
                     }`}
                   >
-                    <div className="flex items-start gap-3.5 flex-1">
-                      <div className="w-10 h-10 rounded-xl bg-stone-100 text-stone-700 flex items-center justify-center text-xl shrink-0">
-                        {icon}
+                    <div className="size-10 rounded-2xl bg-[#EAE8E1] dark:bg-[#1E1E1C] flex items-center justify-center text-lg shrink-0 mt-0.5">
+                      {icon}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className={`text-sm ${!notif.read ? 'font-semibold text-[#1A1A1A] dark:text-white' : 'font-medium text-[#71716E] dark:text-[#A8A7A0]'}`}>
+                          {notif.title}
+                        </span>
+                        <span className="text-[11px] text-[#71716E] dark:text-[#888880] shrink-0">
+                          {formatTimeAgo(notif.createdAt)}
+                        </span>
                       </div>
 
-                      <div className="space-y-1 flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className={`text-sm font-bold ${!notif.read ? 'text-teal-950' : 'text-stone-900'}`}>
-                            {notif.title}
-                          </h4>
-                          {!notif.read && (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-600 text-white">
-                              NEW
-                            </span>
-                          )}
-                        </div>
-
-                        <p className="text-xs text-stone-600 leading-relaxed">
-                          {notif.message}
-                        </p>
-
-                        <div className="flex items-center gap-3 pt-1 text-[11px] text-stone-400">
-                          <span>{formatTimeAgo(notif.createdAt)}</span>
-                          {link && (
-                            <>
-                              <span>•</span>
-                              <span className="text-teal-700 font-semibold hover:underline">
-                                View details →
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      </div>
+                      <p className="text-xs text-[#71716E] dark:text-[#8E8E88] mt-1 leading-relaxed">
+                        {notif.message}
+                      </p>
                     </div>
 
                     {!notif.read && (
                       <button
                         onClick={(e) => handleMarkRead(notif._id, e)}
                         title="Mark as read"
-                        className="text-xs font-semibold text-stone-400 hover:text-teal-700 px-2 py-1 rounded-md hover:bg-stone-100 transition-colors shrink-0"
-                      >
-                        Mark Read
-                      </button>
+                        className="size-2.5 rounded-full bg-[#1A1A1A] dark:bg-white shrink-0 mt-2 hover:scale-150 transition-transform cursor-pointer"
+                      />
                     )}
                   </div>
                 );
               })}
             </div>
           )}
-        </Card>
+        </div>
       </div>
     </AppLayout>
   );

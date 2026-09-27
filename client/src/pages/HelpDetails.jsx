@@ -119,10 +119,11 @@ export default function HelpDetails() {
     }
   };
 
-  const handleCancel = async () => {
+  const handleCancel = async (e) => {
+    e.preventDefault();
     try {
       setActionLoading(true);
-      await cancelHelpRequest(id, cancelReason);
+      await cancelHelpRequest(id, cancelReason || 'Cancelled by user');
       setIsCancelModalOpen(false);
       fetchDetails();
     } catch (err) {
@@ -133,7 +134,7 @@ export default function HelpDetails() {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this help request?')) return;
+    if (!window.confirm('Are you sure you want to permanently delete this request?')) return;
     try {
       setActionLoading(true);
       await deleteHelpRequest(id);
@@ -147,7 +148,7 @@ export default function HelpDetails() {
   if (loading) {
     return (
       <AppLayout>
-        <div className="flex justify-center items-center py-20">
+        <div className="flex justify-center items-center py-24">
           <LoadingSpinner />
         </div>
       </AppLayout>
@@ -157,14 +158,14 @@ export default function HelpDetails() {
   if (error || !request) {
     return (
       <AppLayout>
-        <Card className="text-center py-12">
-          <div className="text-4xl mb-3">⚠️</div>
-          <h2 className="text-xl font-bold text-stone-900 mb-2">Request Not Found</h2>
-          <p className="text-stone-600 mb-6">{error || 'The requested favor does not exist.'}</p>
-          <Link to="/help">
-            <Button variant="primary">Back to Help</Button>
+        <div className="space-y-4">
+          <Link to="/help" className="text-xs font-medium text-[#71716E] dark:text-[#8E8E88] hover:text-[#1A1A1A] dark:hover:text-white">
+            &larr; Back to Help Board
           </Link>
-        </Card>
+          <div className="p-4 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs rounded-2xl border border-rose-200 dark:border-rose-900/50">
+            {error || 'Help request not found'}
+          </div>
+        </div>
       </AppLayout>
     );
   }
@@ -172,368 +173,165 @@ export default function HelpDetails() {
   const isRequester = request.requester?._id === user?._id || request.requester === user?._id;
   const isHelper = request.acceptedBy?._id === user?._id || request.acceptedBy === user?._id;
 
-  // Urgency styling
-  let urgencyColor = 'bg-stone-100 text-stone-700 border-stone-200';
-  if (request.urgency === 'urgent') urgencyColor = 'bg-rose-50 text-rose-700 border-rose-200';
-  else if (request.urgency === 'high') urgencyColor = 'bg-amber-50 text-amber-700 border-amber-200';
-  else if (request.urgency === 'medium') urgencyColor = 'bg-blue-50 text-blue-700 border-blue-200';
-  else if (request.urgency === 'low') urgencyColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
-
-  // Status progression steps
-  const steps = ['open', 'accepted', 'in_progress', 'completed'];
-  const currentStepIndex = steps.indexOf(request.status);
-
   return (
     <AppLayout>
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Navigation Breadcrumb */}
+      <div className="max-w-4xl mx-auto space-y-6 animate-fade-in-up">
+        {/* Navigation / Header */}
         <div className="flex items-center justify-between">
-          <Link
-            to="/help"
-            className="inline-flex items-center gap-2 text-sm font-medium text-stone-600 hover:text-stone-900"
-          >
-            <span>←</span> Back to Help Requests
+          <Link to="/help" className="text-xs font-medium text-[#71716E] dark:text-[#8E8E88] hover:text-[#1A1A1A] dark:hover:text-white transition-colors flex items-center gap-1.5">
+            &larr; Back to Help Board
           </Link>
-
-          {isRequester && request.status === 'open' && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-rose-600 hover:bg-rose-50"
-              onClick={handleDelete}
-              disabled={actionLoading}
-            >
-              Delete Request
-            </Button>
+          {isRequester && (
+            <div className="flex items-center gap-2">
+              {request.status !== 'completed' && request.status !== 'cancelled' && (
+                <Button variant="outline" size="sm" onClick={() => setIsCancelModalOpen(true)}>
+                  Cancel Request
+                </Button>
+              )}
+              <Button variant="danger" size="sm" onClick={handleDelete}>
+                Delete
+              </Button>
+            </div>
           )}
         </div>
 
         {/* Main Details Card */}
-        <Card className="p-6 md:p-8">
-          {/* Header Row */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pb-6 border-b border-stone-200">
-            <div className="flex items-center gap-3">
-              <span className="text-3xl p-2.5 bg-stone-100 rounded-xl">
-                {getTypeIcon(request.type)}
-              </span>
-              <div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-teal-700">
-                  {request.type} request
+        <div className="bg-white dark:bg-[#141413] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-3xl p-7 sm:p-9 shadow-sm space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-6 border-b border-[#E8E7E1] dark:border-[#2A2A28]">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2.5">
+                <span className="text-2xl">{getTypeIcon(request.type)}</span>
+                <span className="text-xs font-medium uppercase tracking-wider text-[#71716E] dark:text-[#8E8E88]">
+                  {request.type}
                 </span>
-                <h1 className="text-2xl font-bold text-stone-900">
-                  {request.title}
-                </h1>
+                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-medium uppercase tracking-wider ${
+                  request.urgency === 'urgent'
+                    ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
+                    : request.urgency === 'high'
+                    ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                    : 'bg-[#EAE8E1] dark:bg-[#1E1E1C] text-[#71716E] dark:text-[#8E8E88]'
+                }`}>
+                  {request.urgency} urgency
+                </span>
               </div>
+              <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-[#1A1A1A] dark:text-white">
+                {request.title}
+              </h1>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${urgencyColor} capitalize`}>
-                Urgency: {request.urgency}
-              </span>
-              <span className="text-xs font-semibold px-3 py-1 rounded-full border bg-stone-100 text-stone-800 capitalize">
-                Status: {request.status.replace('_', ' ')}
+            <div className="shrink-0">
+              <span className={`px-3 py-1 rounded-full text-xs font-medium uppercase tracking-wider ${
+                request.status === 'completed'
+                  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                  : request.status === 'in_progress'
+                  ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20'
+                  : request.status === 'accepted'
+                  ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                  : request.status === 'cancelled'
+                  ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
+                  : 'bg-[#EAE8E1] dark:bg-[#1E1E1C] text-[#1A1A1A] dark:text-[#FAF9F5]'
+              }`}>
+                {request.status?.replace('_', ' ')}
               </span>
             </div>
           </div>
 
-          {/* Lifecycle Step Tracker (If not cancelled) */}
-          {request.status !== 'cancelled' ? (
-            <div className="py-6 border-b border-stone-100">
-              <div className="flex items-center justify-between relative max-w-xl mx-auto">
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-stone-200 w-full z-0" />
-                <div
-                  className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-teal-600 z-0 transition-all duration-300"
-                  style={{ width: `${(Math.max(0, currentStepIndex) / (steps.length - 1)) * 100}%` }}
-                />
-
-                {steps.map((st, idx) => {
-                  const isDone = idx <= currentStepIndex;
-                  const isCurrent = idx === currentStepIndex;
-                  return (
-                    <div key={st} className="relative z-10 flex flex-col items-center">
-                      <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-colors ${
-                          isDone
-                            ? 'bg-teal-600 text-white shadow-xs'
-                            : 'bg-white border-2 border-stone-300 text-stone-400'
-                        }`}
-                      >
-                        {isDone ? '✓' : idx + 1}
-                      </div>
-                      <span
-                        className={`text-[11px] font-semibold mt-1.5 capitalize ${
-                          isCurrent ? 'text-teal-700 font-bold' : isDone ? 'text-stone-700' : 'text-stone-400'
-                        }`}
-                      >
-                        {st.replace('_', ' ')}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ) : (
-            <div className="py-4 my-4 bg-rose-50 border border-rose-200 rounded-lg p-4 text-xs text-rose-700">
-              <strong>This request was cancelled.</strong> Reason: {request.cancelReason || 'No reason provided.'}
+          {/* Description */}
+          {request.description && (
+            <div className="space-y-1">
+              <h3 className="text-xs font-medium uppercase tracking-wider text-[#71716E] dark:text-[#8E8E88]">
+                Description
+              </h3>
+              <p className="text-sm text-[#1A1A1A] dark:text-[#FAF9F5] leading-relaxed">
+                {request.description}
+              </p>
             </div>
           )}
 
-          {/* Description & Metadata */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-6">
-            <div className="md:col-span-2 space-y-4">
-              <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-400 mb-1.5">
-                  Details & Instructions
-                </h3>
-                <p className="text-sm text-stone-700 whitespace-pre-line leading-relaxed bg-stone-50/70 p-4 rounded-xl border border-stone-100">
-                  {request.description || 'No additional details provided.'}
-                </p>
-              </div>
-
-              {/* Locations */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                {request.fromLocation && (
-                  <div className="p-3 bg-white border border-stone-200 rounded-lg">
-                    <span className="text-xs font-semibold text-stone-400 block">From Location</span>
-                    <span className="text-sm font-medium text-stone-800">📍 {request.fromLocation}</span>
-                  </div>
-                )}
-                {request.toLocation && (
-                  <div className="p-3 bg-white border border-stone-200 rounded-lg">
-                    <span className="text-xs font-semibold text-stone-400 block">Destination</span>
-                    <span className="text-sm font-medium text-stone-800">🎯 {request.toLocation}</span>
-                  </div>
-                )}
-                {request.location && !request.fromLocation && !request.toLocation && (
-                  <div className="p-3 bg-white border border-stone-200 rounded-lg sm:col-span-2">
-                    <span className="text-xs font-semibold text-stone-400 block">Location</span>
-                    <span className="text-sm font-medium text-stone-800">📍 {request.location}</span>
-                  </div>
-                )}
-              </div>
+          {/* Key Meta Details */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+            <div className="p-4 rounded-2xl bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28]">
+              <span className="text-[10px] uppercase font-medium text-[#71716E] dark:text-[#8E8E88] block">Date</span>
+              <span className="text-sm font-medium text-[#1A1A1A] dark:text-white mt-1 block">{request.date}</span>
             </div>
-
-            {/* People & Time Sidebar */}
-            <div className="space-y-4 bg-stone-50 p-4 rounded-xl border border-stone-200">
-              <div>
-                <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider block mb-1">
-                  Requested By
-                </span>
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-teal-100 text-teal-700 font-bold flex items-center justify-center text-xs">
-                    {request.requester?.name?.charAt(0).toUpperCase() || 'U'}
-                  </div>
-                  <div>
-                    <div className="text-sm font-bold text-stone-900">
-                      {isRequester ? `${request.requester?.name} (You)` : request.requester?.name}
-                    </div>
-                    <div className="text-[11px] text-stone-500">{request.requester?.email}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider block mb-1">
-                  Helper Assigned
-                </span>
-                {request.acceptedBy ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center text-xs">
-                      {request.acceptedBy?.name?.charAt(0).toUpperCase() || 'H'}
-                    </div>
-                    <div>
-                      <div className="text-sm font-bold text-stone-900">
-                        {isHelper ? `${request.acceptedBy?.name} (You)` : request.acceptedBy?.name}
-                      </div>
-                      <div className="text-[11px] text-emerald-600 font-medium">Assigned Roommate</div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-xs text-stone-500 italic">No roommate has accepted yet.</div>
-                )}
-              </div>
-
-              <div className="pt-2 border-t border-stone-200 text-xs space-y-1.5 text-stone-600">
-                <div className="flex justify-between">
-                  <span>Date:</span>
-                  <span className="font-semibold text-stone-800">
-                    {new Date(request.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                  </span>
-                </div>
-                {request.startTime && (
-                  <div className="flex justify-between">
-                    <span>Time Window:</span>
-                    <span className="font-semibold text-stone-800">
-                      {formatTime12h(request.startTime)} - {formatTime12h(request.endTime)}
-                    </span>
-                  </div>
-                )}
-              </div>
+            <div className="p-4 rounded-2xl bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28]">
+              <span className="text-[10px] uppercase font-medium text-[#71716E] dark:text-[#8E8E88] block">Requested By</span>
+              <span className="text-sm font-medium text-[#1A1A1A] dark:text-white mt-1 block">
+                {request.requester?.name || 'Flatmate'} {isRequester && '(You)'}
+              </span>
+            </div>
+            <div className="p-4 rounded-2xl bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28]">
+              <span className="text-[10px] uppercase font-medium text-[#71716E] dark:text-[#8E8E88] block">Helper</span>
+              <span className="text-sm font-medium text-[#1A1A1A] dark:text-white mt-1 block">
+                {request.acceptedBy?.name || 'Unassigned / Open'} {isHelper && '(You)'}
+              </span>
             </div>
           </div>
 
-          {/* Action Buttons Footer */}
-          <div className="pt-6 border-t border-stone-200 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              {request.status === 'open' && !isRequester && (
-                <Button
-                  variant="primary"
-                  loading={actionLoading}
-                  onClick={handleAccept}
-                  className="shadow-xs"
-                >
-                  🤝 I Can Help (Accept Request)
-                </Button>
-              )}
-
-              {request.status === 'accepted' && isHelper && (
-                <Button
-                  variant="primary"
-                  loading={actionLoading}
-                  onClick={handleStart}
-                  className="shadow-xs"
-                >
-                  🚀 Start Doing Favor
-                </Button>
-              )}
-
-              {request.status === 'in_progress' && isHelper && (
-                <Button
-                  variant="primary"
-                  loading={actionLoading}
-                  onClick={handleComplete}
-                  className="shadow-xs"
-                >
-                  ✅ Mark Done & Complete
-                </Button>
-              )}
-
-              {request.status === 'completed' && (
-                <div className="inline-flex items-center gap-2 text-sm font-semibold text-teal-700 bg-teal-50 px-4 py-2 rounded-lg border border-teal-200">
-                  <span>🎉</span> Completed Successfully
-                </div>
-              )}
-            </div>
-
-            {(isRequester || isHelper) && request.status !== 'completed' && request.status !== 'cancelled' && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-stone-500 hover:text-rose-600"
-                onClick={() => setIsCancelModalOpen(true)}
-              >
-                Cancel Request
+          {/* Actions */}
+          <div className="pt-4 border-t border-[#E8E7E1] dark:border-[#2A2A28] flex flex-wrap gap-3">
+            {request.status === 'open' && !isRequester && (
+              <Button onClick={handleAccept} isLoading={actionLoading}>
+                Accept this Favor &rarr;
+              </Button>
+            )}
+            {request.status === 'accepted' && isHelper && (
+              <Button onClick={handleStart} isLoading={actionLoading}>
+                Start Favor
+              </Button>
+            )}
+            {request.status === 'in_progress' && (isHelper || isRequester) && (
+              <Button onClick={handleComplete} isLoading={actionLoading}>
+                Mark as Completed ✓
               </Button>
             )}
           </div>
-        </Card>
+        </div>
 
-        {/* Smart Roommate Availability Recommendations (Visible for Open Requests) */}
-        {request.status === 'open' && (
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-base font-bold text-stone-900 flex items-center gap-2">
-                  <span>🤖</span> Available Roommates & Recommendation Engine
-                </h3>
-                <p className="text-xs text-stone-500 mt-0.5">
-                  Calculated using individual schedules, recurring availability windows, and existing chore loads.
-                </p>
-              </div>
+        {/* Smart Recommendations */}
+        {request.status === 'open' && recommendations.length > 0 && (
+          <div className="bg-white dark:bg-[#141413] border border-[#E8E7E1] dark:border-[#2A2A28] rounded-3xl p-6 sm:p-7 shadow-sm space-y-4">
+            <h3 className="text-base font-medium tracking-tight text-[#1A1A1A] dark:text-white">
+              Suggested Roommates Free Right Now
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {recommendations.map((rec) => (
+                <div
+                  key={rec.user?._id}
+                  className="p-4 rounded-2xl bg-[#FAF9F5] dark:bg-[#181816] border border-[#E8E7E1] dark:border-[#2A2A28] flex items-center justify-between"
+                >
+                  <div>
+                    <span className="text-sm font-medium text-[#1A1A1A] dark:text-white block">{rec.user?.name}</span>
+                    <span className="text-xs text-[#71716E] dark:text-[#8E8E88]">{rec.reason || 'Available right now'}</span>
+                  </div>
+                  <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                    {rec.matchScore ? `${rec.matchScore}% Match` : 'Free'}
+                  </span>
+                </div>
+              ))}
             </div>
-
-            {recommendations.length === 0 ? (
-              <div className="text-xs text-stone-500 italic py-4 text-center">
-                No other household roommates found to analyze.
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {recommendations.map(rec => {
-                  let badgeColor = 'bg-stone-100 text-stone-700';
-                  let badgeText = 'Unavailable';
-                  if (rec.status === 'full_match') {
-                    badgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
-                    badgeText = '⭐ Best Match';
-                  } else if (rec.status === 'partial_match') {
-                    badgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
-                    badgeText = '⚡ Partial Match';
-                  } else if (rec.status === 'free_schedule') {
-                    badgeColor = 'bg-blue-50 text-blue-700 border-blue-200';
-                    badgeText = '🟢 Free Schedule';
-                  }
-
-                  return (
-                    <div
-                      key={rec.user._id}
-                      className="p-4 bg-stone-50 border border-stone-200 rounded-xl space-y-3"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-teal-100 text-teal-800 font-bold flex items-center justify-center text-xs">
-                            {rec.user.name?.charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <div className="text-sm font-bold text-stone-900">{rec.user.name}</div>
-                            <div className="text-[11px] text-stone-500">{rec.user.email}</div>
-                          </div>
-                        </div>
-
-                        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${badgeColor}`}>
-                          {badgeText}
-                        </span>
-                      </div>
-
-                      {/* Reasons */}
-                      <ul className="text-xs text-stone-600 space-y-1 bg-white p-2.5 rounded-lg border border-stone-200/60">
-                        {rec.reasons.map((r, i) => (
-                          <li key={i} className="flex items-start gap-1.5">
-                            <span className="text-teal-600 font-bold">•</span>
-                            <span>{r}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </Card>
+          </div>
         )}
       </div>
 
       {/* Cancel Modal */}
-      <Modal
-        isOpen={isCancelModalOpen}
-        onClose={() => setIsCancelModalOpen(false)}
-        title="Cancel Help Request"
-      >
-        <div className="space-y-4">
-          <p className="text-sm text-stone-600">
-            Are you sure you want to cancel this request? You can optionally provide a reason for your roommates.
-          </p>
-          <textarea
-            rows={3}
+      <Modal isOpen={isCancelModalOpen} onClose={() => setIsCancelModalOpen(false)} title="Cancel Favor Request">
+        <form onSubmit={handleCancel} className="space-y-4 text-xs">
+          <Input
+            label="Reason for cancellation (optional)"
             value={cancelReason}
             onChange={(e) => setCancelReason(e.target.value)}
-            placeholder="e.g. Found another ride / no longer needed..."
-            className="w-full px-3 py-2 text-sm bg-white border border-stone-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+            placeholder="e.g. Handled it myself / no longer needed"
           />
-          <div className="flex justify-end gap-2 pt-2 border-t border-stone-100">
-            <Button
-              variant="ghost"
-              onClick={() => setIsCancelModalOpen(false)}
-            >
-              Keep Request
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" type="button" onClick={() => setIsCancelModalOpen(false)}>
+              Keep Active
             </Button>
-            <Button
-              variant="danger"
-              loading={actionLoading}
-              onClick={handleCancel}
-            >
+            <Button variant="danger" type="submit" isLoading={actionLoading}>
               Confirm Cancel
             </Button>
           </div>
-        </div>
+        </form>
       </Modal>
     </AppLayout>
   );
